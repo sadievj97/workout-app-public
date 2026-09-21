@@ -53,6 +53,8 @@ fun TodayScreen(
     repo: ProtocolRepository,
     today: LocalDate,
     now: LocalTime,
+    /** Typed in by the owner in Settings. Displayed, never generated or changed. */
+    rehabExercises: List<String>,
     onStartSession: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -81,6 +83,30 @@ fun TodayScreen(
                 programWeek = week,
                 onStartSession = onStartSession,
             )
+        }
+
+        // Sunday's rehab work, shown exactly as typed. The app never generates,
+        // changes, or substitutes it.
+        if (schedule?.sessionId == "easy_walk_rehab") {
+            CutCard {
+                SectionLabel("Rehab")
+                if (rehabExercises.isEmpty()) {
+                    Text(
+                        "No rehab exercises entered yet. Add them in Settings.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MistDim,
+                    )
+                } else {
+                    rehabExercises.forEach {
+                        Text(it, style = MaterialTheme.typography.bodyLarge, color = Mist)
+                    }
+                    Text(
+                        "From your rehab program. The app never changes these.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MistDim,
+                    )
+                }
+            }
         }
 
         TimelineCard(repo = repo, now = now)

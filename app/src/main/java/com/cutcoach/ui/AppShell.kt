@@ -17,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -35,6 +36,7 @@ import androidx.navigation.navArgument
 import com.cutcoach.data.db.TrainingRepository
 import com.cutcoach.data.protocol.ProtocolLoad
 import com.cutcoach.data.protocol.ProtocolRepository
+import com.cutcoach.data.settings.SettingsRepository
 import com.cutcoach.ui.body.BodyScreen
 import com.cutcoach.ui.exercise.CueCardScreen
 import com.cutcoach.ui.history.ExerciseHistoryScreen
@@ -45,15 +47,19 @@ import com.cutcoach.ui.theme.CutCoachTheme
 import com.cutcoach.ui.theme.Mist
 import com.cutcoach.ui.theme.MistDim
 import com.cutcoach.ui.theme.SlateEdge
+import com.cutcoach.ui.settings.SettingsScreen
 import com.cutcoach.ui.theme.SunriseAmber
 import com.cutcoach.ui.today.TodayScreen
+import com.cutcoach.ui.week.WeekScreen
 import java.time.LocalDate
 import java.time.LocalTime
 
 object Routes {
     const val TODAY = "today"
+    const val WEEK = "week"
     const val HISTORY = "history"
     const val BODY = "body"
+    const val SETTINGS = "settings"
     const val SESSION = "session/{sessionId}"
     const val CUE_CARD = "cue/{exerciseId}"
     const val EXERCISE_HISTORY = "exerciseHistory/{exerciseId}"
@@ -66,8 +72,10 @@ object Routes {
 /** The tabs in the bottom bar, in order. */
 private val TABS = listOf(
     Routes.TODAY to "Today",
+    Routes.WEEK to "Week",
     Routes.HISTORY to "History",
     Routes.BODY to "Body",
+    Routes.SETTINGS to "Settings",
 )
 
 /**
@@ -128,16 +136,28 @@ private fun NavGraph(
 
         composable(Routes.TODAY) {
             val today = LocalDate.now()
+            val settings = remember { SettingsRepository.get(context) }
+            val rehab by settings.rehabExercises.collectAsStateWithLifecycle(emptyList())
+
             TodayScreen(
                 repo = repo,
                 today = today,
                 now = LocalTime.now(),
+                rehabExercises = rehab,
                 onStartSession = {
                     repo.scheduleFor(today.dayOfWeek)?.let {
                         navController.navigate(Routes.session(it.sessionId))
                     }
                 },
             )
+        }
+
+        composable(Routes.WEEK) {
+            WeekScreen(repo = repo, today = LocalDate.now())
+        }
+
+        composable(Routes.SETTINGS) {
+            SettingsScreen(repo = repo)
         }
 
         composable(Routes.HISTORY) {
@@ -158,13 +178,16 @@ private fun NavGraph(
             val sessionId = entry.arguments?.getString("sessionId").orEmpty()
             val programWeek = repo.programWeek(LocalDate.now())
             val training = remember { TrainingRepository.get(context) }
+            val settings = remember { SettingsRepository.get(context) }
 
             // Scoped to this back-stack entry, so opening a cue card mid-set and
             // coming back keeps the timer running and the log intact.
             val vm: SessionPlayerViewModel = viewModel(
                 viewModelStoreOwner = entry,
                 factory = viewModelFactory {
-                    initializer { SessionPlayerViewModel(repo, training, sessionId, programWeek) }
+                    initializer {
+                        SessionPlayerViewModel(repo, training, settings, sessionId, programWeek)
+                    }
                 },
             )
 
@@ -185,11 +208,15 @@ private fun NavGraph(
             if (exercise == null) {
                 MissingExercise(exerciseId)
             } else {
+                val settings = remember { SettingsRepository.get(context) }
+                val override by settings.videoUrl(exerciseId).collectAsStateWithLifecycle("")
+
                 CueCardScreen(
                     exercise = exercise,
                     // Until progression is stored, everyone starts on rung one.
                     // Phase 3 replaces this with the exercise's real position.
                     currentLadderStep = 0,
+                    videoUrl = override.ifBlank { exercise.videoUrl },
                     onBack = { navController.popBackStack() },
                 )
             }

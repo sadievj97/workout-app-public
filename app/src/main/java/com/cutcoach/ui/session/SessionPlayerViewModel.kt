@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cutcoach.data.db.TrainingRepository
 import com.cutcoach.data.protocol.ProtocolRepository
+import com.cutcoach.data.settings.SettingsRepository
 import com.cutcoach.data.session.SessionStep
 import com.cutcoach.data.session.Side
 import com.cutcoach.data.session.buildSessionPlan
@@ -35,9 +36,17 @@ data class LoggedSet(
 class SessionPlayerViewModel(
     private val repo: ProtocolRepository,
     private val training: TrainingRepository,
+    private val settings: SettingsRepository,
     val sessionId: String,
     val programWeek: Int?,
 ) : ViewModel() {
+
+    /**
+     * Rest is the one duration the owner can override in Settings. It is read
+     * when each rest starts rather than baked into the plan, so changing it
+     * mid-session applies from the next set instead of nothing.
+     */
+    private var effectiveRestSeconds = repo.restSeconds
 
     /** The database row for this session, created as soon as the player opens. */
     private var sessionLogId: Long? = null
@@ -110,6 +119,10 @@ class SessionPlayerViewModel(
             pending.clear()
         }
 
+        viewModelScope.launch {
+            settings.restSecondsOverride.collect { effectiveRestSeconds = it ?: repo.restSeconds }
+        }
+
         // The rung each exercise is on, so every set records how hard it was.
         viewModelScope.launch {
             steps.forEach { step ->
@@ -144,7 +157,7 @@ class SessionPlayerViewModel(
     private fun prepareStep() {
         when (val step = current) {
             is SessionStep.Warmup -> startCountdown(step.seconds)
-            is SessionStep.Rest -> startCountdown(step.seconds)
+            is SessionStep.Rest -> startCountdown(effectiveRestSeconds)
             is SessionStep.SwitchSides -> startCountdown(step.seconds)
             is SessionStep.HoldSet -> startCountdown(step.seconds)
             is SessionStep.RepSet -> {

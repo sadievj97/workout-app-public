@@ -47,10 +47,13 @@ import com.cutcoach.ui.theme.SunriseAmber
 fun CueCardScreen(
     exercise: Exercise,
     currentLadderStep: Int,
+    /** The link to use: a Settings override if there is one, otherwise the library's. */
+    videoUrl: String,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
+    val hasVideo = videoUrl.isNotBlank()
 
     Column(
         modifier = modifier
@@ -117,10 +120,10 @@ fun CueCardScreen(
             }
         }
 
-        if (exercise.hasVideo) {
+        if (hasVideo) {
             Button(
                 onClick = {
-                    val intent = Intent(Intent.ACTION_VIEW, exercise.videoUrl.toUri())
+                    val intent = Intent(Intent.ACTION_VIEW, videoUrl.toUri())
                     context.startActivity(intent)
                 },
                 modifier = Modifier
@@ -137,8 +140,8 @@ fun CueCardScreen(
         } else {
             // No link yet. Said plainly rather than shown as a dead button.
             Text(
-                "No demo video linked yet. Add one to exercises.json when you find a " +
-                    "clip you trust.",
+                "No demo video linked yet. Add one in Settings when you find a clip " +
+                    "you trust.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MistDim,
             )

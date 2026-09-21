@@ -18,6 +18,14 @@ Read CLAUDE.md, protocol.json, and exercises.json in this folder. Do not write a
 Implement Phase 1 from CLAUDE.md. Create the Android project with Kotlin, Jetpack Compose, and Room. Load protocol.json and exercises.json from assets as the single source of truth. Work in small steps and commit to git after each working step. When Phase 1 is done, tell me click by click how to open the project in Android Studio, connect my Samsung phone by USB, and run the app. Then explain the three most important files in plain language.
 ```
 
+## Prompt 1b: how-to animations (Phase 1b)
+
+Before pasting: for each exercise, pick one demo video you trust and note the seconds where the clean demonstration starts and ends. You will enter the link and the times in Settings.
+
+```
+Implement Phase 1b from CLAUDE.md. Build the animation engine and only three exercises first (push-up, pull-up, hollow hold), then stop and tell me how to see them on the phone. After I approve the look, animate the remaining twelve, build the Form check screen, and add the looping video segments to the cue cards.
+```
+
 ## When something breaks (use any time)
 
 ```

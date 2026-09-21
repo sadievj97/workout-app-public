@@ -5,7 +5,7 @@
 A personal Android app for one user, installed from Android Studio and never published. It runs the 24-week cut protocol in `protocol.json`:
 
 - shows today's session and the day's timeline,
-- guides each workout with timers and exercise cue cards,
+- guides each workout with timers, animated stick figures, and exercise cue cards,
 - logs every set,
 - reads Galaxy Watch 8 data through Health Connect,
 - recommends progressions and substitutions that follow the protocol's own rules.
@@ -34,6 +34,7 @@ Later, Claude adds substitutions, harder variations, and weekly reviews.
 - Kotlin, Jetpack Compose, Material 3
 - Room for local storage; all data stays on the phone
 - WorkManager for the daily Health Connect sync
+- Compose Canvas for the stick-figure animations; no third-party image or animation assets
 - Health Connect Jetpack client (`androidx.health.connect:connect-client`) from Phase 2
 - minSdk 28; targetSdk the latest stable version
 - No backend, no accounts, no analytics, no cloud sync (Phase 4 adds one small proxy, described below)
@@ -71,6 +72,45 @@ Build in order. Do not start a phase until the previous one works on the phone.
 - Body tracking: daily weight entry with a 7-day average; waist entry on Sundays.
 - Settings: program start date, ramp start date, rest default, video links, rehab exercise list.
 - Weekly view.
+
+### Phase 1b: how-to animations and demo loops
+
+Build right after the Phase 1 timers work on the phone.
+
+**Stick-figure animations (drawn in code, work offline)**
+- One simple 2D figure drawn with Compose Canvas: head, torso, upper and lower arms, upper and lower legs, feet. No image files and no third-party animation assets.
+- Each exercise is a short sequence of poses (keyframes) with smooth interpolation between them.
+- Store the poses as data in `app/src/main/assets/poses.json`, one entry per exercise id in `exercises.json`, so a wrong pose can be fixed without touching drawing code.
+- Draw props as simple shapes: floor line, pull-up bar, chair, table edge, step, towel.
+- Camera angle: side view by default; front view where that shows the key joint more clearly (for example the side plank).
+- Tempo follows the current ladder step:
+  - Default: about 1 second up and 1 second down.
+  - On a "3-second lowering" step, the lowering takes 3 seconds.
+  - On a "pause" step, the figure holds at the hardest point for the time the ladder text states, or 1 second if it states none.
+  - Timed holds show the held position with a countdown ring.
+- Each-side exercises: animate one side, and mirror the figure for the other side and during "Switch sides".
+- Placement: small and glanceable next to the set counter in the session player; large at the top of the cue card.
+- Styling: the figure in mist (#D5DDE8), with the working limbs highlighted in sunrise amber (#F2A541) during work phases.
+- Reduced motion: if the phone's "remove animations" setting is on, show the start and end poses side by side instead.
+
+**Accuracy review**
+- Build the engine and three exercises first (push-up, pull-up, hollow hold), then stop for the owner's approval of the look before animating the other twelve.
+- Add a Form check screen listing all 15 animations. Each gets "Looks right" and "Needs fixing" buttons and a note field. Until the owner marks an animation "Looks right", it shows a small "Unreviewed" label.
+- The figures are schematic reminders of movement and tempo. They do not replace learning form from a video or a coach; the cue card says so once.
+- After all 15 base animations are approved, add variant poses for ladder steps that change body position (feet elevated, knees bent, single leg, arms overhead). Steps that change only tempo reuse the base pose.
+
+**Looping demo clips (online, in the cue card)**
+- Add optional `video_start_s` and `video_end_s` fields to each exercise in `exercises.json`, editable in Settings next to the video link.
+- When `video_url` is set, play that segment muted and on loop inside the cue card through YouTube's official embedded player (IFrame Player API). Loop by seeking back to `video_start_s` when playback reaches `video_end_s`.
+- Never download, cache, or re-host video files.
+- With no internet, or if a video does not allow embedding, fall back to the stick figure plus an "Open in YouTube" button.
+
+**Checks before Phase 2**
+- A unit test fails if any exercise in `protocol.json` has no pose.
+- On a "3-second lowering" step, the lowering phase lasts 3 seconds, within a small tolerance.
+- Mirroring works for every each-side exercise.
+- The reduced-motion fallback works.
+- The whole session player works in airplane mode.
 
 ### Phase 2: watch data through Health Connect (read only)
 
@@ -155,6 +195,7 @@ Samsung Health syncs to Health Connect, and the app reads from Health Connect.
 
 - README covering the problem, architecture, key decisions, test results, and what failed.
 - Sample data only. Confirm that no secrets and no personal health data exist anywhere in the git history.
+- The stick figures are original work and can ship in the public repo. Demo videos stay as links, never copies.
 
 ## Design direction
 
@@ -171,8 +212,9 @@ The app is used half-awake at 05:35 in a dim room, with the phone on the floor a
 - **Type:** Atkinson Hyperlegible throughout, chosen for legibility when tired; tabular figures for every number.
 - **Words and controls:** sentence case, plain verbs, no decoration. Touch targets of at least 56 dp for logging reps.
 
-## Security and privacy
+## Security, privacy, and licensing
 
+- Never bundle copyrighted images, GIFs, or video files. Figures are drawn in code; demo videos play only through YouTube's own player.
 - No secrets in code or git. Keep local config in `local.properties`, and list it in `.gitignore`.
 - Health data stays on the phone, except the minimal summaries sent to Claude in Phase 4.
 - The app is never distributed. It is installed from Android Studio on the owner's phone only.

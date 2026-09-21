@@ -34,8 +34,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.cutcoach.data.poses.PoseLoad
+import com.cutcoach.data.poses.PoseRepository
 import com.cutcoach.data.session.SessionStep
 import com.cutcoach.data.session.Side
+import com.cutcoach.ui.figure.AnimatedStickFigure
 import com.cutcoach.ui.theme.CoolSky
 import com.cutcoach.ui.theme.Mist
 import com.cutcoach.ui.theme.MistDim
@@ -268,9 +271,17 @@ private fun HoldStep(
     ) {
         ExerciseHeading(
             name = vm.exerciseName(step.exerciseId),
+            exerciseId = step.exerciseId,
             setNumber = step.setNumber,
             totalSets = step.totalSets,
             side = step.side,
+            working = true,
+            // The ring fills as the hold runs down.
+            holdProgress = if (step.seconds > 0) {
+                1f - (vm.secondsLeft.toFloat() / step.seconds)
+            } else {
+                null
+            },
             onOpenCueCard = { onOpenCueCard(step.exerciseId) },
         )
 
@@ -311,9 +322,11 @@ private fun RepSetStep(
     ) {
         ExerciseHeading(
             name = vm.exerciseName(step.exerciseId),
+            exerciseId = step.exerciseId,
             setNumber = step.setNumber,
             totalSets = step.totalSets,
             side = step.side,
+            working = true,
             onOpenCueCard = { onOpenCueCard(step.exerciseId) },
         )
 
@@ -355,12 +368,23 @@ private fun RepSetStep(
 @Composable
 private fun ExerciseHeading(
     name: String,
+    exerciseId: String,
     setNumber: Int,
     totalSets: Int,
     side: Side,
+    working: Boolean,
+    holdProgress: Float? = null,
     onOpenCueCard: () -> Unit,
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        // Small and glanceable: enough to confirm you are in the right shape,
+        // not so big it competes with the timer.
+        ExerciseFigure(
+            exerciseId = exerciseId,
+            side = side,
+            working = working,
+            holdProgress = holdProgress,
+        )
         Text(
             name,
             style = MaterialTheme.typography.headlineMedium,
@@ -379,6 +403,35 @@ private fun ExerciseHeading(
             Text("How to do it", style = MaterialTheme.typography.labelMedium, color = CoolSky)
         }
     }
+}
+
+/**
+ * The figure for the current exercise, or nothing at all if it has no pose yet.
+ *
+ * The right side of an each-side exercise shows the same figure mirrored, so
+ * one set of poses covers both.
+ */
+@Composable
+private fun ExerciseFigure(
+    exerciseId: String,
+    side: Side,
+    working: Boolean,
+    holdProgress: Float?,
+) {
+    val context = LocalContext.current
+    val poses = remember { PoseRepository.load(context) as? PoseLoad.Success } ?: return
+    val animation = poses.library.animationFor(exerciseId) ?: return
+
+    AnimatedStickFigure(
+        animation = animation,
+        style = poses.library.figure,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(140.dp),
+        mirrored = side == Side.RIGHT,
+        highlightWorking = working,
+        holdProgress = holdProgress,
+    )
 }
 
 @Composable

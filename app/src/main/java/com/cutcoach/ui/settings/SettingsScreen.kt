@@ -53,7 +53,11 @@ import kotlinx.coroutines.launch
  * protocol's own value.
  */
 @Composable
-fun SettingsScreen(repo: ProtocolRepository, modifier: Modifier = Modifier) {
+fun SettingsScreen(
+    repo: ProtocolRepository,
+    onOpenFigures: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val context = LocalContext.current
     val settings = remember { SettingsRepository.get(context) }
     val scope = rememberCoroutineScope()
@@ -71,6 +75,19 @@ fun SettingsScreen(repo: ProtocolRepository, modifier: Modifier = Modifier) {
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         Text("Settings", style = MaterialTheme.typography.displaySmall, color = Mist)
+
+        // Temporary: replaced by the Form check screen once all fifteen
+        // figures exist.
+        CutCard {
+            SectionLabel("Figures")
+            TextButton(onClick = onOpenFigures) {
+                Text(
+                    "Preview the first three figures",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = CoolSky,
+                )
+            }
+        }
 
         // Read-only, and the screen says why.
         CutCard {

@@ -39,6 +39,7 @@ import com.cutcoach.data.protocol.ProtocolRepository
 import com.cutcoach.data.settings.SettingsRepository
 import com.cutcoach.ui.body.BodyScreen
 import com.cutcoach.ui.exercise.CueCardScreen
+import com.cutcoach.ui.figure.FigurePreviewScreen
 import com.cutcoach.ui.history.ExerciseHistoryScreen
 import com.cutcoach.ui.history.HistoryScreen
 import com.cutcoach.ui.session.SessionPlayerScreen
@@ -63,6 +64,7 @@ object Routes {
     const val SESSION = "session/{sessionId}"
     const val CUE_CARD = "cue/{exerciseId}"
     const val EXERCISE_HISTORY = "exerciseHistory/{exerciseId}"
+    const val FIGURES = "figures"
 
     fun session(id: String) = "session/$id"
     fun cueCard(id: String) = "cue/$id"
@@ -157,7 +159,14 @@ private fun NavGraph(
         }
 
         composable(Routes.SETTINGS) {
-            SettingsScreen(repo = repo)
+            SettingsScreen(
+                repo = repo,
+                onOpenFigures = { navController.navigate(Routes.FIGURES) },
+            )
+        }
+
+        composable(Routes.FIGURES) {
+            FigurePreviewScreen(repo = repo, onBack = { navController.popBackStack() })
         }
 
         composable(Routes.HISTORY) {

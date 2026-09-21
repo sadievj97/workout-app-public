@@ -1,0 +1,132 @@
+{
+  "meta": {
+    "note": "Keyframe poses for the stick figures. Drawn in code with Compose Canvas; no image files and no third-party animation assets, so everything here works offline and can ship in a public repo.",
+    "coordinate_space": "Normalised 0 to 1 inside a square box. x runs left to right, y runs top to bottom, so a larger y is lower on the screen. The floor is usually y 0.856.",
+    "how_to_fix_a_pose": "Move the numbers, not the drawing code. Each joint is [x, y]. Limbs are drawn between joints: neck to hip is the torso, neck to elbow to wrist is the arm, hip to knee to ankle to toe is the leg. Keep the distance between two joints about the same across every pose of one exercise, or the limb will appear to stretch as it moves.",
+    "review_status": "push_up, pull_up and hollow_hold are the first three, built for approval before the other twelve."
+  },
+
+  "figure": {
+    "head_radius": 0.042,
+    "stroke_width": 0.017,
+    "segment_lengths_reference": {
+      "torso": 0.26,
+      "upper_arm": 0.105,
+      "forearm": 0.105,
+      "thigh": 0.135,
+      "shin": 0.135,
+      "foot": 0.05,
+      "neck_to_head_centre": 0.055
+    }
+  },
+
+  "exercises": {
+
+    "push_up": {
+      "view": "side",
+      "working_limbs": ["arms"],
+      "props": [
+        {"type": "floor", "y": 0.856}
+      ],
+      "poses": {
+        "top": {
+          "head":  [0.746, 0.627],
+          "neck":  [0.694, 0.646],
+          "hip":   [0.450, 0.735],
+          "elbow": [0.694, 0.751],
+          "wrist": [0.694, 0.856],
+          "knee":  [0.323, 0.781],
+          "ankle": [0.196, 0.827],
+          "toe":   [0.237, 0.856]
+        },
+        "bottom": {
+          "head":  [0.758, 0.710],
+          "neck":  [0.704, 0.721],
+          "hip":   [0.450, 0.775],
+          "elbow": [0.619, 0.783],
+          "wrist": [0.694, 0.856],
+          "knee":  [0.318, 0.803],
+          "ankle": [0.186, 0.831],
+          "toe":   [0.229, 0.856]
+        }
+      },
+      "sequence": [
+        {"pose": "top",    "seconds": 0.0, "role": "start"},
+        {"pose": "bottom", "seconds": 1.0, "role": "lower"},
+        {"pose": "top",    "seconds": 1.0, "role": "raise"}
+      ],
+      "hardest_pose": "bottom"
+    },
+
+    "pull_up": {
+      "view": "front",
+      "view_note": "Seen from the front. In a side view the arms sit exactly on top of the torso and the whole figure reads as a pole with a ball on it.",
+      "working_limbs": ["arms", "torso"],
+      "props": [
+        {"type": "bar", "y": 0.120, "from_x": 0.200, "to_x": 0.800}
+      ],
+      "poses": {
+        "hang": {
+          "head":      [0.500, 0.255],
+          "neck":      [0.500, 0.330],
+          "hip":       [0.500, 0.590],
+          "elbow":     [0.430, 0.228],
+          "wrist":     [0.400, 0.120],
+          "elbow_far": [0.570, 0.228],
+          "wrist_far": [0.600, 0.120],
+          "knee":      [0.470, 0.724],
+          "ankle":     [0.462, 0.858],
+          "toe":       [0.448, 0.902],
+          "knee_far":  [0.530, 0.724],
+          "ankle_far": [0.538, 0.858],
+          "toe_far":   [0.552, 0.902]
+        },
+        "top": {
+          "head":      [0.500, 0.068],
+          "neck":      [0.500, 0.143],
+          "hip":       [0.500, 0.403],
+          "elbow":     [0.413, 0.231],
+          "wrist":     [0.400, 0.120],
+          "elbow_far": [0.587, 0.231],
+          "wrist_far": [0.600, 0.120],
+          "knee":      [0.470, 0.537],
+          "ankle":     [0.462, 0.671],
+          "toe":       [0.448, 0.715],
+          "knee_far":  [0.530, 0.537],
+          "ankle_far": [0.538, 0.671],
+          "toe_far":   [0.552, 0.715]
+        }
+      },
+      "sequence": [
+        {"pose": "hang", "seconds": 0.0, "role": "start"},
+        {"pose": "top",  "seconds": 1.0, "role": "raise"},
+        {"pose": "hang", "seconds": 1.0, "role": "lower"}
+      ],
+      "hardest_pose": "top"
+    },
+
+    "hollow_hold": {
+      "view": "side",
+      "working_limbs": ["torso"],
+      "props": [
+        {"type": "floor", "y": 0.856}
+      ],
+      "poses": {
+        "hold": {
+          "head":  [0.685, 0.742],
+          "neck":  [0.605, 0.757],
+          "hip":   [0.360, 0.845],
+          "elbow": [0.690, 0.655],
+          "wrist": [0.775, 0.595],
+          "knee":  [0.239, 0.786],
+          "ankle": [0.117, 0.727],
+          "toe":   [0.072, 0.705]
+        }
+      },
+      "sequence": [
+        {"pose": "hold", "seconds": 0.0, "role": "hold"}
+      ],
+      "hardest_pose": "hold"
+    }
+  }
+}

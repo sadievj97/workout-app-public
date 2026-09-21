@@ -21,14 +21,19 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
+import com.cutcoach.data.poses.PoseLoad
+import com.cutcoach.data.poses.PoseRepository
+import com.cutcoach.data.poses.Tempo
 import com.cutcoach.data.protocol.Exercise
 import com.cutcoach.ui.components.CutCard
+import com.cutcoach.ui.figure.AnimatedStickFigure
 import com.cutcoach.ui.components.SectionLabel
 import com.cutcoach.ui.theme.CoolSky
 import com.cutcoach.ui.theme.Mist
@@ -54,6 +59,11 @@ fun CueCardScreen(
 ) {
     val context = LocalContext.current
     val hasVideo = videoUrl.isNotBlank()
+    val poses = remember { PoseRepository.load(context) as? PoseLoad.Success }
+    val animation = poses?.library?.animationFor(exercise.id)
+    val tempo = remember(exercise.id, currentLadderStep) {
+        Tempo.fromLadderStep(exercise.ladder.getOrNull(currentLadderStep))
+    }
 
     Column(
         modifier = modifier
@@ -74,6 +84,26 @@ fun CueCardScreen(
                 style = MaterialTheme.typography.bodySmall,
                 color = MistDim,
             )
+        }
+
+        // The movement, large, before any words about it.
+        if (animation != null && poses != null) {
+            CutCard {
+                AnimatedStickFigure(
+                    animation = animation,
+                    style = poses.library.figure,
+                    tempo = tempo,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(260.dp),
+                )
+                Text(
+                    "A reminder of the shape and the tempo, not a substitute for " +
+                        "learning the form from a video or a coach.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MistDim,
+                )
+            }
         }
 
         // Safety first where the setup itself can hurt you.

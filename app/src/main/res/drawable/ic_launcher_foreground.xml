@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  A sunrise over a horizon: the 05:00 start. Drawn inside the central safe zone
+  of the 108dp adaptive-icon canvas so no launcher shape crops it.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <path
+        android:pathData="M 34,64 A 20,20 0 0 1 74,64"
+        android:strokeColor="#F2A541"
+        android:strokeWidth="6"
+        android:strokeLineCap="round" />
+
+    <path
+        android:pathData="M 28,74 L 80,74"
+        android:strokeColor="#F2A541"
+        android:strokeWidth="6"
+        android:strokeLineCap="round" />
+
+    <path
+        android:pathData="M 54,30 L 54,36"
+        android:strokeColor="#7FB2E5"
+        android:strokeWidth="5"
+        android:strokeLineCap="round" />
+
+    <path
+        android:pathData="M 31,40 L 35,44"
+        android:strokeColor="#7FB2E5"
+        android:strokeWidth="5"
+        android:strokeLineCap="round" />
+
+    <path
+        android:pathData="M 77,40 L 73,44"
+        android:strokeColor="#7FB2E5"
+        android:strokeWidth="5"
+        android:strokeLineCap="round" />
+
+</vector>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  A deliberately plain system theme. Its one real job is the navy window
+  background, so launching the app at 05:35 in a dark room never flashes white
+  before Compose draws.
+-->
+<resources>
+    <style name="Theme.CutCoach" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/pre_dawn_navy</item>
+        <item name="android:statusBarColor">@color/pre_dawn_navy</item>
+        <item name="android:navigationBarColor">@color/pre_dawn_navy</item>
+    </style>
+</resources>

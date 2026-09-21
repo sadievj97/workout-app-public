@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The palette from the design direction. These XML copies exist only for the
+  window background and the launcher icon, which are drawn by the system before
+  any Compose code runs. The Compose theme in step 2 is the real home of these
+  colours.
+-->
+<resources>
+    <color name="pre_dawn_navy">#101B2D</color>
+    <color name="slate">#1D2B42</color>
+    <color name="mist">#D5DDE8</color>
+    <color name="sunrise_amber">#F2A541</color>
+    <color name="cool_sky">#7FB2E5</color>
+</resources>

@@ -4,101 +4,173 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
+import com.cutcoach.ui.theme.CoolSky
+import com.cutcoach.ui.theme.CutCoachTheme
+import com.cutcoach.ui.theme.Mist
+import com.cutcoach.ui.theme.MistDim
+import com.cutcoach.ui.theme.PreDawnNavy
+import com.cutcoach.ui.theme.Slate
+import com.cutcoach.ui.theme.SunriseAmber
+import com.cutcoach.ui.theme.tabular
 
 /**
- * Step 1 of Phase 1: the smallest app that proves the toolchain works.
+ * Step 2 of Phase 1: the theme.
  *
- * It renders one screen, reads no files and stores nothing. Everything real
- * arrives in later steps: the theme and font in step 2, the protocol.json
- * loader in step 3, the Today screen in step 4.
+ * The screen below is a test card, not a feature. It exists so the typeface,
+ * the palette and the tabular figures can be checked on the actual phone in
+ * the actual lighting before any real screen depends on them. Step 3 replaces
+ * it with the protocol.json loader.
  */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContent {
-            CutCoachPlaceholderTheme {
+            CutCoachTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
-                    ItRuns()
+                    ThemeTestCard()
                 }
             }
         }
     }
 }
 
-// The palette from the design direction, applied here in the crudest possible
-// way so step 1 has nothing that can fail. Step 2 replaces this with a proper
-// theme file and the Atkinson Hyperlegible typeface.
-private val PreDawnNavy = Color(0xFF101B2D)
-private val Slate = Color(0xFF1D2B42)
-private val Mist = Color(0xFFD5DDE8)
-private val SunriseAmber = Color(0xFFF2A541)
-
 @Composable
-private fun CutCoachPlaceholderTheme(content: @Composable () -> Unit) {
-    MaterialTheme(
-        colorScheme = darkColorScheme(
-            background = PreDawnNavy,
-            surface = Slate,
-            primary = SunriseAmber,
-            onBackground = Mist,
-            onSurface = Mist,
-        ),
-        content = content,
-    )
-}
-
-@Composable
-private fun ItRuns(modifier: Modifier = Modifier) {
-    val today = LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE d MMMM yyyy"))
-
+private fun ThemeTestCard(modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
-        horizontalAlignment = Alignment.CenterHorizontally,
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 24.dp, vertical = 48.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
+        Text("CutCoach", style = MaterialTheme.typography.displaySmall, color = SunriseAmber)
         Text(
-            text = "CutCoach",
-            style = MaterialTheme.typography.displaySmall,
-            color = SunriseAmber,
-        )
-        Text(
-            text = "The app builds, installs, and runs.",
-            style = MaterialTheme.typography.bodyLarge,
-            textAlign = TextAlign.Center,
-        )
-        Text(
-            text = today,
+            "Atkinson Hyperlegible, dark by default.",
             style = MaterialTheme.typography.bodyMedium,
-            color = Mist.copy(alpha = 0.7f),
+            color = MistDim,
         )
+
+        HorizontalDivider(color = MaterialTheme.colorScheme.outline)
+
+        // The timer is where the boldness is spent. This is the real size.
+        Section("The timer, at full size") {
+            Text("01:00", style = MaterialTheme.typography.displayLarge, color = SunriseAmber)
+            Text("WORK", style = MaterialTheme.typography.labelLarge, color = SunriseAmber)
+            Text("00:45", style = MaterialTheme.typography.displayLarge, color = CoolSky)
+            Text("REST", style = MaterialTheme.typography.labelLarge, color = CoolSky)
+        }
+
+        HorizontalDivider(color = MaterialTheme.colorScheme.outline)
+
+        // If tabular figures are working, these two rows are exactly as wide as
+        // each other. If the font feature failed, the 1s row is visibly shorter.
+        Section("Tabular figures") {
+            Text(
+                "11111111",
+                style = MaterialTheme.typography.headlineMedium.tabular(),
+                color = Mist,
+            )
+            Text(
+                "88888888",
+                style = MaterialTheme.typography.headlineMedium.tabular(),
+                color = Mist,
+            )
+            Text(
+                "Both rows must be the same width.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MistDim,
+            )
+        }
+
+        HorizontalDivider(color = MaterialTheme.colorScheme.outline)
+
+        Section("Type scale") {
+            Text("Strength A", style = MaterialTheme.typography.headlineMedium, color = Mist)
+            Text("Push and legs", style = MaterialTheme.typography.titleMedium, color = Mist)
+            Text(
+                "Hands slightly wider than your shoulders. Body in one straight " +
+                    "line from head to heels, glutes and abs tight.",
+                style = MaterialTheme.typography.bodyLarge,
+                color = Mist,
+            )
+            Text("Set 3 of 4 - target 8 to 15 reps", style = MaterialTheme.typography.bodyMedium.tabular(), color = MistDim)
+        }
+
+        HorizontalDivider(color = MaterialTheme.colorScheme.outline)
+
+        Section("Palette") {
+            Swatch("Pre-dawn navy", PreDawnNavy)
+            Swatch("Slate", Slate)
+            Swatch("Mist", Mist)
+            Swatch("Sunrise amber", SunriseAmber)
+            Swatch("Cool sky", CoolSky)
+        }
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF101B2D)
 @Composable
-private fun ItRunsPreview() {
-    CutCoachPlaceholderTheme { ItRuns() }
+private fun Section(title: String, content: @Composable () -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            title.uppercase(),
+            style = MaterialTheme.typography.labelSmall,
+            color = MistDim,
+        )
+        content()
+    }
+}
+
+@Composable
+private fun Swatch(name: String, color: Color) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Box56(color)
+        Text(name, style = MaterialTheme.typography.bodyMedium, color = Mist)
+    }
+}
+
+@Composable
+private fun Box56(color: Color) {
+    Column(
+        modifier = Modifier
+            .size(44.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(color),
+        content = {},
+    )
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF101B2D, heightDp = 1400)
+@Composable
+private fun ThemeTestCardPreview() {
+    CutCoachTheme { ThemeTestCard() }
 }

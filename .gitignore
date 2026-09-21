@@ -7,6 +7,10 @@ build/
 app/build/
 .gradle/
 .kotlin/
+
+# Gradle's own cache and downloaded distributions, kept inside the project on
+# this machine because the C: drive is full. Several GB. Never committed.
+GradleHome/
 captures/
 *.apk
 *.aab

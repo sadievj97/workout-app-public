@@ -1,0 +1,31 @@
+# Local machine configuration. Holds the Android SDK path, and is where any
+# secret would live later (Phase 4). Never commit this.
+local.properties
+
+# Build output
+build/
+app/build/
+.gradle/
+captures/
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+.cxx/
+
+# Keystores. No signing key ever belongs in this repository.
+*.jks
+*.keystore
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# Logs and scratch
+*.log
+/scratch/

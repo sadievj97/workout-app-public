@@ -1,0 +1,298 @@
+{
+  "meta": {
+    "name": "The 24-week cut",
+    "source_document": "Exercise_One_Page_Protocol.pdf",
+    "principle": "The training protects the muscle; the kitchen and the calendar do the rest.",
+    "program_length_weeks": null,
+    "program_length_note": "Open-ended. A length here caps the week counter, which silently switches the deloads off past the end, so it is only set deliberately. The finish line is target_weight_kg, not a date. Null means the week counter, the deload cadence and the bedtime ramp all carry on indefinitely, the same way bedtime_ramp's last step already does with [15, null].",
+    "program_start_date": "2026-01-06",
+    "goal": {
+      "start_weight_kg": 80,
+      "target_weight_kg": 75,
+      "target_month": "2027-02",
+      "expected_loss_kg_per_week": [0.5, 0.6],
+      "max_loss_kg_per_week": 0.7,
+      "approx_daily_deficit_kcal": 480
+    },
+    "equipment": [
+      "Bodyweight",
+      "Pull-up bar (the one purchase)",
+      "Backpack for added load (1 litre of water = 1 kg)",
+      "Chair, bench, or couch edge",
+      "Towel on a smooth floor"
+    ],
+    "note": "Sample data. The program week runs Monday to Sunday and deload weeks are every 4th program week. Replace this file with your own numbers in protocol.local.json, which is gitignored."
+  },
+
+  "session_defaults": {
+    "rest_seconds": 60,
+    "switch_sides_seconds": 10,
+    "rest_seconds_note": "Not stated in the protocol. Chosen 2026-01-06 to keep strength days near their 40-minute budget. Editable in Settings; this file is the source of truth and exercises.json defers to it.",
+    "session_overrun_grace_min": 5
+  },
+
+  "daily_timeline": [
+    {"time": "05:00", "label": "Up, all lights on, water"},
+    {"time": "05:35", "label": "Train (plus 8-minute warm-up)"},
+    {"time": "11:00", "label": "Last caffeine"},
+    {"time": "12:00", "label": "Lunch, first food"},
+    {"time": "15:30", "label": "Whey plus yogurt, do not skip"},
+    {"time": "17:30", "label": "Tennis or a walk"},
+    {"time": "18:30", "label": "Dinner, last food"},
+    {"time": "20:00", "label": "Lamps only, screens dim"},
+    {"time": "21:00", "label": "Phone out of the bedroom"},
+    {"time": "21:30", "label": "Lights out", "is_lights_out": true}
+  ],
+
+  "reminders": {
+    "default_on_from": "20:00",
+    "note": "Timeline entries at or after this time are reminded by default; every entry can be switched on or off in Settings. The entry marked is_lights_out is reminded at tonight's bedtime-ramp target rather than at the time written above, because during the ramp the two differ.",
+    "lie_in_guardrail": "No reminder ever suggests a later wake or a lie-in. Reminders only ever move bedtime earlier."
+  },
+
+  "weekly_schedule": {
+    "MON": {"session_id": "strength_a", "start": "05:35", "duration_min": 40},
+    "TUE": {"session_id": "zone2_cardio", "start": "05:35", "duration_min": 45},
+    "WED": {"session_id": "strength_b", "start": "05:35", "duration_min": 40},
+    "THU": {"session_id": "zone2_cardio", "start": "05:35", "duration_min": 45},
+    "FRI": {"session_id": "strength_c", "start": "05:35", "duration_min": 40},
+    "SAT": {"session_id": "intervals", "start": "10:00", "duration_min": 25},
+    "SUN": {"session_id": "easy_walk_rehab", "start": "any", "duration_min": [60, 75]}
+  },
+
+  "sessions": {
+    "strength_a": {
+      "name": "Strength A",
+      "focus": "Push and legs",
+      "warmup_min": 8,
+      "exercises": [
+        {"exercise_id": "push_up", "sets": 4, "target": {"type": "reps", "min": 8, "max": 15}},
+        {"exercise_id": "bulgarian_split_squat", "sets": 4, "target": {"type": "reps", "min": 8, "max": 12}, "each_side": true},
+        {"exercise_id": "pike_push_up", "sets": 3, "target": {"type": "reps", "min": 8, "max": 12}},
+        {"exercise_id": "single_leg_rdl", "sets": 3, "target": {"type": "reps", "min": 10, "max": 10}, "each_side": true},
+        {"exercise_id": "hollow_hold", "sets": 3, "target": {"type": "seconds", "min": 30, "max": 30}}
+      ]
+    },
+    "strength_b": {
+      "name": "Strength B",
+      "focus": "Pull and core",
+      "warmup_min": 8,
+      "exercises": [
+        {"exercise_id": "pull_up", "sets": 4, "target": {"type": "max_reps"}},
+        {"exercise_id": "inverted_row", "sets": 3, "target": {"type": "reps", "min": 10, "max": 15}},
+        {"exercise_id": "chin_up", "sets": 3, "target": {"type": "max_reps"}},
+        {"exercise_id": "single_leg_hip_thrust", "sets": 3, "target": {"type": "reps", "min": 12, "max": 12}, "each_side": true},
+        {"exercise_id": "hanging_knee_raise", "sets": 3, "target": {"type": "reps", "min": 10, "max": 15}},
+        {"exercise_id": "side_plank", "sets": 3, "target": {"type": "seconds", "min": 30, "max": 45}, "each_side": true}
+      ]
+    },
+    "strength_c": {
+      "name": "Strength C",
+      "focus": "Full body",
+      "warmup_min": 8,
+      "exercises": [
+        {"exercise_id": "pull_up", "sets": 3, "target": {"type": "max_reps"}},
+        {"exercise_id": "push_up_feet_up", "sets": 3, "target": {"type": "max_reps"}},
+        {"exercise_id": "reverse_lunge", "sets": 3, "target": {"type": "reps", "min": 12, "max": 12}, "each_side": true},
+        {"exercise_id": "hamstring_bridge_curl", "sets": 3, "target": {"type": "reps", "min": 10, "max": 10}},
+        {"exercise_id": "pike_push_up", "sets": 3, "target": {"type": "reps", "min": 10, "max": 10}},
+        {"exercise_id": "single_leg_calf_raise", "sets": 3, "target": {"type": "reps", "min": 15, "max": 15}, "each_side": true},
+        {"exercise_id": "hollow_hold", "sets": 3, "target": {"type": "seconds", "min": 30, "max": 40}}
+      ]
+    },
+    "zone2_cardio": {
+      "name": "Wall tennis or hill walk",
+      "options": ["wall_tennis", "hill_walk"],
+      "hr_zone": "zone2",
+      "note": "Record which option was chosen. Compare session heart rate with Zone 2."
+    },
+    "intervals": {
+      "name": "Hill repeats or singles",
+      "options": ["hill_repeats", "tennis_singles"],
+      "hr_zone": "intervals",
+      "interval_structure": {
+        "applies_to": "hill_repeats",
+        "work_seconds": 60,
+        "recovery_seconds": 120,
+        "rounds": 6,
+        "rounds_start": 4,
+        "rounds_ramp_note": "Start at 4 rounds in week 1 and build toward 6 as it feels manageable. Guidance for the user, not a rule the app enforces, and not a volume increase beyond the protocol.",
+        "warmup_min": 3,
+        "cooldown_min": 3
+      },
+      "note": "Structure chosen 2026-01-06: 6 x (60 s hard uphill / 120 s easy walk down), about 25 minutes with an easy start and finish. Tennis singles remains the alternative and has no interval prompts; the app records duration and reports time in the interval zone."
+    },
+    "easy_walk_rehab": {
+      "name": "Easy walk, rehab only",
+      "options": ["easy_walk"],
+      "rehab_exercises": [],
+      "note": "Enter the rehab exercises from the rehab program. The app never generates, changes, or substitutes rehab work."
+    }
+  },
+
+  "daily_targets": {
+    "steps": 10000,
+    "steps_baseline_at_start": 7000,
+    "nutrition_display_only": {
+      "calories_kcal": 1900,
+      "calorie_floor_kcal": 1900,
+      "calorie_floor_note": "The guardrail calorie_floor as a number. The daily target already sits on the floor, so the plateau rule's calorie lever is never available and steps are the only one it can pull.",
+      "protein_g": 145,
+      "protein_note": "Never miss this.",
+      "fat_min_g": 60,
+      "fibre_g": 30,
+      "water_l": [2.5, 3.0],
+      "note": "Shown as reminders only. The app does not track food in any phase."
+    }
+  },
+
+  "heart_rate": {
+    "zone2_bpm": [110, 140],
+    "zone2_use": "Most sessions",
+    "zone2_talk_test": "You can speak a full sentence but would rather not sing.",
+    "intervals_bpm": [150, 170],
+    "intervals_use": "Saturday",
+    "sleeping_hr_baseline_bpm": 60,
+    "sleeping_hr_goal_bpm": [52, 58]
+  },
+
+  "sleep": {
+    "wake_time": "05:00",
+    "wake_same_time_every_day": true,
+    "ramp_start_date": "2026-01-06",
+    "ramp_start_note": "Night 1 is the evening of ramp_start_date, lights out 22:45. A ramp night is dated by the evening you go to bed, not the morning you wake. The 21:30 target is reached from night 15.",
+    "bedtime_ramp": [
+      {"nights": [1, 3], "lights_out": "22:45"},
+      {"nights": [4, 7], "lights_out": "22:15"},
+      {"nights": [8, 14], "lights_out": "21:50"},
+      {"nights": [15, null], "lights_out": "21:30"}
+    ],
+    "nap_threshold_hours": 2,
+    "nap_threshold_note": "A recorded sleep shorter than this is treated as a nap and is not measured against the ramp. Anything longer is the night, whatever hour it began: a 5 a.m. bedtime is a very late night, not a nap, and hiding it would hide the largest ramp miss in the log.",
+    "notes": [
+      "Wake at 05:00 every day, weekends included. One 9 a.m. lie-in undoes most of a week.",
+      "Night 1 you may lie awake. Hold the alarm anyway; the short night buys you night 2."
+    ]
+  },
+
+  "tracking": {
+    "weight": {"frequency": "daily", "display": "7-day rolling average"},
+    "waist": {"frequency": "weekly", "day": "SUN", "how": "At the navel, fasted"},
+    "plateau_rule": {
+      "condition": "Waist flat AND 7-day average weight flat for 3 consecutive weeks",
+      "action": "Change exactly one thing: minus 150 kcal per day OR plus 1,500 steps per day. Never both.",
+      "levers": {
+        "calories_kcal_change": -150,
+        "steps_change": 1500,
+        "note": "The two levers as numbers, so the rules engine does not have to read them out of the sentence above. Exactly one is ever suggested. The calorie lever is only available while it would stay at or above calorie_floor_kcal."
+      },
+      "wait_weeks_after_change": 3,
+      "flat_definition": {
+        "window_weeks": 3,
+        "max_weight_drop_kg": 0.3,
+        "max_waist_drop_cm": 0.5,
+        "combine": "AND",
+        "measured_on": "7-day rolling average weight, and Sunday waist measurements",
+        "explanation": "Flat means the 7-day average fell by less than 0.3 kg AND the waist fell by less than 0.5 cm across the 3 weeks. If the waist is still shrinking, it is not a plateau and nothing changes."
+      },
+      "note": "Flat definition chosen 2026-01-06. The protocol expects 1.5 to 1.8 kg over three weeks, so under 0.3 kg is well outside scale noise."
+    }
+  },
+
+  "progression_rules": {
+    "order": ["reps", "leverage", "load"],
+    "reps": "Add reps until every set reaches the top of the range.",
+    "leverage_options": ["Feet elevated", "3-second lowering", "Pause at the hardest point"],
+    "load": {
+      "method": "Backpack",
+      "conversion": "1 litre of water = 1 kg",
+      "reference_max_kg": 12,
+      "reference_note": "12 kg makes it hard again."
+    },
+    "deload": {
+      "every_nth_week": 4,
+      "rule": "Cut all sets by a third.",
+      "set_multiplier": 0.6667,
+      "rounding": "Round to the nearest whole set, minimum 1 (4 sets become 3; 3 sets become 2)."
+    },
+    "max_rep_advance": {
+      "applies_to": ["pull_up", "chin_up", "push_up_feet_up"],
+      "trigger": "first_set_reaches",
+      "reps": 12,
+      "explanation": "Max-rep exercises have no rep ceiling to hit, so the first set is the yardstick. When the first set of a session reaches 12 clean reps, advance one ladder step. The first set is used so that normal fatigue across later sets does not block progression."
+    },
+    "implementation_notes": [
+      "After advancing one step on an exercise's ladder, restart at the bottom of its rep range. Standard double progression, confirmed 2026-01-06.",
+      "Timed holds follow the same logic: reach the top of the time range on every set, then advance one ladder step."
+    ]
+  },
+
+  "guardrails": {
+    "from_protocol": [
+      {"id": "no_eating_back_watch_calories", "rule": "Never present watch-estimated calories burned as food to eat back. Watch energy estimates run 30 to 90 percent off."},
+      {"id": "no_weekend_sleep_in", "rule": "Never suggest a weekend lie-in or a later wake time."},
+      {"id": "no_week1_scale_verdict", "rule": "Do not judge progress by the scale in week 1; that is water and cortisol. Show the data without a verdict."},
+      {"id": "calorie_floor", "rule": "Never suggest going below 1,900 kcal to speed things up. Losing faster than 0.7 kg per week costs muscle."},
+      {"id": "keep_leg_work", "rule": "Never reduce training to pull-ups and push-ups only. Unloaded muscle is what the body burns first in a deficit."},
+      {"id": "honest_core_expectations", "rule": "Never claim core work removes flank fat. It builds what is underneath; the diet uncovers it."}
+    ],
+    "added_for_the_app": [
+      {"id": "no_extra_volume", "rule": "During the cut, recommendations may substitute or progress exercises but never add sessions or sets beyond the protocol. The only volume lever is steps, through the plateau rule."},
+      {"id": "rehab_untouched", "rule": "Never generate, modify, or substitute rehab exercises."},
+      {"id": "pain_stop", "rule": "If sharp or worsening pain, chest pain, dizziness, or fainting is reported, suggest no workout and recommend seeing a clinician."},
+      {"id": "fast_loss_flag", "rule": "If the 7-day average falls faster than 0.7 kg per week for two consecutive weeks, flag it as faster than the protocol allows and never suggest further cuts."},
+      {"id": "no_guessing", "rule": "If watch data is missing, ask a check-in question instead of guessing."}
+    ]
+  },
+
+  "readiness_adjustment": {
+    "id": "readiness_adjustment",
+    "status": "approved",
+    "approved_on": "2026-01-06",
+    "rule": "Yellow day if last night's sleep was under 6 hours OR sleeping heart rate is at least 5 bpm above its 14-day average: suggest dropping one set from each exercise. Red day if both: suggest an easy walk instead of strength. Always a suggestion; the user decides.",
+    "sleep_hours_threshold": 6,
+    "sleeping_hr_above_baseline_bpm": 5,
+    "baseline_window_days": 14,
+    "energy_score_fallback": {
+      "status": "approved",
+      "approved_on": "2026-01-07",
+      "rule": "When Health Connect has no sleep for last night, fall back to Samsung Health's Energy Score: a yellow day if it is at least 5 below its own 14-day average. Never a red day.",
+      "below_baseline": 5,
+      "baseline_window_days": 14,
+      "why_five": "The same magnitude as sleeping_hr_above_baseline_bpm, chosen for symmetry with the rule it stands in for rather than fitted to any particular fortnight of scores.",
+      "why_never_red": "A red day means both a short night and an elevated heart rate. Energy Score is one number and cannot tell those apart, so the fallback stops at yellow. A fallback should be more cautious than the rule it replaces, not less.",
+      "conditions": [
+        "Only when there is no sleep record at all for last night. It never overrides sleep data that exists.",
+        "Only with a full 14-day baseline of Energy Scores, the same bar the sleeping heart rate rule sets.",
+        "No sleep and no Energy Score is still a check-in question, never an inferred verdict. See guardrail no_guessing.",
+        "Requires Samsung Health developer mode, which the owner can switch off at any time. Losing it costs the fallback and nothing else."
+      ]
+    },
+    "conditions": [
+      "Always a suggestion, dismissible with one tap. It never changes the session on its own.",
+      "It never fires until at least 14 days of sleeping heart rate exist. Before that, the baseline is not real.",
+      "Missing sleep or heart rate data produces a check-in question, never an inferred yellow or red day. See guardrail no_guessing.",
+      "It only ever reduces volume, never adds. See guardrail no_extra_volume.",
+      "Rehab work on Sunday is never reduced by this rule. See guardrail rehab_untouched."
+    ]
+  },
+
+  "proposed_rules_needing_approval": [],
+
+  "open_decisions": [],
+
+  "resolved_decisions": [
+    {"id": "program_start_date", "resolved_on": "2026-01-06", "answer": "Week 1 starts Monday 2026-01-06.", "written_to": "meta.program_start_date"},
+    {"id": "ramp_start_date", "resolved_on": "2026-01-06", "answer": "Bedtime ramp night 1 is the evening of 2026-01-06.", "written_to": "sleep.ramp_start_date"},
+    {"id": "rest_seconds", "resolved_on": "2026-01-06", "answer": "60 seconds between sets, editable in Settings.", "written_to": "session_defaults.rest_seconds"},
+    {"id": "warmup_content", "resolved_on": "2026-01-06", "answer": "The proposed default: 2 min easy marching, 3 min mobility, 3 min one ramp-up set of the day's first exercise at about half effort.", "written_to": "exercises.json warmup_default"},
+    {"id": "interval_structure", "resolved_on": "2026-01-06", "answer": "6 x (60 s hard / 120 s easy walk down), starting at 4 rounds in week 1.", "written_to": "sessions.intervals.interval_structure"},
+    {"id": "max_rep_threshold", "resolved_on": "2026-01-06", "answer": "Advance one ladder step when the first set reaches 12 reps.", "written_to": "progression_rules.max_rep_advance"},
+    {"id": "plateau_flat_definition", "resolved_on": "2026-01-06", "answer": "7-day average down under 0.3 kg AND waist down under 0.5 cm across the 3 weeks.", "written_to": "tracking.plateau_rule.flat_definition"},
+    {"id": "side_plank_sides", "resolved_on": "2026-01-06", "answer": "3 sets per side, 6 holds total, with a switch-sides countdown between.", "written_to": "sessions.strength_b.exercises[side_plank]"},
+    {"id": "hamstring_bridge_curl_form", "resolved_on": "2026-01-06", "answer": "Yes, the sliding version: heels on a towel, curling out and back from a bridge.", "written_to": "exercises.json hamstring_bridge_curl"},
+    {"id": "inverted_row_setup", "resolved_on": "2026-01-06", "answer": "A low bar, with bar height as the first rung of the difficulty ladder. The exact bar is still to be confirmed.", "written_to": "exercises.json inverted_row"},
+{"id": "energy_score_fallback", "resolved_on": "2026-01-07", "answer": "Approved as a fallback only: Energy Score fills in when Health Connect has no sleep, and never changes the approved sleep and heart-rate rule. Chosen over adding it as a third condition because the failure being fixed is a readiness rule that cannot fire, not a rule that is wrong.", "written_to": "readiness_adjustment.energy_score_fallback"},
+    {"id": "readiness_adjustment", "resolved_on": "2026-01-06", "answer": "Approved as written, with four conditions: suggestion only, no firing before 14 days of baseline data, missing data produces a check-in question, and rehab is never reduced.", "written_to": "readiness_adjustment"}
+  ]
+}

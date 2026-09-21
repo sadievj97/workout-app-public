@@ -1,0 +1,302 @@
+{
+  "meta": {
+    "note": "Coaching cues written for this protocol. Before relying on them, check each exercise against one demo video you trust and paste that video's link into video_url. Rehab exercises are not included and must come from the rehab program.",
+    "defaults_note": "Rest and switch-sides timings live in protocol.json under session_defaults, which is the single source of truth. Resolved 2026-09-21: 60 s rest, 10 s switch sides.",
+    "ladder_note": "Each ladder follows the protocol: reps to the top of the range first, then leverage (feet elevated, 3-second lowering, pause at the hardest point), then backpack load (1 litre of water = 1 kg, up to about 12 kg)."
+  },
+
+  "warmup_default": {
+    "duration_min": 8,
+    "status": "Approved 2026-09-21. Edit freely.",
+    "blocks": [
+      {"min": 2, "what": "Easy marching in place or light jumping jacks"},
+      {"min": 3, "what": "Mobility: hip circles, leg swings, arm circles, cat-cow"},
+      {"min": 3, "what": "One easy ramp-up set of the day's first exercise at about half effort"}
+    ]
+  },
+
+  "exercises": [
+    {
+      "id": "push_up",
+      "name": "Push-up",
+      "pattern": "Horizontal push",
+      "muscles": ["Chest", "Triceps", "Front shoulders", "Core"],
+      "equipment": ["Floor"],
+      "type": "reps",
+      "setup": "Hands slightly wider than your shoulders. Body in one straight line from head to heels, glutes and abs tight.",
+      "cues": [
+        "Lower with elbows angled about 45 degrees from your body, not flared straight out.",
+        "Stop with your chest a fist's height from the floor, then push the floor away.",
+        "Keep the straight line the whole time."
+      ],
+      "common_mistakes": ["Hips sagging or piking up", "Elbows flared to 90 degrees", "Half reps that stop well short of the floor"],
+      "easier": "Hands on a bench, chair, or wall.",
+      "ladder": ["Standard push-up", "Feet elevated on a chair", "3-second lowering", "Pause 1 to 2 seconds just above the floor", "Backpack load, 1 to 2 kg at a time, up to about 12 kg"],
+      "video_url": ""
+    },
+    {
+      "id": "bulgarian_split_squat",
+      "name": "Bulgarian split squat",
+      "pattern": "Single-leg squat",
+      "muscles": ["Quads", "Glutes", "Adductors"],
+      "equipment": ["Chair, bench, or step behind you"],
+      "type": "reps",
+      "setup": "Rear foot laces-down on a chair or bench behind you. Front foot far enough forward that your front heel stays down at the bottom.",
+      "cues": [
+        "Drop the back knee straight down toward the floor.",
+        "Keep the front knee tracking over your toes, not caving inward.",
+        "Drive up through the whole front foot, heel included."
+      ],
+      "common_mistakes": ["Front foot too close, so the heel lifts", "Front knee collapsing inward", "Bouncing out of the bottom"],
+      "easier": "Split squat with the back foot on the floor, holding a doorframe for balance.",
+      "ladder": ["Bodyweight", "3-second lowering", "Pause 1 to 2 seconds at the bottom", "Backpack load, 1 to 2 kg at a time"],
+      "video_url": ""
+    },
+    {
+      "id": "pike_push_up",
+      "name": "Pike push-up",
+      "pattern": "Vertical push",
+      "muscles": ["Shoulders", "Triceps", "Upper chest"],
+      "equipment": ["Floor"],
+      "type": "reps",
+      "setup": "Hands shoulder-width on the floor, hips high in an upside-down V, head between your arms.",
+      "cues": [
+        "Bend your elbows and lower the top of your head toward a spot just in front of your hands.",
+        "Keep your hips high; this is a vertical press, not a regular push-up.",
+        "Press back up to the V."
+      ],
+      "common_mistakes": ["Hips dropping so it turns into a push-up", "Elbows flaring wide", "Letting the head drop fast"],
+      "easier": "Walk your feet farther back so your torso is less vertical.",
+      "ladder": ["Standard pike push-up", "Feet elevated on a chair", "3-second lowering", "Pause just above the floor"],
+      "ladder_end_note": "Backpack load is impractical here. When this ladder tops out, the app should suggest a harder vertical-push variation instead.",
+      "video_url": ""
+    },
+    {
+      "id": "single_leg_rdl",
+      "name": "Single-leg Romanian deadlift",
+      "pattern": "Hip hinge",
+      "muscles": ["Hamstrings", "Glutes", "Balance and trunk"],
+      "equipment": ["Floor"],
+      "type": "reps",
+      "setup": "Stand on one leg with a soft bend in the knee.",
+      "cues": [
+        "Push your hips back as the free leg extends behind you; torso and back leg move as one straight line.",
+        "Keep your hips square to the floor, not rotating open.",
+        "Stand up by driving the standing hip forward and squeezing the glute."
+      ],
+      "common_mistakes": ["Rounding the back", "Hip rotating open toward the ceiling", "Bending the standing knee into a squat"],
+      "easier": "Kickstand version (back toes lightly touching the floor), or one hand on a wall.",
+      "ladder": ["Bodyweight", "3-second lowering", "Pause at the bottom", "Backpack held in the hand opposite the standing leg, 1 to 2 kg at a time"],
+      "video_url": ""
+    },
+    {
+      "id": "hollow_hold",
+      "name": "Hollow hold",
+      "pattern": "Core, anti-extension",
+      "muscles": ["Abs", "Hip flexors"],
+      "equipment": ["Floor"],
+      "type": "hold",
+      "setup": "Lie on your back and press your lower back into the floor.",
+      "cues": [
+        "Lift your shoulders and legs off the floor, arms reaching past your ears or toward your feet.",
+        "Keep your legs straight and only as low as you can while your lower back stays down.",
+        "Breathe shallowly with your ribs pulled down."
+      ],
+      "common_mistakes": ["Lower back lifting off the floor", "Neck cranked forward"],
+      "easier": "Tuck hollow: knees bent, arms by your sides.",
+      "ladder": ["Tuck hollow", "Arms by sides, legs straight", "Arms overhead, legs straight", "Legs lower while the back stays down", "Hollow rocks"],
+      "video_url": ""
+    },
+    {
+      "id": "pull_up",
+      "name": "Pull-up",
+      "pattern": "Vertical pull",
+      "muscles": ["Lats", "Upper back", "Biceps"],
+      "equipment": ["Pull-up bar"],
+      "type": "reps",
+      "setup": "Overhand grip slightly wider than your shoulders. Start from a dead hang with your shoulders set, pulled slightly down away from your ears.",
+      "cues": [
+        "Drive your elbows down toward your ribs until your chin clears the bar.",
+        "Lower under control all the way to straight arms.",
+        "No swinging or kicking."
+      ],
+      "common_mistakes": ["Kipping or swinging", "Half reps that skip the bottom", "Shrugging shoulders up to the ears"],
+      "easier": "Negatives (step to the top, lower over 3 to 5 seconds) or feet-assisted from a chair.",
+      "ladder": ["Negatives or feet-assisted", "Full bodyweight pull-up", "3-second lowering", "Pause 1 second at the top", "Backpack load, 1 to 2 kg at a time"],
+      "video_url": ""
+    },
+    {
+      "id": "inverted_row",
+      "name": "Inverted row",
+      "pattern": "Horizontal pull",
+      "muscles": ["Upper back", "Lats", "Biceps", "Rear shoulders"],
+      "equipment": ["Low bar"],
+      "setup_choice": "Low bar, confirmed 2026-09-21. The exact bar is still to be named; bar height is the first rung of the difficulty ladder, so lower the bar to make it harder.",
+      "type": "reps",
+      "setup": "Lie under a low bar and grip it shoulder-width apart. Body straight from head to heels, heels on the floor. The lower the bar, the harder the row.",
+      "cues": [
+        "Pull your chest to the edge, squeezing your shoulder blades together.",
+        "Keep your hips up and your body rigid.",
+        "Lower under control to straight arms."
+      ],
+      "common_mistakes": ["Hips sagging", "Leading with the chin", "Using an anchor that can tip, slide, or rotate"],
+      "safety": "Hang your full weight from the bar standing up before you get under it for the first set. Check that nothing rotates or slides.",
+      "easier": "Bend your knees, or raise the bar so your body is more upright.",
+      "ladder": ["Knees bent", "Legs straight", "Bar lowered so the body is more horizontal", "Feet elevated on a chair", "3-second lowering", "Pause at the top", "Backpack load, 1 to 2 kg at a time"],
+      "video_url": ""
+    },
+    {
+      "id": "chin_up",
+      "name": "Chin-up",
+      "pattern": "Vertical pull",
+      "muscles": ["Lats", "Biceps", "Upper back"],
+      "equipment": ["Pull-up bar"],
+      "type": "reps",
+      "setup": "Underhand grip, hands shoulder-width. Start from a dead hang.",
+      "cues": [
+        "Pull your chest toward the bar, elbows driving down and in.",
+        "Get your chin over the bar, then lower fully.",
+        "Keep the body still; no swinging."
+      ],
+      "common_mistakes": ["Kipping", "Stopping short of a full hang", "Craning the neck to get the chin over"],
+      "easier": "Negatives, or feet-assisted from a chair.",
+      "ladder": ["Negatives or feet-assisted", "Full bodyweight chin-up", "3-second lowering", "Pause at the top", "Backpack load, 1 to 2 kg at a time"],
+      "video_url": ""
+    },
+    {
+      "id": "single_leg_hip_thrust",
+      "name": "Single-leg hip thrust",
+      "pattern": "Hip extension",
+      "muscles": ["Glutes", "Hamstrings"],
+      "equipment": ["Couch or bench edge"],
+      "type": "reps",
+      "setup": "Upper back against the edge of a couch or bench, one foot planted, the other leg lifted.",
+      "cues": [
+        "Drive through your heel and lift your hips until your torso is level with the floor.",
+        "Pause and squeeze the glute at the top.",
+        "Keep your ribs down; the lift comes from the hip, not an arched lower back."
+      ],
+      "common_mistakes": ["Arching the lower back at the top", "Pushing through the toes", "Hips tilting to one side"],
+      "easier": "Single-leg glute bridge on the floor, or both feet down.",
+      "ladder": ["Both feet", "Single leg", "3-second lowering", "2-second pause at the top", "Backpack on the hips, 1 to 2 kg at a time"],
+      "video_url": ""
+    },
+    {
+      "id": "hanging_knee_raise",
+      "name": "Hanging knee raise",
+      "pattern": "Core, flexion",
+      "muscles": ["Abs", "Hip flexors", "Grip"],
+      "equipment": ["Pull-up bar"],
+      "type": "reps",
+      "setup": "Dead hang from the bar, shoulders set, legs together.",
+      "cues": [
+        "Lift your knees toward your chest by curling your pelvis up, not just lifting your thighs.",
+        "Lower slowly without swinging.",
+        "If you start swinging, pause in a still hang before the next rep."
+      ],
+      "common_mistakes": ["Swinging for momentum", "Stopping at hip height", "Dropping the legs fast"],
+      "easier": "Lying reverse crunch on the floor.",
+      "ladder": ["Lying reverse crunch", "Hanging knee raise", "3-second lowering", "Pause at the top", "Straight-leg raise"],
+      "video_url": ""
+    },
+    {
+      "id": "side_plank",
+      "name": "Side plank",
+      "pattern": "Core, lateral",
+      "muscles": ["Obliques", "Glute medius", "Shoulder stabilizers"],
+      "equipment": ["Floor"],
+      "type": "hold",
+      "setup": "On your side, elbow under your shoulder, feet stacked or staggered.",
+      "cues": [
+        "Lift your hips so your body forms one straight line from head to feet.",
+        "Keep your hips stacked; do not roll forward.",
+        "Push the floor away with your forearm."
+      ],
+      "common_mistakes": ["Hips sagging", "Rolling forward", "Shoulder shrugging toward the ear"],
+      "easier": "Bent-knee side plank.",
+      "ladder": ["Bent-knee side plank", "Straight-leg side plank", "Top leg raised"],
+      "video_url": ""
+    },
+    {
+      "id": "push_up_feet_up",
+      "name": "Push-up, feet up",
+      "pattern": "Horizontal push, incline toward the shoulders",
+      "muscles": ["Upper chest", "Shoulders", "Triceps", "Core"],
+      "equipment": ["Chair or bench for your feet"],
+      "type": "reps",
+      "setup": "Feet on a chair or bench, hands on the floor slightly wider than your shoulders, body in one straight line.",
+      "cues": [
+        "Lower until your face is a fist's height from the floor, elbows about 45 degrees from your body.",
+        "Press the floor away, keeping the line.",
+        "Do not let your hips pike up."
+      ],
+      "common_mistakes": ["Hips piking or sagging", "Elbows flared", "Short reps"],
+      "easier": "Standard push-up.",
+      "ladder": ["Feet elevated", "3-second lowering", "Pause just above the floor", "Backpack load, 1 to 2 kg at a time"],
+      "video_url": ""
+    },
+    {
+      "id": "reverse_lunge",
+      "name": "Reverse lunge",
+      "pattern": "Single-leg squat",
+      "muscles": ["Quads", "Glutes"],
+      "equipment": ["Floor"],
+      "type": "reps",
+      "setup": "Stand tall with your feet hip-width apart.",
+      "cues": [
+        "Step one foot back and lower the back knee toward the floor.",
+        "Keep the front shin close to vertical and the front knee over your toes.",
+        "Drive through the front heel to return to standing."
+      ],
+      "common_mistakes": ["Step too short, so the front heel lifts", "Front knee caving inward", "Pushing off the back foot instead of the front leg"],
+      "easier": "Split squat in place, holding a wall.",
+      "ladder": ["Bodyweight", "3-second lowering", "Pause just above the floor", "Backpack load, 1 to 2 kg at a time"],
+      "video_url": ""
+    },
+    {
+      "id": "hamstring_bridge_curl",
+      "name": "Hamstring bridge curl",
+      "pattern": "Knee flexion with hip extension",
+      "muscles": ["Hamstrings", "Glutes"],
+      "equipment": ["Towel on a smooth floor, or socks on a hard floor"],
+      "type": "reps",
+      "interpretation_confirmed": "Sliding hamstring curl from a bridge. Confirmed 2026-09-21.",
+      "setup": "Lie on your back, knees bent, heels on a towel on a smooth floor.",
+      "cues": [
+        "Lift your hips into a bridge.",
+        "Keeping your hips high, slide your heels out until your legs are nearly straight, then pull them back in.",
+        "Move slowly; if your hamstrings cramp, shorten the range."
+      ],
+      "common_mistakes": ["Hips dropping during the slide", "Rushing the return", "Arching the lower back"],
+      "easier": "Slide out slowly only (the lowering half), then reset with feet flat.",
+      "ladder": ["Slow slide-outs only", "Full bridge curl", "3-second slide-out", "Single-leg bridge curl"],
+      "video_url": ""
+    },
+    {
+      "id": "single_leg_calf_raise",
+      "name": "Single-leg calf raise",
+      "pattern": "Ankle extension",
+      "muscles": ["Calves"],
+      "equipment": ["Step edge (optional)", "Wall for balance"],
+      "type": "reps",
+      "setup": "Stand on one foot on the edge of a step with your heel hanging off, or on a flat floor. Touch a wall lightly for balance only.",
+      "cues": [
+        "Rise as high as you can onto the ball of your foot.",
+        "Pause for one second at the top.",
+        "Lower slowly, below step level if you are on a step."
+      ],
+      "common_mistakes": ["Bouncing", "Partial range", "Rolling onto the outside of the foot"],
+      "easier": "Both feet.",
+      "ladder": ["Both feet", "Single leg on a flat floor", "Single leg on a step edge", "3-second lowering", "Backpack load, 1 to 2 kg at a time"],
+      "video_url": ""
+    }
+  ],
+
+  "cardio": [
+    {"id": "wall_tennis", "name": "Wall tennis", "type": "duration", "hr_zone": "zone2", "how": "Rally against a wall at a pace that keeps heart rate in Zone 2 and passes the talk test."},
+    {"id": "hill_walk", "name": "Hill walk", "type": "duration", "hr_zone": "zone2", "how": "Brisk uphill walking at Zone 2 effort."},
+    {"id": "hill_repeats", "name": "Hill repeats", "type": "intervals", "hr_zone": "intervals", "how": "Hard uphill efforts with easy walk-down recoveries, aiming for the interval zone during efforts. Structure is an open decision."},
+    {"id": "tennis_singles", "name": "Tennis singles", "type": "duration", "hr_zone": "intervals", "how": "A singles match; heart rate will rise and fall with the points."},
+    {"id": "easy_walk", "name": "Easy walk", "type": "duration", "hr_zone": "easy", "how": "Conversational pace for 60 to 75 minutes."}
+  ]
+}

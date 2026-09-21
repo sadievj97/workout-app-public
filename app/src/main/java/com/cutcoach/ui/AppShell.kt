@@ -21,6 +21,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.cutcoach.data.db.TrainingRepository
 import com.cutcoach.data.protocol.ProtocolLoad
 import com.cutcoach.data.protocol.ProtocolRepository
 import com.cutcoach.ui.exercise.CueCardScreen
@@ -72,6 +73,7 @@ fun CutCoachApp() {
 @Composable
 private fun MainNavigation(repo: ProtocolRepository) {
     val navController = rememberNavController()
+    val context = LocalContext.current
 
     NavHost(navController = navController, startDestination = Routes.TODAY) {
 
@@ -98,10 +100,11 @@ private fun MainNavigation(repo: ProtocolRepository) {
 
             // Scoped to this back-stack entry, so opening a cue card mid-set and
             // coming back keeps the timer running and the log intact.
+            val training = remember { TrainingRepository.get(context) }
             val vm: SessionPlayerViewModel = viewModel(
                 viewModelStoreOwner = entry,
                 factory = viewModelFactory {
-                    initializer { SessionPlayerViewModel(repo, sessionId, programWeek) }
+                    initializer { SessionPlayerViewModel(repo, training, sessionId, programWeek) }
                 },
             )
 

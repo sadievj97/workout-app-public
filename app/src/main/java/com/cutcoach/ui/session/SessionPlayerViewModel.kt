@@ -7,12 +7,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.cutcoach.data.db.TrainingRepository
 import com.cutcoach.data.protocol.ProtocolRepository
 import com.cutcoach.data.session.SessionStep
 import com.cutcoach.data.session.Side
 import com.cutcoach.data.session.buildSessionPlan
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 /** One set as it was actually performed. Step 6 writes these to the database. */
 data class LoggedSet(
@@ -32,9 +34,13 @@ data class LoggedSet(
  */
 class SessionPlayerViewModel(
     private val repo: ProtocolRepository,
+    private val training: TrainingRepository,
     val sessionId: String,
     val programWeek: Int?,
 ) : ViewModel() {
+
+    /** The database row for this session, created as soon as the player opens. */
+    private var sessionLogId: Long? = null
 
     val session = repo.session(sessionId)
     val steps: List<SessionStep> = session?.let { buildSessionPlan(repo, it, programWeek) } ?: emptyList()
@@ -70,6 +76,9 @@ class SessionPlayerViewModel(
     /** What you have logged so far this session. */
     val logged = mutableStateListOf<LoggedSet>()
 
+    /** Sets logged in the first moments before the database row exists. */
+    private val pending = mutableListOf<LoggedSet>()
+
     /** The reps field for the current rep set, pre-filled with the target floor. */
     var repsInput by mutableIntStateOf(0)
         private set
@@ -84,6 +93,35 @@ class SessionPlayerViewModel(
 
     init {
         prepareStep()
+
+        // The session row is created up front, so a session abandoned halfway
+        // still leaves a record of what was done.
+        viewModelScope.launch {
+            sessionLogId = training.startSession(
+                date = LocalDate.now(),
+                sessionId = sessionId,
+                sessionName = session?.name ?: sessionId,
+                programWeek = programWeek,
+                isDeload = programWeek != null && repo.isDeloadWeek(programWeek),
+                plannedMinutes = plannedMinutes,
+            )
+            // Anything logged before the row existed still gets written.
+            pending.forEach { persist(it) }
+            pending.clear()
+        }
+
+        // The rung each exercise is on, so every set records how hard it was.
+        viewModelScope.launch {
+            steps.forEach { step ->
+                val id = when (step) {
+                    is SessionStep.RepSet -> step.exerciseId
+                    is SessionStep.HoldSet -> step.exerciseId
+                    else -> null
+                } ?: return@forEach
+                if (id !in ladderSteps) ladderSteps[id] = training.ladderStep(id)
+            }
+        }
+
         // One ticker for the whole session: it drives both the step countdown
         // and the session clock, so they can never drift apart.
         viewModelScope.launch {
@@ -120,6 +158,7 @@ class SessionPlayerViewModel(
                 if (!finishChimed) {
                     finishChimed = true
                     chimeCount += 1
+                    viewModelScope.launch { sessionLogId?.let { training.endSession(it) } }
                 }
             }
         }
@@ -135,7 +174,7 @@ class SessionPlayerViewModel(
         when (val step = current) {
             // A hold that ran the full length counts as the full length.
             is SessionStep.HoldSet -> {
-                logged += LoggedSet(step.exerciseId, step.setNumber, step.side, seconds = step.seconds)
+                record(LoggedSet(step.exerciseId, step.setNumber, step.side, seconds = step.seconds))
                 advance()
             }
             is SessionStep.Warmup, is SessionStep.Rest, is SessionStep.SwitchSides -> advance()
@@ -150,6 +189,40 @@ class SessionPlayerViewModel(
         }
     }
 
+    // ---- Recording --------------------------------------------------------
+
+    /**
+     * Keeps a set on screen and writes it to the database.
+     *
+     * The screen list is updated first so logging never feels like it is
+     * waiting on storage, which matters when you are counting down a rest.
+     */
+    private fun record(set: LoggedSet) {
+        logged += set
+        val id = sessionLogId
+        if (id == null) {
+            pending += set
+        } else {
+            viewModelScope.launch { persist(set) }
+        }
+    }
+
+    private suspend fun persist(set: LoggedSet) {
+        val id = sessionLogId ?: return
+        training.logSet(
+            sessionLogId = id,
+            exerciseId = set.exerciseId,
+            setNumber = set.setNumber,
+            side = set.side.name,
+            reps = set.reps,
+            seconds = set.seconds,
+            ladderStep = ladderSteps[set.exerciseId] ?: 0,
+        )
+    }
+
+    /** Which rung each exercise is currently on, read once when the player opens. */
+    private val ladderSteps = mutableMapOf<String, Int>()
+
     /** Skip the current step without logging anything. */
     fun skip() {
         // A hold skipped early still records what was actually held.
@@ -157,7 +230,7 @@ class SessionPlayerViewModel(
         if (step is SessionStep.HoldSet) {
             val held = step.seconds - secondsLeft
             if (held > 0) {
-                logged += LoggedSet(step.exerciseId, step.setNumber, step.side, seconds = held)
+                record(LoggedSet(step.exerciseId, step.setNumber, step.side, seconds = held))
             }
         }
         advance()
@@ -167,7 +240,7 @@ class SessionPlayerViewModel(
     fun finishHoldNow() {
         val step = current as? SessionStep.HoldSet ?: return
         val held = step.seconds - secondsLeft
-        logged += LoggedSet(step.exerciseId, step.setNumber, step.side, seconds = held)
+        record(LoggedSet(step.exerciseId, step.setNumber, step.side, seconds = held))
         advance()
     }
 
@@ -191,7 +264,7 @@ class SessionPlayerViewModel(
     /** Record the current rep set and move on to the rest period. */
     fun logReps() {
         val step = current as? SessionStep.RepSet ?: return
-        logged += LoggedSet(step.exerciseId, step.setNumber, step.side, reps = repsInput)
+        record(LoggedSet(step.exerciseId, step.setNumber, step.side, reps = repsInput))
         advance()
     }
 

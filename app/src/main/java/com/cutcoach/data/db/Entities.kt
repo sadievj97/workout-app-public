@@ -89,6 +89,7 @@ data class BodyMetricEntity(
     val waistCm: Double? = null,
     val source: String = WeightSource.MANUAL,
 ) {
+    /** Where [weightKg] came from. Waist is only ever entered by hand. */
     val fromWatch: Boolean get() = source == WeightSource.WATCH
 }
 

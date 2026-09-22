@@ -110,6 +110,23 @@ class TrainingRepository(private val db: CutCoachDatabase) {
     suspend fun recordWaist(date: LocalDate, cm: Double) =
         db.bodyMetricDao().setWaist(date.toString(), cm)
 
+    /**
+     * Remove a weight that should not be there.
+     *
+     * A mistyped number at 05:35 would otherwise sit in the 7-day average with
+     * no way to take it out, only to type a different one over it. Clearing it
+     * also clears the source, so a watch reading may fill the day again.
+     */
+    suspend fun clearWeight(date: LocalDate) = with(db.bodyMetricDao()) {
+        clearWeight(date.toString())
+        deleteIfEmpty(date.toString())
+    }
+
+    suspend fun clearWaist(date: LocalDate) = with(db.bodyMetricDao()) {
+        clearWaist(date.toString())
+        deleteIfEmpty(date.toString())
+    }
+
     suspend fun bodyOn(date: LocalDate): BodyMetricEntity? = db.bodyMetricDao().on(date.toString())
 
     fun allBody(): Flow<List<BodyMetricEntity>> = db.bodyMetricDao().all()

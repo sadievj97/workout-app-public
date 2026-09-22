@@ -118,7 +118,12 @@ fun SettingsScreen(
             SectionLabel("The program")
             LabelledValue("Starts", repo.protocol.meta.programStartDate ?: "not set")
             LabelledValue("Bedtime ramp night 1", repo.protocol.sleep.rampStartDate ?: "not set")
-            LabelledValue("Length", "${repo.protocol.meta.programLengthWeeks} weeks")
+            LabelledValue(
+                "Length",
+                repo.protocol.meta.programLengthWeeks
+                    ?.let { "$it weeks" }
+                    ?: "open-ended, to ${repo.protocol.meta.goal.targetWeightKg.describe("kg")}",
+            )
             LabelledValue("Wake", repo.protocol.sleep.wakeTime)
             Text(
                 "These are set in protocol.json, not here. Moving a start date after " +

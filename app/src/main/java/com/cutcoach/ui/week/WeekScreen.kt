@@ -77,10 +77,11 @@ fun WeekScreen(
             Text("This week", style = MaterialTheme.typography.displaySmall, color = Mist)
             Text(
                 buildString {
-                    if (week != null) {
-                        append("Program week $week of ${repo.protocol.meta.programLengthWeeks}")
-                    } else {
-                        append("Outside the program")
+                    val total = repo.protocol.meta.programLengthWeeks
+                    when {
+                        week == null -> append("Before the program starts")
+                        total == null -> append("Program week $week")
+                        else -> append("Program week $week of $total")
                     }
                     if (isDeload) append("  -  deload")
                 },
@@ -112,13 +113,23 @@ fun WeekScreen(
             )
             val start = repo.programStart
             if (start != null) {
-                val weeks = (1..repo.protocol.meta.programLengthWeeks).filter(repo::isDeloadWeek)
-                weeks.forEach { w ->
+                // The program runs until the weight target is met rather than
+                // to a date, so this shows the next few rather than all of them.
+                val from = if (week != null && repo.isDeloadWeek(week)) week - 1 else week ?: 0
+                repo.deloadWeeksFrom(from, DELOADS_SHOWN).forEach { w ->
                     LabelledValue(
                         "Week $w",
                         start.plusWeeks((w - 1).toLong())
                             .format(DateTimeFormatter.ofPattern("d MMM yyyy")),
                         valueColor = if (w == week) SunriseAmber else Mist,
+                    )
+                }
+                if (repo.isOpenEnded) {
+                    Text(
+                        "Every ${repo.protocol.progressionRules.deload.everyNthWeek}th week, " +
+                            "for as long as the program runs.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MistDim,
                     )
                 }
             }
@@ -184,3 +195,6 @@ private fun DayRow(
         )
     }
 }
+
+/** How many upcoming deloads to list. Enough to plan around, short enough to read. */
+private const val DELOADS_SHOWN = 6

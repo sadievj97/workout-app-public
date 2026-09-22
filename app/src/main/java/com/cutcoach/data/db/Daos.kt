@@ -133,6 +133,22 @@ interface BodyMetricDao {
     )
     suspend fun setWaist(date: String, waistCm: Double, source: String = WeightSource.MANUAL)
 
+    /**
+     * Undo a weight, for the mistyped one at 05:35.
+     *
+     * Two statements rather than a delete, because a Sunday row also carries a
+     * waist measurement that has nothing to do with the weight. The row only
+     * goes when nothing is left in it.
+     */
+    @Query("UPDATE body_metric SET weightKg = NULL, source = 'manual' WHERE date = :date")
+    suspend fun clearWeight(date: String)
+
+    @Query("UPDATE body_metric SET waistCm = NULL WHERE date = :date")
+    suspend fun clearWaist(date: String)
+
+    @Query("DELETE FROM body_metric WHERE date = :date AND weightKg IS NULL AND waistCm IS NULL")
+    suspend fun deleteIfEmpty(date: String)
+
     @Query("SELECT * FROM body_metric WHERE date = :date")
     suspend fun on(date: String): BodyMetricEntity?
 

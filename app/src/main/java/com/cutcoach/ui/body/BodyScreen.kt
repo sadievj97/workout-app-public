@@ -18,6 +18,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -147,6 +148,7 @@ fun BodyScreen(
                     if (todayRow.fromWatch) "From the watch" else "Logged",
                     "%.1f kg".format(it),
                 )
+                ClearButton("Clear this day") { scope.launch { training.clearWeight(today) } }
             }
 
             NumberEntry(
@@ -174,6 +176,7 @@ fun BodyScreen(
                 SectionLabel("Waist, Sundays only")
                 todayRow?.waistCm?.let {
                     LabelledValue("Logged", "%.1f cm".format(it))
+                    ClearButton("Clear this day") { scope.launch { training.clearWaist(today) } }
                 }
                 NumberEntry(
                     value = waistInput,
@@ -216,6 +219,35 @@ fun BodyScreen(
                 )
             }
         }
+    }
+}
+
+/**
+ * Removing a measurement, behind one confirming tap.
+ *
+ * Deliberately two taps. This screen is used half-awake with the phone on the
+ * floor, and a stray touch that silently deleted a logged weight would be the
+ * same class of mistake it exists to undo.
+ */
+@Composable
+private fun ClearButton(label: String, onClear: () -> Unit) {
+    var confirming by remember { mutableStateOf(false) }
+
+    TextButton(
+        onClick = {
+            if (confirming) {
+                onClear()
+                confirming = false
+            } else {
+                confirming = true
+            }
+        },
+    ) {
+        Text(
+            if (confirming) "Tap again to clear" else label,
+            style = MaterialTheme.typography.labelMedium,
+            color = if (confirming) SunriseAmber else MistDim,
+        )
     }
 }
 

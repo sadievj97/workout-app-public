@@ -38,7 +38,15 @@ data class Protocol(
 data class Meta(
     val name: String,
     val principle: String,
-    val programLengthWeeks: Int,
+    /**
+     * How many weeks the program runs, or null for open-ended.
+     *
+     * Null is the normal case: the finish line is a weight, not a date. A
+     * number here caps the week counter, which silently switches the deloads
+     * off past the end, so it should only be set deliberately.
+     */
+    val programLengthWeeks: Int? = null,
+    val programLengthNote: String = "",
     /** ISO date, for example "2026-09-21". Null until the owner sets it. */
     val programStartDate: String? = null,
     val goal: Goal,

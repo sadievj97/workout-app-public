@@ -51,11 +51,41 @@ class ProtocolRepository private constructor(
      *
      * The program week runs Monday to Sunday because the schedule does.
      */
+    /**
+     * Which week of the program a date falls in, or null before it starts.
+     *
+     * Open-ended by default, and the null it returns means one thing only:
+     * before the start date. It used to also mean "past the end", which was a
+     * quiet disaster — null flows into [setsFor], which hands back the full set
+     * count when it cannot tell which week it is, so every deload after the
+     * final week simply stopped happening and nothing said so.
+     */
     fun programWeek(date: LocalDate): Int? {
         val start = programStart ?: return null
         if (date < start) return null
         val week = (ChronoUnit.DAYS.between(start, date) / 7).toInt() + 1
-        return if (week <= protocol.meta.programLengthWeeks) week else null
+        val length = protocol.meta.programLengthWeeks ?: return week
+        return if (week <= length) week else null
+    }
+
+    /** True when the program has no end date, which is the normal case. */
+    val isOpenEnded: Boolean get() = protocol.meta.programLengthWeeks == null
+
+    /**
+     * The next few deload weeks from a given week, for the Week screen.
+     *
+     * An open-ended program has infinitely many, so this takes a horizon rather
+     * than listing them all.
+     */
+    fun deloadWeeksFrom(week: Int, count: Int): List<Int> {
+        val every = protocol.progressionRules.deload.everyNthWeek
+        if (every <= 0) return emptyList()
+        val first = ((week / every) + 1) * every
+        val upTo = protocol.meta.programLengthWeeks
+        return generateSequence(first) { it + every }
+            .takeWhile { upTo == null || it <= upTo }
+            .take(count)
+            .toList()
     }
 
     /** Every 4th program week, per progression_rules.deload.every_nth_week. */

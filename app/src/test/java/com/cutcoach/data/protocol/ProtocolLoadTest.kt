@@ -3,6 +3,7 @@ package com.cutcoach.data.protocol
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -41,7 +42,8 @@ class ProtocolLoadTest {
     @Test
     fun `both files parse`() {
         assertEquals("The 24-week cut", repo.protocol.meta.name)
-        assertEquals(24, repo.protocol.meta.programLengthWeeks)
+        assertNull(repo.protocol.meta.programLengthWeeks)
+        assertTrue(repo.isOpenEnded)
         assertEquals(15, repo.library.exercises.size)
         assertEquals(5, repo.library.cardio.size)
     }
@@ -93,9 +95,12 @@ class ProtocolLoadTest {
         assertEquals(2, repo.programWeek(start.plusDays(7)))
         assertEquals(24, repo.programWeek(start.plusWeeks(23)))
 
-        // Outside the program.
+        // Week 25 is a real week now. The counter has no ceiling to fall off,
+        // which is what kept the deloads running past the old end.
+        assertEquals(25, repo.programWeek(start.plusWeeks(24)))
+
+        // Before the start is still the one thing that has no week.
         assertEquals(null, repo.programWeek(start.minusDays(1)))
-        assertEquals(null, repo.programWeek(start.plusWeeks(24)))
     }
 
     @Test
@@ -203,23 +208,57 @@ class ProtocolLoadTest {
 
     @Test
     fun `the target is reachable inside the program at the expected rate`() {
-        // The dangerous direction. A target that cannot be reached in the weeks
-        // available is a program that fails by arithmetic before it starts, and
-        // nothing on any screen would say so.
+        // An open-ended program can always reach its target, so this only bites
+        // if a length is ever set again. A target that cannot be reached in the
+        // weeks available is a program that fails by arithmetic before it
+        // starts, and nothing on any screen would say so.
         val goal = repo.protocol.meta.goal
         val toLose = goal.startWeightKg - goal.targetWeightKg.max
 
         assertTrue("A cut's target must be below its start weight", toLose > 0)
 
+        val length = repo.protocol.meta.programLengthWeeks ?: return
         val weeksAtSlowest = toLose / goal.expectedLossKgPerWeek.min
         assertTrue(
             "Needs %.1f weeks at %.1f kg/week, but the program is %d".format(
                 weeksAtSlowest,
                 goal.expectedLossKgPerWeek.min,
-                repo.protocol.meta.programLengthWeeks,
+                length,
             ),
-            weeksAtSlowest <= repo.protocol.meta.programLengthWeeks,
+            weeksAtSlowest <= length,
         )
+    }
+
+    @Test
+    fun `the week counter and the deloads run past where the program used to end`() {
+        // The bug this replaced: programWeek returned null past week 24, and
+        // null means "full sets" to setsFor, so every deload after the end
+        // silently stopped happening. Week 28 is a deload and must say so.
+        val start = LocalDate.parse(repo.protocol.meta.programStartDate!!)
+
+        assertEquals(28, repo.programWeek(start.plusWeeks(27)))
+        assertTrue(repo.isDeloadOn(start.plusWeeks(27)))
+        assertEquals(2, repo.setsFor(3, repo.programWeek(start.plusWeeks(27))))
+
+        // And far past it. There is no end to fall off.
+        assertEquals(105, repo.programWeek(start.plusWeeks(104)))
+    }
+
+    @Test
+    fun `before the start there is still no week, and no deload`() {
+        val start = LocalDate.parse(repo.protocol.meta.programStartDate!!)
+
+        assertNull(repo.programWeek(start.minusDays(1)))
+        assertFalse(repo.isDeloadOn(start.minusDays(1)))
+    }
+
+    @Test
+    fun `the next deloads are listed from the week asked for`() {
+        // The Week screen cannot list every deload of an endless program.
+        assertEquals(listOf(4, 8, 12, 16, 20, 24), repo.deloadWeeksFrom(1, 6))
+        assertEquals(listOf(8, 12, 16), repo.deloadWeeksFrom(5, 3))
+        // Standing in a deload week, that week is still the next one shown.
+        assertEquals(listOf(8, 12), repo.deloadWeeksFrom(7, 2))
     }
 
     @Test

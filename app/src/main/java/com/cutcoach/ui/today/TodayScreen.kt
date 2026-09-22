@@ -76,6 +76,7 @@ fun TodayScreen(
     ) {
         Header(today = today, week = week, totalWeeks = repo.protocol.meta.programLengthWeeks)
 
+
         if (isDeload) DeloadBanner(repo.protocol.progressionRules.deload.rule)
 
         if (schedule != null && session != null) {
@@ -124,7 +125,7 @@ fun TodayScreen(
 }
 
 @Composable
-private fun Header(today: LocalDate, week: Int?, totalWeeks: Int) {
+private fun Header(today: LocalDate, week: Int?, totalWeeks: Int?) {
     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
         Text(
             today.format(DateTimeFormatter.ofPattern("EEEE")),
@@ -135,7 +136,15 @@ private fun Header(today: LocalDate, week: Int?, totalWeeks: Int) {
             buildString {
                 append(today.format(DateTimeFormatter.ofPattern("d MMMM")))
                 append("  -  ")
-                append(if (week != null) "week $week of $totalWeeks" else "before the program starts")
+                append(
+                    when {
+                        week == null -> "before the program starts"
+                        // Open-ended: there is no "of N" to count towards,
+                        // because the finish line is a weight, not a date.
+                        totalWeeks == null -> "week $week"
+                        else -> "week $week of $totalWeeks"
+                    },
+                )
             },
             style = MaterialTheme.typography.bodyMedium.tabular(),
             color = MistDim,

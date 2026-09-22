@@ -32,6 +32,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cutcoach.data.db.TrainingRepository
 import com.cutcoach.data.db.sevenDayAverageKg
+import com.cutcoach.data.db.watchDaysInWindow
 import com.cutcoach.data.protocol.ProtocolRepository
 import com.cutcoach.ui.components.CutCard
 import com.cutcoach.ui.components.LabelledValue
@@ -66,7 +67,8 @@ fun BodyScreen(
     val scope = rememberCoroutineScope()
 
     val recent by training.recentBody(today, days = 30).collectAsStateWithLifecycle(emptyList())
-    val average = recent.sevenDayAverageKg()
+    val average = recent.sevenDayAverageKg(today)
+    val watchDays = recent.watchDaysInWindow(today)
     val todayRow = recent.firstOrNull { it.date == today.toString() }
 
     var weightInput by remember { mutableStateOf("") }
@@ -110,6 +112,20 @@ fun BodyScreen(
                 val goal = repo.protocol.meta.goal
                 LabelledValue("Started at", "%.1f kg".format(goal.startWeightKg))
                 LabelledValue("Target", goal.targetWeightKg.describe("kg"))
+
+                // Say where the number came from. A watch reading and a weight
+                // you stood on the scale for are not the same evidence.
+                if (watchDays > 0) {
+                    Text(
+                        if (watchDays == 1) {
+                            "One of these days came from the watch."
+                        } else {
+                            "$watchDays of these days came from the watch."
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MistDim,
+                    )
+                }
             }
 
             // The week-1 guardrail, stated rather than silently applied.
@@ -127,7 +143,10 @@ fun BodyScreen(
             SectionLabel("Today, ${today.format(DateTimeFormatter.ofPattern("EEEE d MMM"))}")
 
             todayRow?.weightKg?.let {
-                LabelledValue("Logged", "%.1f kg".format(it))
+                LabelledValue(
+                    if (todayRow.fromWatch) "From the watch" else "Logged",
+                    "%.1f kg".format(it),
+                )
             }
 
             NumberEntry(
@@ -185,7 +204,10 @@ fun BodyScreen(
                     label = LocalDate.parse(row.date)
                         .format(DateTimeFormatter.ofPattern("EEE d MMM")),
                     value = buildString {
-                        row.weightKg?.let { append("%.1f kg".format(it)) }
+                        row.weightKg?.let {
+                            append("%.1f kg".format(it))
+                            if (row.fromWatch) append(" ·watch")
+                        }
                         row.waistCm?.let {
                             if (isNotEmpty()) append("   ")
                             append("%.1f cm".format(it))

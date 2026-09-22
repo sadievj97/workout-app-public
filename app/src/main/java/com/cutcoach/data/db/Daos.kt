@@ -105,15 +105,24 @@ interface BodyMetricDao {
      * Weight and waist are written separately, because a Sunday has both and
      * every other day has only weight. A plain upsert of the whole row would
      * erase whichever one was not being entered.
+     *
+     * The WHERE clause is the protocol's "manual entries win" rule, enforced by
+     * the store rather than by whoever happens to call it. A watch reading
+     * fills a day that has none and quietly does nothing on a day already
+     * weighed by hand. Keeping it in SQL means a background sync landing at the
+     * same moment as a typed entry cannot win by arriving second.
      */
     @Query(
         """
         INSERT INTO body_metric (date, weightKg, waistCm, source)
         VALUES (:date, :weightKg, NULL, :source)
         ON CONFLICT(date) DO UPDATE SET weightKg = :weightKg, source = :source
+        WHERE :source = 'manual'
+           OR body_metric.weightKg IS NULL
+           OR body_metric.source <> 'manual'
         """,
     )
-    suspend fun setWeight(date: String, weightKg: Double, source: String = "manual")
+    suspend fun setWeight(date: String, weightKg: Double, source: String = WeightSource.MANUAL)
 
     @Query(
         """
@@ -122,7 +131,7 @@ interface BodyMetricDao {
         ON CONFLICT(date) DO UPDATE SET waistCm = :waistCm
         """,
     )
-    suspend fun setWaist(date: String, waistCm: Double, source: String = "manual")
+    suspend fun setWaist(date: String, waistCm: Double, source: String = WeightSource.MANUAL)
 
     @Query("SELECT * FROM body_metric WHERE date = :date")
     suspend fun on(date: String): BodyMetricEntity?

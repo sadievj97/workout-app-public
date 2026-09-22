@@ -95,8 +95,17 @@ class TrainingRepository(private val db: CutCoachDatabase) {
 
     // ---- Body -------------------------------------------------------------
 
-    suspend fun recordWeight(date: LocalDate, kg: Double) =
-        db.bodyMetricDao().setWeight(date.toString(), kg)
+    /**
+     * A weight, from the owner or from the watch.
+     *
+     * Passing the source matters: the store uses it to keep a watch reading
+     * from displacing a day already weighed by hand.
+     */
+    suspend fun recordWeight(
+        date: LocalDate,
+        kg: Double,
+        source: String = WeightSource.MANUAL,
+    ) = db.bodyMetricDao().setWeight(date.toString(), kg, source)
 
     suspend fun recordWaist(date: LocalDate, cm: Double) =
         db.bodyMetricDao().setWaist(date.toString(), cm)
@@ -120,12 +129,36 @@ class TrainingRepository(private val db: CutCoachDatabase) {
 }
 
 /**
- * The 7-day rolling average the protocol asks for, computed over whatever days
- * actually have a weight.
+ * The 7-day rolling average the protocol asks for: the days that have a weight
+ * within the calendar week ending on [endingOn].
  *
- * Returns null rather than guessing when there is nothing to average.
+ * Windowed by date, not by row count. Rows only exist for days something was
+ * logged, so counting seven rows would silently reach back a fortnight after a
+ * few missed days and call the result a 7-day average. The protocol judges
+ * progress by this number, so it has to mean what it says.
+ *
+ * Returns null rather than guessing when nothing in the window was weighed.
  */
-fun List<BodyMetricEntity>.sevenDayAverageKg(): Double? {
-    val weights = take(7).mapNotNull { it.weightKg }
+fun List<BodyMetricEntity>.sevenDayAverageKg(endingOn: LocalDate): Double? {
+    val earliest = endingOn.minusDays(WINDOW_DAYS - 1L)
+    val weights = inWindow(earliest, endingOn).mapNotNull { it.weightKg }
     return if (weights.isEmpty()) null else weights.average()
 }
+
+/** How many of the days in that window came from the watch rather than by hand. */
+fun List<BodyMetricEntity>.watchDaysInWindow(endingOn: LocalDate): Int {
+    val earliest = endingOn.minusDays(WINDOW_DAYS - 1L)
+    return inWindow(earliest, endingOn).count { it.weightKg != null && it.fromWatch }
+}
+
+private fun List<BodyMetricEntity>.inWindow(
+    earliest: LocalDate,
+    latest: LocalDate,
+): List<BodyMetricEntity> = filter { row ->
+    // A row whose date will not parse is skipped rather than crashing a screen
+    // the owner is standing over at 05:35.
+    val date = runCatching { LocalDate.parse(row.date) }.getOrNull()
+    date != null && !date.isBefore(earliest) && !date.isAfter(latest)
+}
+
+private const val WINDOW_DAYS = 7

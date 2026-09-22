@@ -7,6 +7,7 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.cutcoach.data.db.TrainingRepository
+import com.cutcoach.data.db.WeightSource
 import com.cutcoach.data.protocol.ProtocolLoad
 import com.cutcoach.data.protocol.ProtocolRepository
 import java.time.LocalDate
@@ -46,19 +47,17 @@ class DailySyncWorker(
             )
 
             // Weight is the only value worth storing: it feeds a 7-day average
-            // that has to survive the watch not syncing on a given day. Manual
-            // entries still win, so this never overwrites one.
+            // that has to survive the watch not syncing on a given day.
+            //
+            // Written as WATCH, not as manual. The store then refuses to
+            // displace a day the owner weighed by hand, and the Body screen can
+            // say which days it filled in.
             val training = TrainingRepository.get(applicationContext)
             todayHealth?.weightKg?.let { kg ->
-                if (training.bodyOn(today)?.weightKg == null) {
-                    training.recordWeight(today, kg)
-                }
+                training.recordWeight(today, kg, WeightSource.WATCH)
             }
             lastNight?.weightKg?.let { kg ->
-                val yesterday = today.minusDays(1)
-                if (training.bodyOn(yesterday)?.weightKg == null) {
-                    training.recordWeight(yesterday, kg)
-                }
+                training.recordWeight(today.minusDays(1), kg, WeightSource.WATCH)
             }
 
             Result.success()

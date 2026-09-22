@@ -78,13 +78,28 @@ data class ExerciseStateEntity(
  * Daily body measurements. One row per date, with waist usually only on
  * Sundays.
  *
- * [source] is "manual" throughout Phase 1. Phase 2 adds watch data, and manual
- * entries win where both exist.
+ * [source] says where the number came from. Manual entries win where both
+ * exist, so the two have to stay distinguishable: a watch reading written down
+ * as "manual" would look like something the owner stood on the scale for.
  */
 @Entity(tableName = "body_metric")
 data class BodyMetricEntity(
     @PrimaryKey val date: String,
     val weightKg: Double? = null,
     val waistCm: Double? = null,
-    val source: String = "manual",
-)
+    val source: String = WeightSource.MANUAL,
+) {
+    val fromWatch: Boolean get() = source == WeightSource.WATCH
+}
+
+/**
+ * Stored as text rather than an enum so the column stays readable in the
+ * database and a future source can be added without a migration.
+ */
+object WeightSource {
+    /** Typed in on the Body screen. Always wins. */
+    const val MANUAL = "manual"
+
+    /** A WeightRecord read from Health Connect by the daily sync. */
+    const val WATCH = "watch"
+}

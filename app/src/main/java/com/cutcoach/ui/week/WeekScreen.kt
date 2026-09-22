@@ -27,6 +27,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cutcoach.data.db.TrainingRepository
 import com.cutcoach.data.protocol.ProtocolRepository
 import com.cutcoach.ui.components.CutCard
+import com.cutcoach.ui.components.CutIcon
+import com.cutcoach.ui.components.CutIconView
 import com.cutcoach.ui.components.LabelledValue
 import com.cutcoach.ui.components.SectionLabel
 import com.cutcoach.ui.theme.CoolSky
@@ -155,17 +157,16 @@ private fun DayRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Box(
-            Modifier
-                .size(10.dp)
-                .clip(CircleShape)
-                .background(
-                    when {
-                        isDone -> SunriseAmber
-                        isToday -> CoolSky
-                        else -> SlateEdge
-                    },
-                ),
+        // A done day shows a tick; otherwise the icon says what kind of day it
+        // is, which the dot never did.
+        CutIconView(
+            icon = if (isDone) CutIcon.CHECK else sessionIcon(schedule?.sessionId),
+            tint = when {
+                isDone -> SunriseAmber
+                isToday -> CoolSky
+                else -> SlateEdge
+            },
+            size = 18.dp,
         )
         Text(
             date.format(DateTimeFormatter.ofPattern("EEE")),
@@ -198,3 +199,18 @@ private fun DayRow(
 
 /** How many upcoming deloads to list. Enough to plan around, short enough to read. */
 private const val DELOADS_SHOWN = 6
+
+/**
+ * What kind of day a session is, for the row's icon.
+ *
+ * Matched on the session id from protocol.json rather than on its name, since
+ * ids are what the schedule actually refers to and they do not change when a
+ * session is renamed.
+ */
+internal fun sessionIcon(sessionId: String?): CutIcon = when {
+    sessionId == null -> CutIcon.REST
+    sessionId.startsWith("strength") -> CutIcon.BARBELL
+    sessionId.contains("interval") || sessionId.contains("cardio") -> CutIcon.SHOE
+    sessionId.contains("walk") || sessionId.contains("rehab") -> CutIcon.SHOE
+    else -> CutIcon.DOT
+}

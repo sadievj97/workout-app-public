@@ -36,6 +36,7 @@ import com.cutcoach.data.db.sevenDayAverageKg
 import com.cutcoach.data.db.watchDaysInWindow
 import com.cutcoach.data.protocol.ProtocolRepository
 import com.cutcoach.ui.components.CutCard
+import com.cutcoach.ui.components.Sparkline
 import com.cutcoach.ui.components.LabelledValue
 import com.cutcoach.ui.components.SectionLabel
 import com.cutcoach.ui.theme.CoolSky
@@ -111,6 +112,26 @@ fun BodyScreen(
                     )
                 }
                 val goal = repo.protocol.meta.goal
+
+                // Which way the fortnight went, which is what the protocol
+                // actually judges. The numbers are still listed below.
+                val fortnight = (FORTNIGHT downTo 0).map { back ->
+                    val date = today.minusDays(back.toLong()).toString()
+                    recent.firstOrNull { it.date == date }?.weightKg
+                }
+                // One weighing is a dot, not a trend. Drawing nothing but
+                // keeping the caption would describe a line that is not there.
+                if (fortnight.count { it != null } >= 2) {
+                    Sparkline(values = fortnight, colour = SunriseAmber)
+                    Text(
+                        "The last $FORTNIGHT days. A gap is a day with nothing weighed, " +
+                            "not a flat one.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MistDim,
+                    )
+                }
+
+                Box(Modifier.height(4.dp))
                 LabelledValue("Started at", "%.1f kg".format(goal.startWeightKg))
                 LabelledValue("Target", goal.targetWeightKg.describe("kg"))
 
@@ -303,3 +324,6 @@ private fun NumberEntry(
         }
     }
 }
+
+/** How far back the trend line looks. Two weeks shows a direction without noise. */
+private const val FORTNIGHT = 14

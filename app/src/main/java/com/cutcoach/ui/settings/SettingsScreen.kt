@@ -1,5 +1,6 @@
 package com.cutcoach.ui.settings
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -7,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -30,6 +32,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -40,6 +43,8 @@ import com.cutcoach.reminders.ReminderNotifier
 import com.cutcoach.rules.PainKind
 import com.cutcoach.reminders.ReminderWorker
 import com.cutcoach.ui.components.CutCard
+import com.cutcoach.ui.components.CutIcon
+import com.cutcoach.ui.components.CutIconView
 import com.cutcoach.ui.components.LabelledValue
 import com.cutcoach.ui.components.SectionLabel
 import com.cutcoach.ui.theme.CoolSky
@@ -91,13 +96,11 @@ fun SettingsScreen(
 
         CutCard {
             SectionLabel("Difficulty")
-            TextButton(onClick = onOpenLadders) {
-                Text(
-                    "Starting rungs: where you begin on each ladder",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = CoolSky,
-                )
-            }
+            NavRow(
+                icon = CutIcon.LADDER,
+                label = "Starting rungs: where you begin on each ladder",
+                onClick = onOpenLadders,
+            )
             Text(
                 "Everything starts on its first rung. If you can already do the " +
                     "harder version, say so here rather than working up to where " +
@@ -109,24 +112,20 @@ fun SettingsScreen(
 
         CutCard {
             SectionLabel("Figures")
-            TextButton(onClick = onOpenFigures) {
-                Text(
-                    "Form check: review all fifteen figures",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = CoolSky,
-                )
-            }
+            NavRow(
+                icon = CutIcon.PERSON,
+                label = "Form check: review all fifteen figures",
+                onClick = onOpenFigures,
+            )
         }
 
         CutCard {
             SectionLabel("Watch data")
-            TextButton(onClick = onOpenDataCheck) {
-                Text(
-                    "Data check: what Health Connect actually has",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = CoolSky,
-                )
-            }
+            NavRow(
+                icon = CutIcon.HEART,
+                label = "Data check: what Health Connect actually has",
+                onClick = onOpenDataCheck,
+            )
             Text(
                 "Read only. Nothing in the app depends on watch data yet.",
                 style = MaterialTheme.typography.bodySmall,
@@ -263,6 +262,30 @@ fun SettingsScreen(
                 )
             }
         }
+    }
+}
+
+/**
+ * A row that opens another screen.
+ *
+ * The icon is here because Settings is a list of destinations that all look
+ * alike in words: at a glance the ladder, the figure and the pulse line tell
+ * them apart faster than reading three similar sentences does.
+ */
+@Composable
+private fun NavRow(icon: CutIcon, label: String, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(10.dp))
+            .clickable(onClick = onClick)
+            .heightIn(min = 56.dp)
+            .padding(vertical = 8.dp, horizontal = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        CutIconView(icon, CoolSky, size = 22.dp)
+        Text(label, style = MaterialTheme.typography.bodyLarge, color = CoolSky)
     }
 }
 

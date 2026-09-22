@@ -17,6 +17,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -26,6 +27,9 @@ import com.cutcoach.data.db.SetLogEntity
 import com.cutcoach.data.db.TrainingRepository
 import com.cutcoach.data.protocol.ProtocolRepository
 import com.cutcoach.ui.components.CutCard
+import com.cutcoach.ui.components.CutIcon
+import com.cutcoach.ui.components.CutIconView
+import com.cutcoach.ui.week.sessionIcon
 import com.cutcoach.ui.components.SectionLabel
 import com.cutcoach.ui.theme.CoolSky
 import com.cutcoach.ui.theme.Mist
@@ -116,9 +120,22 @@ private fun SessionRow(row: SessionWithCount) {
     CutCard {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(session.sessionName, style = MaterialTheme.typography.titleMedium, color = Mist)
+            // Finished or not is the first thing worth knowing about a past
+            // session, so it leads the row rather than trailing it in words.
+            CutIconView(
+                icon = if (session.endedAt != null) CutIcon.CHECK else sessionIcon(session.sessionId),
+                tint = if (session.endedAt != null) SunriseAmber else MistDim,
+                size = 20.dp,
+            )
+            Text(
+                session.sessionName,
+                style = MaterialTheme.typography.titleMedium,
+                color = Mist,
+                modifier = Modifier.weight(1f),
+            )
             Text(
                 date.format(DateTimeFormatter.ofPattern("d MMM")),
                 style = MaterialTheme.typography.bodyMedium.tabular(),

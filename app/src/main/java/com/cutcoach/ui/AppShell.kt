@@ -41,6 +41,8 @@ import com.cutcoach.data.protocol.ProtocolLoad
 import com.cutcoach.data.protocol.ProtocolRepository
 import com.cutcoach.data.settings.SettingsRepository
 import com.cutcoach.ui.body.BodyScreen
+import com.cutcoach.ui.components.CutIcon
+import com.cutcoach.ui.components.CutIconView
 import com.cutcoach.ui.exercise.CueCardScreen
 
 import com.cutcoach.ui.exercise.LadderScreen
@@ -331,17 +333,28 @@ private fun BottomTabs(current: String?, onSelect: (String) -> Unit) {
         ) {
             TABS.forEach { (route, label) ->
                 val selected = route == current
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = if (selected) SunriseAmber else MistDim,
-                    textAlign = TextAlign.Center,
+                val tint = if (selected) SunriseAmber else MistDim
+
+                // Icon above the word rather than instead of it. Five icons
+                // alone would be a guessing game the first few weeks, and this
+                // bar is used half-awake.
+                Column(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxWidth()
                         .clickable { if (!selected) onSelect(route) }
-                        .padding(vertical = 20.dp),
-                )
+                        .padding(vertical = 8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(3.dp),
+                ) {
+                    CutIconView(tabIcon(route), tint, size = 22.dp)
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = tint,
+                        textAlign = TextAlign.Center,
+                    )
+                }
             }
         }
     }
@@ -383,4 +396,19 @@ private fun ProtocolError(failure: ProtocolLoad.Failure) {
             color = MistDim,
         )
     }
+}
+
+/**
+ * The icon for each tab.
+ *
+ * Sunrise for Today because this app's day starts at 05:00 and that is the
+ * whole point of it; a person for Body because it is about you rather than
+ * about the training.
+ */
+private fun tabIcon(route: String): CutIcon = when (route) {
+    Routes.TODAY -> CutIcon.SUNRISE
+    Routes.WEEK -> CutIcon.CALENDAR
+    Routes.HISTORY -> CutIcon.CLOCK
+    Routes.BODY -> CutIcon.PERSON
+    else -> CutIcon.GEAR
 }

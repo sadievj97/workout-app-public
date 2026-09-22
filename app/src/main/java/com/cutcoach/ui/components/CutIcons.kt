@@ -68,6 +68,24 @@ enum class CutIcon {
     /** Screens down, lamps only. */
     LAMP,
 
+    /** A session that was finished. */
+    CHECK,
+
+    /** A figure: the form-check drawings. */
+    PERSON,
+
+    /** A rest day, with nothing scheduled. */
+    REST,
+
+    /** The week. */
+    CALENDAR,
+
+    /** What has already happened. */
+    CLOCK,
+
+    /** Settings. */
+    GEAR,
+
     /** A plain point on the timeline. */
     DOT,
 }
@@ -218,6 +236,53 @@ private fun DrawScope.drawIcon(icon: CutIcon, tint: Color, u: Float, stroke: Str
             line(10f, 4f, 14f, 4f)
             line(12f, 11f, 12f, 20f)
             line(9f, 20f, 15f, 20f)
+        }
+
+        CutIcon.CHECK -> {
+            line(4f, 13f, 9.5f, 18f)
+            line(9.5f, 18f, 20f, 6f)
+        }
+
+        CutIcon.PERSON -> {
+            drawCircle(tint, radius = 3f * u, center = p(12f, 6f), style = stroke)
+            line(12f, 9f, 12f, 16f)
+            line(12f, 11f, 7f, 14f)
+            line(12f, 11f, 17f, 14f)
+            line(12f, 16f, 8.5f, 21f)
+            line(12f, 16f, 15.5f, 21f)
+        }
+
+        // A dash: nothing scheduled, said without a symbol that implies failure.
+        CutIcon.REST -> line(6f, 12f, 18f, 12f)
+
+        CutIcon.CALENDAR -> {
+            drawRoundRect(
+                color = tint,
+                topLeft = p(3f, 5f),
+                size = Size(18f * u, 16f * u),
+                cornerRadius = androidx.compose.ui.geometry.CornerRadius(2.5f * u, 2.5f * u),
+                style = stroke,
+            )
+            line(3f, 10f, 21f, 10f)
+            line(8f, 3f, 8f, 6f)
+            line(16f, 3f, 16f, 6f)
+        }
+
+        CutIcon.CLOCK -> {
+            drawCircle(tint, radius = 9f * u, center = p(12f, 12f), style = stroke)
+            line(12f, 7f, 12f, 12f)
+            line(12f, 12f, 16f, 14f)
+        }
+
+        // Sliders, not a cog. A cog small enough for a tab bar loses its teeth
+        // and reads as a crosshair, which is what the first attempt did.
+        CutIcon.GEAR -> {
+            line(3f, 7f, 21f, 7f)
+            line(3f, 12f, 21f, 12f)
+            line(3f, 17f, 21f, 17f)
+            drawCircle(tint, radius = 2.4f * u, center = p(9f, 7f))
+            drawCircle(tint, radius = 2.4f * u, center = p(15f, 12f))
+            drawCircle(tint, radius = 2.4f * u, center = p(8f, 17f))
         }
 
         CutIcon.DOT -> drawCircle(tint, radius = 3.2f * u, center = p(12f, 12f))

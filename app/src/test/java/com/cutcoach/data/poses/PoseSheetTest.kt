@@ -19,7 +19,16 @@ import java.io.File
 class PoseSheetTest {
 
     private val side = 260
-    private val extraAngles = listOf(45f, 90f, 135f)
+
+    /**
+     * Extra camera angles per pose. With fifteen exercises the full spread is
+     * too tall to take in, so the default is the chosen angle only, laid out as
+     * a grid. Put angles back here when checking one exercise closely.
+     */
+    private val extraAngles = emptyList<Float>()
+
+    /** How many panels across before wrapping. */
+    private val columns = 4
 
     @Test
     fun `write a contact sheet of every pose`() {
@@ -33,9 +42,10 @@ class PoseSheetTest {
         val rows = library.exercises.flatMap { (id, animation) ->
             animation.poses.keys.map { Triple(id, it, animation) }
         }
-        val columns = 1 + extraAngles.size
+        val perPose = 1 + extraAngles.size
+        val panels = rows.size * perPose
         val width = columns * side
-        val height = rows.size * side
+        val height = ((panels + columns - 1) / columns) * side
 
         val svg = buildString {
             append("<svg xmlns='http://www.w3.org/2000/svg' width='$width' height='$height' ")
@@ -51,7 +61,8 @@ class PoseSheetTest {
                     }
                 }
                 val worked = exercises.exercise(id)?.muscles.orEmpty()
-                cameras.forEachIndexed { column, (camera, label) ->
+                cameras.forEachIndexed { index, (camera, label) ->
+                    val panelNumber = row * perPose + index
                     append(
                         panel(
                             pose = pose,
@@ -60,8 +71,8 @@ class PoseSheetTest {
                             camera = camera,
                             worked = worked,
                             anatomy = library.anatomy,
-                            originX = column * side,
-                            originY = row * side,
+                            originX = (panelNumber % columns) * side,
+                            originY = (panelNumber / columns) * side,
                             label = label,
                         ),
                     )

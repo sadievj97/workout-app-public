@@ -71,22 +71,38 @@ class BodyTest {
     }
 
     @Test
-    fun `the two sides of the body are the same size`() {
+    fun `a symmetrical exercise has identical limbs on both sides`() {
+        // Compared segment by segment rather than by sorting all the lengths
+        // and looking for pairs: that earlier version matched a foot to the
+        // neck because they happened to be within a few thousandths, and
+        // failed a figure that was perfectly fine.
         library.exercises.forEach { (id, animation) ->
             val symmetry = animation.symmetryMode
-            animation.poses.forEach { (name, pose) ->
-                val capsules = pose.body(symmetry, style).filterIsInstance<Capsule>()
-                val lengths = capsules.map { (it.to - it.from).length() }.sorted()
+            if (symmetry == Symmetry.NONE) return@forEach
 
-                // Every limb capsule appears twice, once per side, plus the
-                // single neck. So the sorted lengths pair up apart from one.
-                val unpaired = lengths.indices.count { index ->
-                    val mine = lengths[index]
-                    lengths.count { abs(it - mine) < 0.005f } % 2 == 1
-                }
-                assertTrue(
-                    "$id/$name: limbs do not pair up between the two sides",
-                    unpaired <= 1,
+            animation.poses.forEach { (name, pose) ->
+                val armA = pose.armA()
+                val armB = pose.armB(symmetry)
+                val legA = pose.legA()
+                val legB = pose.legB(symmetry)
+
+                assertEquals(
+                    "$id/$name: forearms differ",
+                    (armA[1] - armA[0]).length(),
+                    (armB[1] - armB[0]).length(),
+                    0.005f,
+                )
+                assertEquals(
+                    "$id/$name: shins differ",
+                    (legA[1] - legA[0]).length(),
+                    (legB[1] - legB[0]).length(),
+                    0.005f,
+                )
+                assertEquals(
+                    "$id/$name: feet differ",
+                    (legA[2] - legA[1]).length(),
+                    (legB[2] - legB[1]).length(),
+                    0.005f,
                 )
             }
         }

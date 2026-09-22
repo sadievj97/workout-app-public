@@ -251,6 +251,493 @@
         {"pose": "hold", "seconds": 0.0, "role": "hold"}
       ],
       "hardest_pose": "hold"
+    },
+
+    "push_up_feet_up": {
+      "camera": {"azimuth": 20, "elevation": 12},
+      "facing": [0.0, 1.0, 0.0],
+      "symmetry": "mirror_z",
+      "working_limbs": ["arms"],
+      "props": [
+        {"type": "floor", "y": 0.333, "from_x": -0.5, "to_x": 0.5, "depth": 0.22},
+        {"type": "chair", "y": 0.262, "from_x": -0.360, "to_x": -0.225, "z": 0.0, "height": 0.071}
+      ],
+      "poses": {
+        "top": {
+          "head":  [ 0.258, 0.112,  0.000],
+          "neck":  [ 0.204, 0.123,  0.000],
+          "hip":   [-0.050, 0.175,  0.000],
+          "elbow": [ 0.204, 0.228,  0.055],
+          "wrist": [ 0.204, 0.333,  0.055],
+          "knee":  [-0.182, 0.202,  0.045],
+          "ankle": [-0.314, 0.229,  0.045],
+          "toe":   [-0.273, 0.258,  0.045]
+        },
+        "bottom": {
+          "head":  [ 0.272, 0.185,  0.000],
+          "neck":  [ 0.218, 0.193,  0.000],
+          "hip":   [-0.037, 0.230,  0.000],
+          "elbow": [ 0.128, 0.256,  0.055],
+          "wrist": [ 0.204, 0.333,  0.055],
+          "knee":  [-0.170, 0.251,  0.045],
+          "ankle": [-0.303, 0.271,  0.045],
+          "toe":   [-0.262, 0.300,  0.045]
+        }
+      },
+      "sequence": [
+        {"pose": "top",    "seconds": 0.0, "role": "start"},
+        {"pose": "bottom", "seconds": 1.0, "role": "lower"},
+        {"pose": "top",    "seconds": 1.0, "role": "raise"}
+      ],
+      "hardest_pose": "bottom"
+    },
+
+    "pike_push_up": {
+      "camera": {"azimuth": 22, "elevation": 10},
+      "facing": [0.0, 1.0, 0.0],
+      "symmetry": "mirror_z",
+      "working_limbs": ["arms"],
+      "props": [
+        {"type": "floor", "y": 0.283, "from_x": -0.5, "to_x": 0.5, "depth": 0.22}
+      ],
+      "poses": {
+        "top": {
+          "head":  [ 0.208, 0.138,  0.000],
+          "neck":  [ 0.146, 0.094,  0.000],
+          "hip":   [-0.010, -0.118, 0.000],
+          "elbow": [ 0.129, 0.198,  0.055],
+          "wrist": [ 0.190, 0.283,  0.055],
+          "knee":  [-0.051, 0.011,  0.045],
+          "ankle": [-0.092, 0.140,  0.045],
+          "toe":   [-0.070, 0.185,  0.045]
+        },
+        "bottom": {
+          "head":  [ 0.226, 0.201,  0.000],
+          "neck":  [ 0.160, 0.166,  0.000],
+          "hip":   [ 0.004, -0.046, 0.000],
+          "elbow": [ 0.078, 0.243,  0.055],
+          "wrist": [ 0.190, 0.283,  0.055],
+          "knee":  [-0.037, 0.083,  0.045],
+          "ankle": [-0.078, 0.212,  0.045],
+          "toe":   [-0.056, 0.257,  0.045]
+        }
+      },
+      "sequence": [
+        {"pose": "top",    "seconds": 0.0, "role": "start"},
+        {"pose": "bottom", "seconds": 1.0, "role": "lower"},
+        {"pose": "top",    "seconds": 1.0, "role": "raise"}
+      ],
+      "hardest_pose": "bottom"
+    },
+
+    "chin_up": {
+      "camera": {"azimuth": 12, "elevation": 6},
+      "facing": [0.0, 0.0, 1.0],
+      "symmetry": "mirror_x",
+      "working_limbs": ["arms", "torso"],
+      "props": [
+        {"type": "bar", "y": -0.380, "from_x": -0.300, "to_x": 0.300, "z": 0.020}
+      ],
+      "poses": {
+        "hang": {
+          "head":  [ 0.000, -0.255,  0.010],
+          "neck":  [ 0.000, -0.180,  0.000],
+          "hip":   [ 0.000,  0.080, -0.030],
+          "elbow": [-0.052, -0.283,  0.020],
+          "wrist": [-0.062, -0.380,  0.020],
+          "knee":  [-0.030,  0.214, -0.040],
+          "ankle": [-0.038,  0.348, -0.055],
+          "toe":   [-0.052,  0.392, -0.030]
+        },
+        "top": {
+          "head":  [ 0.000, -0.442,  0.010],
+          "neck":  [ 0.000, -0.367,  0.000],
+          "hip":   [ 0.000, -0.107, -0.030],
+          "elbow": [-0.075, -0.281,  0.020],
+          "wrist": [-0.062, -0.380,  0.020],
+          "knee":  [-0.030,  0.027, -0.040],
+          "ankle": [-0.038,  0.161, -0.055],
+          "toe":   [-0.052,  0.205, -0.030]
+        }
+      },
+      "sequence": [
+        {"pose": "hang", "seconds": 0.0, "role": "start"},
+        {"pose": "top",  "seconds": 1.0, "role": "raise"},
+        {"pose": "hang", "seconds": 1.0, "role": "lower"}
+      ],
+      "hardest_pose": "top"
+    },
+
+    "inverted_row": {
+      "camera": {"azimuth": 24, "elevation": 12},
+      "facing": [0.0, -1.0, 0.0],
+      "symmetry": "mirror_z",
+      "working_limbs": ["arms", "torso"],
+      "props": [
+        {"type": "floor", "y": 0.300, "from_x": -0.5, "to_x": 0.5, "depth": 0.22},
+        {"type": "bar", "y": -0.080, "from_x": 0.120, "to_x": 0.300, "z": 0.0}
+      ],
+      "poses": {
+        "hang": {
+          "head":  [ 0.252, 0.060,  0.000],
+          "neck":  [ 0.198, 0.112,  0.000],
+          "hip":   [-0.015, 0.262,  0.000],
+          "elbow": [ 0.215, 0.008,  0.055],
+          "wrist": [ 0.210, -0.080, 0.055],
+          "knee":  [-0.126, 0.285,  0.045],
+          "ankle": [-0.261, 0.291,  0.045],
+          "toe":   [-0.281, 0.245,  0.045]
+        },
+        "top": {
+          "head":  [ 0.234, -0.022, 0.000],
+          "neck":  [ 0.180, 0.030,  0.000],
+          "hip":   [-0.033, 0.180,  0.000],
+          "elbow": [ 0.128, -0.038, 0.055],
+          "wrist": [ 0.210, -0.080, 0.055],
+          "knee":  [-0.144, 0.203,  0.045],
+          "ankle": [-0.279, 0.209,  0.045],
+          "toe":   [-0.299, 0.163,  0.045]
+        }
+      },
+      "sequence": [
+        {"pose": "hang", "seconds": 0.0, "role": "start"},
+        {"pose": "top",  "seconds": 1.0, "role": "raise"},
+        {"pose": "hang", "seconds": 1.0, "role": "lower"}
+      ],
+      "hardest_pose": "top"
+    },
+
+    "hanging_knee_raise": {
+      "camera": {"azimuth": 70, "elevation": 8},
+      "facing": [0.0, 0.0, 1.0],
+      "symmetry": "mirror_x",
+      "working_limbs": ["torso"],
+      "props": [
+        {"type": "bar", "y": -0.400, "from_x": -0.300, "to_x": 0.300, "z": 0.020}
+      ],
+      "poses": {
+        "hang": {
+          "head":  [ 0.000, -0.265,  0.010],
+          "neck":  [ 0.000, -0.190,  0.000],
+          "hip":   [ 0.000,  0.070, -0.020],
+          "elbow": [-0.048, -0.295,  0.015],
+          "wrist": [-0.062, -0.400,  0.020],
+          "knee":  [-0.030,  0.204, -0.030],
+          "ankle": [-0.038,  0.338, -0.040],
+          "toe":   [-0.052,  0.382, -0.020]
+        },
+        "raised": {
+          "head":  [ 0.000, -0.265,  0.010],
+          "neck":  [ 0.000, -0.190,  0.000],
+          "hip":   [ 0.000,  0.070, -0.020],
+          "elbow": [-0.048, -0.295,  0.015],
+          "wrist": [-0.062, -0.400,  0.020],
+          "knee":  [-0.030,  0.008,  0.098],
+          "ankle": [-0.038,  0.140,  0.108],
+          "toe":   [-0.052,  0.182,  0.100]
+        }
+      },
+      "sequence": [
+        {"pose": "hang",   "seconds": 0.0, "role": "start"},
+        {"pose": "raised", "seconds": 1.0, "role": "raise"},
+        {"pose": "hang",   "seconds": 1.0, "role": "lower"}
+      ],
+      "hardest_pose": "raised"
+    },
+
+    "bulgarian_split_squat": {
+      "camera": {"azimuth": 20, "elevation": 10},
+      "facing": [1.0, 0.0, 0.0],
+      "facing_note": "Standing and facing along positive x, the direction the front foot points.",
+      "symmetry": "none",
+      "symmetry_note": "The legs genuinely differ: one forward on the floor, one behind on a chair.",
+      "working_limbs": ["legs"],
+      "props": [
+        {"type": "floor", "y": 0.205, "from_x": -0.5, "to_x": 0.5, "depth": 0.22},
+        {"type": "chair", "y": 0.158, "from_x": -0.230, "to_x": -0.060, "z": 0.0, "height": 0.047}
+      ],
+      "poses": {
+        "top": {
+          "head":  [ 0.047, -0.409, 0.000],
+          "neck":  [ 0.041, -0.334, 0.000],
+          "hip":   [ 0.020, -0.075, 0.000],
+          "elbow": [ 0.051, -0.230, 0.062],
+          "wrist": [ 0.051, -0.125, 0.062],
+          "knee":  [ 0.067,  0.052, 0.042],
+          "ankle": [ 0.067,  0.187, 0.042],
+          "toe":   [ 0.114,  0.204, 0.042],
+          "knee_other":  [-0.054, 0.038, -0.042],
+          "ankle_other": [-0.115, 0.158, -0.042],
+          "toe_other":   [-0.160, 0.180, -0.042]
+        },
+        "bottom": {
+          "head":  [ 0.047, -0.309, 0.000],
+          "neck":  [ 0.041, -0.234, 0.000],
+          "hip":   [ 0.020,  0.025, 0.000],
+          "elbow": [ 0.051, -0.130, 0.062],
+          "wrist": [ 0.051, -0.025, 0.062],
+          "knee":  [ 0.145,  0.077, 0.042],
+          "ankle": [ 0.067,  0.187, 0.042],
+          "toe":   [ 0.114,  0.204, 0.042],
+          "knee_other":  [ 0.020, 0.160, -0.042],
+          "ankle_other": [-0.115, 0.158, -0.042],
+          "toe_other":   [-0.160, 0.180, -0.042]
+        }
+      },
+      "sequence": [
+        {"pose": "top",    "seconds": 0.0, "role": "start"},
+        {"pose": "bottom", "seconds": 1.0, "role": "lower"},
+        {"pose": "top",    "seconds": 1.0, "role": "raise"}
+      ],
+      "hardest_pose": "bottom"
+    },
+
+    "reverse_lunge": {
+      "camera": {"azimuth": 20, "elevation": 10},
+      "facing": [1.0, 0.0, 0.0],
+      "symmetry": "none",
+      "working_limbs": ["legs"],
+      "props": [
+        {"type": "floor", "y": 0.205, "from_x": -0.5, "to_x": 0.5, "depth": 0.22}
+      ],
+      "poses": {
+        "stand": {
+          "head":  [ 0.006, -0.409, 0.000],
+          "neck":  [ 0.000, -0.334, 0.000],
+          "hip":   [ 0.000, -0.075, 0.000],
+          "elbow": [ 0.010, -0.230, 0.062],
+          "wrist": [ 0.010, -0.125, 0.062],
+          "knee":  [ 0.010,  0.060, 0.042],
+          "ankle": [ 0.010,  0.195, 0.042],
+          "toe":   [ 0.058,  0.205, 0.042],
+          "knee_other":  [-0.010, 0.060, -0.042],
+          "ankle_other": [-0.010, 0.195, -0.042],
+          "toe_other":   [ 0.038, 0.205, -0.042]
+        },
+        "lunge": {
+          "head":  [ 0.006, -0.309, 0.000],
+          "neck":  [ 0.000, -0.234, 0.000],
+          "hip":   [ 0.000,  0.025, 0.000],
+          "elbow": [ 0.010, -0.130, 0.062],
+          "wrist": [ 0.010, -0.025, 0.062],
+          "knee":  [ 0.110,  0.104, 0.042],
+          "ankle": [ 0.010,  0.195, 0.042],
+          "toe":   [ 0.058,  0.205, 0.042],
+          "knee_other":  [-0.070, 0.135, -0.042],
+          "ankle_other": [-0.190, 0.196, -0.042],
+          "toe_other":   [-0.155, 0.231, -0.042]
+        }
+      },
+      "sequence": [
+        {"pose": "stand", "seconds": 0.0, "role": "start"},
+        {"pose": "lunge", "seconds": 1.0, "role": "lower"},
+        {"pose": "stand", "seconds": 1.0, "role": "raise"}
+      ],
+      "hardest_pose": "lunge"
+    },
+
+    "single_leg_rdl": {
+      "camera": {"azimuth": 22, "elevation": 10},
+      "facing": [1.0, 0.0, 0.0],
+      "symmetry": "none",
+      "working_limbs": ["legs"],
+      "props": [
+        {"type": "floor", "y": 0.205, "from_x": -0.5, "to_x": 0.5, "depth": 0.22}
+      ],
+      "poses": {
+        "stand": {
+          "head":  [ 0.006, -0.409, 0.000],
+          "neck":  [ 0.000, -0.334, 0.000],
+          "hip":   [ 0.000, -0.075, 0.000],
+          "elbow": [ 0.010, -0.230, 0.055],
+          "wrist": [ 0.010, -0.125, 0.055],
+          "knee":  [ 0.010,  0.060, 0.030],
+          "ankle": [ 0.010,  0.195, 0.030],
+          "toe":   [ 0.058,  0.205, 0.030],
+          "knee_other":  [-0.030, 0.055, -0.030],
+          "ankle_other": [-0.060, 0.186, -0.030],
+          "toe_other":   [-0.012, 0.200, -0.030]
+        },
+        "hinge": {
+          "head":  [ 0.235, -0.120, 0.000],
+          "neck":  [ 0.162, -0.102, 0.000],
+          "hip":   [-0.090, -0.040, 0.000],
+          "elbow": [ 0.172,  0.003, 0.055],
+          "wrist": [ 0.172,  0.108, 0.055],
+          "knee":  [ 0.000,  0.060, 0.030],
+          "ankle": [ 0.010,  0.195, 0.030],
+          "toe":   [ 0.058,  0.205, 0.030],
+          "knee_other":  [-0.221, -0.073, -0.030],
+          "ankle_other": [-0.352, -0.105, -0.030],
+          "toe_other":   [-0.401, -0.117, -0.030]
+        }
+      },
+      "sequence": [
+        {"pose": "stand", "seconds": 0.0, "role": "start"},
+        {"pose": "hinge", "seconds": 1.0, "role": "lower"},
+        {"pose": "stand", "seconds": 1.0, "role": "raise"}
+      ],
+      "hardest_pose": "hinge"
+    },
+
+    "single_leg_hip_thrust": {
+      "camera": {"azimuth": 22, "elevation": 12},
+      "facing": [0.0, -1.0, 0.0],
+      "facing_note": "Shoulders on a bench and hips up, so the front of the body points at the ceiling.",
+      "symmetry": "none",
+      "working_limbs": ["legs"],
+      "props": [
+        {"type": "floor", "y": 0.300, "from_x": -0.5, "to_x": 0.5, "depth": 0.22},
+        {"type": "chair", "y": 0.060, "from_x": 0.180, "to_x": 0.360, "z": 0.0, "height": 0.240}
+      ],
+      "poses": {
+        "down": {
+          "head":  [ 0.276, 0.062, 0.000],
+          "neck":  [ 0.202, 0.074, 0.000],
+          "hip":   [-0.054, 0.117, 0.000],
+          "elbow": [ 0.215, 0.178, 0.062],
+          "wrist": [ 0.230, 0.282, 0.062],
+          "knee":  [-0.176, 0.176, 0.038],
+          "ankle": [-0.175, 0.300, 0.038],
+          "toe":   [-0.125, 0.300, 0.038],
+          "knee_other":  [-0.164, 0.039, -0.038],
+          "ankle_other": [-0.272, -0.041, -0.038],
+          "toe_other":   [-0.312, -0.071, -0.038]
+        },
+        "up": {
+          "head":  [ 0.276, 0.062, 0.000],
+          "neck":  [ 0.202, 0.074, 0.000],
+          "hip":   [-0.056, 0.075, 0.000],
+          "elbow": [ 0.215, 0.178, 0.062],
+          "wrist": [ 0.230, 0.282, 0.062],
+          "knee":  [-0.141, 0.180, 0.038],
+          "ankle": [-0.175, 0.300, 0.038],
+          "toe":   [-0.125, 0.300, 0.038],
+          "knee_other":  [-0.166, -0.003, -0.038],
+          "ankle_other": [-0.274, -0.083, -0.038],
+          "toe_other":   [-0.314, -0.113, -0.038]
+        }
+      },
+      "sequence": [
+        {"pose": "down", "seconds": 0.0, "role": "start"},
+        {"pose": "up",   "seconds": 1.0, "role": "raise"},
+        {"pose": "down", "seconds": 1.0, "role": "lower"}
+      ],
+      "hardest_pose": "up"
+    },
+
+    "side_plank": {
+      "camera": {"azimuth": 18, "elevation": 10},
+      "facing": [0.0, 0.0, 1.0],
+      "facing_note": "On your side, so the front of the body points at the viewer.",
+      "symmetry": "none",
+      "working_limbs": ["torso"],
+      "props": [
+        {"type": "floor", "y": 0.300, "from_x": -0.5, "to_x": 0.5, "depth": 0.22}
+      ],
+      "poses": {
+        "hold": {
+          "head":  [ 0.268, -0.135, 0.000],
+          "neck":  [ 0.196, -0.114, 0.000],
+          "hip":   [-0.054,  0.058, 0.000],
+          "elbow": [ 0.186, -0.009, 0.060],
+          "wrist": [ 0.120,  0.072, 0.060],
+          "knee":  [-0.188,  0.078, 0.030],
+          "ankle": [-0.322,  0.094, 0.030],
+          "toe":   [-0.368,  0.114, 0.030],
+          "knee_other":  [-0.188, 0.118, -0.030],
+          "ankle_other": [-0.322, 0.134, -0.030],
+          "toe_other":   [-0.368, 0.154, -0.030]
+        }
+      },
+      "sequence": [
+        {"pose": "hold", "seconds": 0.0, "role": "hold"}
+      ],
+      "hardest_pose": "hold"
+    },
+
+    "hamstring_bridge_curl": {
+      "camera": {"azimuth": 22, "elevation": 12},
+      "facing": [0.0, -1.0, 0.0],
+      "symmetry": "mirror_z",
+      "working_limbs": ["legs"],
+      "props": [
+        {"type": "floor", "y": 0.300, "from_x": -0.5, "to_x": 0.5, "depth": 0.22},
+        {"type": "towel", "y": 0.296, "from_x": -0.360, "to_x": -0.150, "z": 0.0}
+      ],
+      "poses": {
+        "in": {
+          "head":  [ 0.300, 0.284, 0.000],
+          "neck":  [ 0.226, 0.296, 0.000],
+          "hip":   [-0.030, 0.254, 0.000],
+          "elbow": [ 0.240, 0.196, 0.062],
+          "wrist": [ 0.255, 0.092, 0.062],
+          "knee":  [-0.161, 0.176, 0.040],
+          "ankle": [-0.216, 0.299, 0.040],
+          "toe":   [-0.167, 0.309, 0.040]
+        },
+        "out": {
+          "head":  [ 0.300, 0.284, 0.000],
+          "neck":  [ 0.226, 0.296, 0.000],
+          "hip":   [-0.030, 0.272, 0.000],
+          "elbow": [ 0.240, 0.196, 0.062],
+          "wrist": [ 0.255, 0.092, 0.062],
+          "knee":  [-0.165, 0.254, 0.040],
+          "ankle": [-0.300, 0.272, 0.040],
+          "toe":   [-0.251, 0.281, 0.040]
+        }
+      },
+      "sequence": [
+        {"pose": "in",  "seconds": 0.0, "role": "start"},
+        {"pose": "out", "seconds": 1.0, "role": "lower"},
+        {"pose": "in",  "seconds": 1.0, "role": "raise"}
+      ],
+      "hardest_pose": "out"
+    },
+
+    "single_leg_calf_raise": {
+      "camera": {"azimuth": 24, "elevation": 8},
+      "facing": [1.0, 0.0, 0.0],
+      "symmetry": "none",
+      "working_limbs": ["legs"],
+      "props": [
+        {"type": "floor", "y": 0.205, "from_x": -0.5, "to_x": 0.5, "depth": 0.22},
+        {"type": "step", "y": 0.205, "from_x": -0.120, "to_x": 0.120, "z": 0.0, "height": 0.060}
+      ],
+      "poses": {
+        "down": {
+          "head":  [ 0.006, -0.409, 0.000],
+          "neck":  [ 0.000, -0.334, 0.000],
+          "hip":   [ 0.000, -0.075, 0.000],
+          "elbow": [ 0.010, -0.230, 0.055],
+          "wrist": [ 0.010, -0.125, 0.055],
+          "knee":  [ 0.010,  0.060, 0.030],
+          "ankle": [ 0.010,  0.195, 0.030],
+          "toe":   [ 0.059,  0.185, 0.030],
+          "knee_other":  [-0.042, 0.052, -0.030],
+          "ankle_other": [-0.084, 0.180, -0.030],
+          "toe_other":   [-0.048, 0.214, -0.030]
+        },
+        "up": {
+          "head":  [ 0.006, -0.469, 0.000],
+          "neck":  [ 0.000, -0.394, 0.000],
+          "hip":   [ 0.000, -0.135, 0.000],
+          "elbow": [ 0.010, -0.290, 0.055],
+          "wrist": [ 0.010, -0.185, 0.055],
+          "knee":  [ 0.010,  0.000, 0.030],
+          "ankle": [ 0.010,  0.135, 0.030],
+          "toe":   [ 0.059,  0.145, 0.030],
+          "knee_other":  [-0.042, -0.008, -0.030],
+          "ankle_other": [-0.084,  0.120, -0.030],
+          "toe_other":   [-0.048,  0.154, -0.030]
+        }
+      },
+      "sequence": [
+        {"pose": "down", "seconds": 0.0, "role": "start"},
+        {"pose": "up",   "seconds": 1.0, "role": "raise"},
+        {"pose": "down", "seconds": 1.0, "role": "lower"}
+      ],
+      "hardest_pose": "up"
     }
   }
 }

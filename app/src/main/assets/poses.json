@@ -853,6 +853,27 @@
               "toe_other":   [-0.388, 0.212, 0.020]
             }
           }
+        },
+        {
+          "rung": 2,
+          "note": "Top leg raised. The bottom leg and the whole torso are the base pose; only the top leg lifts, its knee solved from the hip so the thigh keeps its 0.1377 length.",
+          "poses": {
+            "hold": {
+              "head":  [ 0.252, 0.147, 0.020],
+              "neck":  [ 0.180, 0.167, 0.020],
+              "hip":   [-0.071, 0.235, 0.020],
+              "elbow": [ 0.180, 0.312, 0.020],
+              "wrist": [ 0.075, 0.312, 0.020],
+              "elbow_other": [ 0.180, 0.022, 0.020],
+              "wrist_other": [ 0.180, -0.083, 0.020],
+              "knee":  [-0.201, 0.270, 0.020],
+              "ankle": [-0.331, 0.305, 0.020],
+              "toe":   [-0.380, 0.313, 0.020],
+              "knee_other":  [-0.178, 0.148, 0.020],
+              "ankle_other": [-0.308, 0.183, 0.020],
+              "toe_other":   [-0.357, 0.191, 0.020]
+            }
+          }
         }
       ]
     },

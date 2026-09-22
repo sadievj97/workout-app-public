@@ -4,6 +4,7 @@ import com.cutcoach.data.protocol.ReminderMoment
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 /**
@@ -58,21 +59,31 @@ fun plan(
 
     return (stillToCome + nextTime)
         .filter { (moment, _) -> chosen[moment.id] ?: moment.onByDefault }
-        .map { (moment, at) -> reminderFor(moment, at) }
+        .map { (moment, at) -> reminderFor(moment, at, bedtimeOn(momentsOn, at.toLocalDate())) }
         .sortedBy { it.at }
 }
+
+/** Lights out on a given date, which during the ramp is not the timeline's time. */
+fun bedtimeOn(momentsOn: (LocalDate) -> List<ReminderMoment>, date: LocalDate): LocalTime? =
+    momentsOn(date).firstOrNull { it.isLightsOut }?.time
 
 /**
  * What a reminder says.
  *
- * The lights-out one carries its own time, because during the ramp that is not
- * the time written in the timeline and the difference is the whole point.
+ * Every one carries tonight's bedtime, because that is the number the reminder
+ * exists to serve and during the ramp it is not the time written in the
+ * timeline. A reminder that only repeated its own title would say nothing the
+ * notification's own heading had not already said.
  */
-fun reminderFor(moment: ReminderMoment, at: LocalDateTime): PlannedReminder {
-    val body = if (moment.isLightsOut) {
-        "Lights out now. Tonight's target is ${at.toLocalTime().format(CLOCK)}."
-    } else {
-        "${moment.label}. On the way to lights out."
+fun reminderFor(
+    moment: ReminderMoment,
+    at: LocalDateTime,
+    bedtime: LocalTime? = null,
+): PlannedReminder {
+    val body = when {
+        moment.isLightsOut -> "Tonight's target is ${at.toLocalTime().format(CLOCK)}."
+        bedtime != null -> "On the way to lights out at ${bedtime.format(CLOCK)}."
+        else -> "Part of tonight's wind-down."
     }
     return PlannedReminder(
         momentId = moment.id,

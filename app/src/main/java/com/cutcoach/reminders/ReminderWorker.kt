@@ -49,9 +49,12 @@ class ReminderWorker(
         }
 
         // Post the one that came due, if it is still switched on.
+        val bedtime = bedtimeOn(protocol.repository::reminderMoments, now.toLocalDate())
         fired
             ?.takeIf { chosen[it.id] ?: it.onByDefault }
-            ?.let { moment -> ReminderNotifier.post(applicationContext, reminderFor(moment, now)) }
+            ?.let { moment ->
+                ReminderNotifier.post(applicationContext, reminderFor(moment, now, bedtime))
+            }
 
         // Book the next from just after the one that fired, not from the clock.
         // WorkManager can run a job a moment early, and rescheduling from an

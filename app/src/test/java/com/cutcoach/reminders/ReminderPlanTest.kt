@@ -104,6 +104,34 @@ class ReminderPlanTest {
     }
 
     @Test
+    fun `an earlier reminder names tonight's bedtime, not the timeline's`() {
+        // The 20:00 one exists to serve the bedtime, so it has to say which
+        // bedtime. During the ramp that is 22:45, not the timeline's 21:30.
+        val rampTonight: (LocalDate) -> List<ReminderMoment> = {
+            listOf(
+                moment("20:00", "Lamps only, screens dim"),
+                moment("22:45", "Lights out", lightsOut = true, id = "21:30"),
+            )
+        }
+        val now = LocalDateTime.parse("2026-09-22T19:30")
+
+        val lamps = plan(rampTonight, emptyMap(), now).first { it.momentId == "20:00" }
+        assertEquals("On the way to lights out at 22:45.", lamps.body)
+    }
+
+    @Test
+    fun `a reminder does not merely repeat its own heading`() {
+        val now = LocalDateTime.parse("2026-09-22T19:30")
+
+        plan(fixed(evening), emptyMap(), now).forEach { reminder ->
+            assertTrue(
+                "${reminder.title} / ${reminder.body}",
+                !reminder.body.startsWith(reminder.title),
+            )
+        }
+    }
+
+    @Test
     fun `a missed moment fires at once rather than at a negative delay`() {
         val now = LocalDateTime.parse("2026-09-22T21:05")
         val past = LocalDateTime.parse("2026-09-22T21:00")

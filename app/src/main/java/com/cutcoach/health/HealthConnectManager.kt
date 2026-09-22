@@ -194,6 +194,8 @@ class HealthConnectManager(private val context: Context) {
                 meanHeartRate = mean,
                 inZone = timeInZone(during, band.first, band.last),
                 zoneName = bandName,
+                zoneLow = band.first,
+                zoneHigh = band.last,
                 verdict = mean?.let { zoneVerdict(it, band.first, band.last) },
             )
         }

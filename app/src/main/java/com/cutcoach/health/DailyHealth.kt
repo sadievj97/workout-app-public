@@ -63,5 +63,14 @@ data class WorkoutSession(
     val inZone: Duration = Duration.ZERO,
     /** Which zone it was measured against, for the label. */
     val zoneName: String? = null,
+    /**
+     * The band itself, in bpm.
+     *
+     * Carried rather than looked up again, so anything reporting on the session
+     * can say what it was measured against. "Above Zone 2" without naming where
+     * Zone 2 ends tells you that you failed without telling you at what.
+     */
+    val zoneLow: Int? = null,
+    val zoneHigh: Int? = null,
     val verdict: ZoneVerdict? = null,
 )

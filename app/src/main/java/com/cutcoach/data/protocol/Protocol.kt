@@ -189,6 +189,9 @@ data class DailyTargets(
 @Serializable
 data class Nutrition(
     val caloriesKcal: Int,
+    /** The guardrail calorie_floor as a number. Never suggest going below it. */
+    val calorieFloorKcal: Int = 1900,
+    val calorieFloorNote: String = "",
     val proteinG: Int,
     val proteinNote: String,
     val fatMinG: Int,
@@ -249,8 +252,20 @@ data class WaistTracking(val frequency: String, val day: String, val how: String
 data class PlateauRule(
     val condition: String,
     val action: String,
+    val levers: PlateauLevers = PlateauLevers(),
     val waitWeeksAfterChange: Int,
     val flatDefinition: FlatDefinition,
+)
+
+/**
+ * The two levers as numbers, so the engine never parses them out of prose.
+ * Exactly one is ever suggested: the protocol says never both.
+ */
+@Serializable
+data class PlateauLevers(
+    val caloriesKcalChange: Int = -150,
+    val stepsChange: Int = 1500,
+    val note: String = "",
 )
 
 @Serializable

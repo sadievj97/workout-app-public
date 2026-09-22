@@ -9,7 +9,10 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
+import com.cutcoach.rules.PainKind
+import com.cutcoach.rules.PainReport
 import kotlinx.coroutines.flow.map
+import java.time.LocalDate
 
 private val Context.settingsStore: DataStore<Preferences> by preferencesDataStore("settings")
 
@@ -46,6 +49,10 @@ class SettingsRepository(private val context: Context) {
         val REST_SECONDS = intPreferencesKey("rest_seconds")
         val REHAB_LIST = stringPreferencesKey("rehab_exercises")
         val REMINDERS_ON = booleanPreferencesKey("reminders_on")
+        val PAIN_KIND = stringPreferencesKey("pain_kind")
+        val PAIN_NOTE = stringPreferencesKey("pain_note")
+        val PAIN_ON = stringPreferencesKey("pain_reported_on")
+        val LAST_PLATEAU_CHANGE = stringPreferencesKey("last_plateau_change")
         fun reminder(momentId: String) = booleanPreferencesKey("reminder_$momentId")
         fun videoUrl(exerciseId: String) = stringPreferencesKey("video_url_$exerciseId")
         fun videoStart(exerciseId: String) = stringPreferencesKey("video_start_$exerciseId")
@@ -96,6 +103,52 @@ class SettingsRepository(private val context: Context) {
 
     private fun String.removePrefixOrNull(prefix: String): String? =
         if (startsWith(prefix)) removePrefix(prefix) else null
+
+    // ---- How you feel ------------------------------------------------------
+
+    /**
+     * A pain report, which expires at the end of the day it was made.
+     *
+     * Deliberately not sticky. The `pain_stop` guardrail is severe — it
+     * suggests no workout at all — so it should be re-stated rather than
+     * silently muting the app for a week after one bad shoulder.
+     */
+    val painReport: Flow<PainReport?> = context.settingsStore.data.map { prefs ->
+        val on = prefs[Keys.PAIN_ON]?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+        if (on == null || on != LocalDate.now()) return@map null
+        val kind = PainKind.entries.firstOrNull { it.name == prefs[Keys.PAIN_KIND] }
+            ?: return@map null
+        PainReport(kind, prefs[Keys.PAIN_NOTE].orEmpty())
+    }
+
+    suspend fun reportPain(kind: PainKind?, note: String = "") {
+        context.settingsStore.edit { prefs ->
+            if (kind == null) {
+                prefs.remove(Keys.PAIN_KIND)
+                prefs.remove(Keys.PAIN_NOTE)
+                prefs.remove(Keys.PAIN_ON)
+            } else {
+                prefs[Keys.PAIN_KIND] = kind.name
+                prefs[Keys.PAIN_NOTE] = note
+                prefs[Keys.PAIN_ON] = LocalDate.now().toString()
+            }
+        }
+    }
+
+    /** When the plateau rule last suggested a change, so it can wait its period. */
+    val lastPlateauChange: Flow<LocalDate?> = context.settingsStore.data.map { prefs ->
+        prefs[Keys.LAST_PLATEAU_CHANGE]?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+    }
+
+    suspend fun recordPlateauChange(on: LocalDate?) {
+        context.settingsStore.edit { prefs ->
+            if (on == null) {
+                prefs.remove(Keys.LAST_PLATEAU_CHANGE)
+            } else {
+                prefs[Keys.LAST_PLATEAU_CHANGE] = on.toString()
+            }
+        }
+    }
 
     // ---- Evening reminders -------------------------------------------------
 

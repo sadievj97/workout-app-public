@@ -58,6 +58,8 @@ fun TodayScreen(
     /** What the watch recorded today, and last night. Null until read. */
     health: com.cutcoach.health.DailyHealth? = null,
     lastNight: com.cutcoach.health.DailyHealth? = null,
+    /** What the rules engine makes of all of it. Suggestions only. */
+    advice: List<com.cutcoach.rules.Recommendation> = emptyList(),
     onStartSession: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -78,6 +80,9 @@ fun TodayScreen(
 
 
         if (isDeload) DeloadBanner(repo.protocol.progressionRules.deload.rule)
+
+        // Above the session card: a pain report has to be read before you start.
+        AdviceCard(advice)
 
         if (schedule != null && session != null) {
             SessionCard(

@@ -159,6 +159,23 @@ private fun NavGraph(
                 value = com.cutcoach.health.readTodayAndLastNight(context, repo, today).second
             }
 
+            // Computed after the watch read, so the advice sees the same data
+            // the cards above it show rather than a moment-older copy.
+            val advice = produceState(
+                initialValue = emptyList<com.cutcoach.rules.Recommendation>(),
+                today,
+                health.value,
+                lastNight.value,
+            ) {
+                value = com.cutcoach.rules.adviceForToday(
+                    context = context,
+                    repo = repo,
+                    today = today,
+                    todayHealth = health.value,
+                    lastNight = lastNight.value,
+                )
+            }
+
             TodayScreen(
                 repo = repo,
                 today = today,
@@ -166,6 +183,7 @@ private fun NavGraph(
                 rehabExercises = rehab,
                 health = health.value,
                 lastNight = lastNight.value,
+                advice = advice.value,
                 onStartSession = {
                     repo.scheduleFor(today.dayOfWeek)?.let {
                         navController.navigate(Routes.session(it.sessionId))

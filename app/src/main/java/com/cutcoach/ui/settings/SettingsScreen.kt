@@ -37,6 +37,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cutcoach.data.protocol.ProtocolRepository
 import com.cutcoach.data.settings.SettingsRepository
 import com.cutcoach.reminders.ReminderNotifier
+import com.cutcoach.rules.PainKind
 import com.cutcoach.reminders.ReminderWorker
 import com.cutcoach.ui.components.CutCard
 import com.cutcoach.ui.components.LabelledValue
@@ -44,6 +45,7 @@ import com.cutcoach.ui.components.SectionLabel
 import com.cutcoach.ui.theme.CoolSky
 import com.cutcoach.ui.theme.Mist
 import com.cutcoach.ui.theme.MistDim
+import com.cutcoach.ui.theme.Slate
 import com.cutcoach.ui.theme.SlateEdge
 import com.cutcoach.ui.theme.SunriseAmber
 import com.cutcoach.ui.theme.tabular
@@ -84,6 +86,8 @@ fun SettingsScreen(
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         Text("Settings", style = MaterialTheme.typography.displaySmall, color = Mist)
+
+        PainCard()
 
         CutCard {
             SectionLabel("Difficulty")
@@ -256,6 +260,65 @@ fun SettingsScreen(
                     onSaveSegment = { start, end ->
                         scope.launch { settings.setVideoSegment(exercise.id, start, end) }
                     },
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Reporting pain, which stops the app suggesting any training at all.
+ *
+ * It expires at the end of the day rather than sticking, because the guardrail
+ * is severe and should be re-stated rather than quietly muting the app for a
+ * week after one bad shoulder.
+ *
+ * The app gives no medical advice beyond the protocol's own line: stop, and see
+ * a clinician.
+ */
+@Composable
+private fun PainCard() {
+    val context = LocalContext.current
+    val settings = remember { SettingsRepository.get(context) }
+    val scope = rememberCoroutineScope()
+    val report by settings.painReport.collectAsStateWithLifecycle(null)
+
+    CutCard(background = if (report != null) SlateEdge else Slate) {
+        SectionLabel("Today")
+
+        if (report == null) {
+            Text(
+                "Feeling something you should not be?",
+                style = MaterialTheme.typography.bodyLarge,
+                color = Mist,
+            )
+            TextButton(
+                onClick = { scope.launch { settings.reportPain(PainKind.SERIOUS) } },
+            ) {
+                Text(
+                    "Report sharp or worsening pain",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = SunriseAmber,
+                )
+            }
+            Text(
+                "Chest pain, dizziness or fainting counts too. The app will stop " +
+                    "suggesting training for the rest of today and tell you to see " +
+                    "a clinician.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MistDim,
+            )
+        } else {
+            Text(
+                "Pain reported today. No training is being suggested.",
+                style = MaterialTheme.typography.bodyLarge,
+                color = SunriseAmber,
+            )
+            TextButton(onClick = { scope.launch { settings.reportPain(null) } }) {
+                Text(
+                    "Clear it",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = CoolSky,
                 )
             }
         }

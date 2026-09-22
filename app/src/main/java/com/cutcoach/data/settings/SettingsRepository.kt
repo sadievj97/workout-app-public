@@ -12,6 +12,21 @@ import kotlinx.coroutines.flow.map
 
 private val Context.settingsStore: DataStore<Preferences> by preferencesDataStore("settings")
 
+/** What the owner made of one figure. */
+enum class FormVerdict {
+    UNREVIEWED, LOOKS_RIGHT, NEEDS_FIXING;
+
+    companion object {
+        fun parse(value: String?): FormVerdict =
+            entries.firstOrNull { it.name == value } ?: UNREVIEWED
+    }
+}
+
+data class FormReview(
+    val verdict: FormVerdict = FormVerdict.UNREVIEWED,
+    val note: String = "",
+)
+
 /**
  * The handful of things the owner can change on the phone.
  *
@@ -30,7 +45,52 @@ class SettingsRepository(private val context: Context) {
         val REST_SECONDS = intPreferencesKey("rest_seconds")
         val REHAB_LIST = stringPreferencesKey("rehab_exercises")
         fun videoUrl(exerciseId: String) = stringPreferencesKey("video_url_$exerciseId")
+        fun formVerdict(exerciseId: String) = stringPreferencesKey("form_verdict_$exerciseId")
+        fun formNote(exerciseId: String) = stringPreferencesKey("form_note_$exerciseId")
     }
+
+    /**
+     * What the owner made of each figure: unreviewed, right, or needs fixing,
+     * plus a note saying what is wrong.
+     *
+     * An animation is a drawing of a movement made by someone who cannot see
+     * the owner do it, so it stays labelled unreviewed until they say
+     * otherwise.
+     */
+    val formReviews: Flow<Map<String, FormReview>> = context.settingsStore.data.map { prefs ->
+        prefs.asMap()
+            .keys
+            .mapNotNull { key -> key.name.removePrefixOrNull("form_verdict_") }
+            .associateWith { exerciseId ->
+                FormReview(
+                    verdict = FormVerdict.parse(prefs[Keys.formVerdict(exerciseId)]),
+                    note = prefs[Keys.formNote(exerciseId)].orEmpty(),
+                )
+            }
+    }
+
+    suspend fun setFormVerdict(exerciseId: String, verdict: FormVerdict) {
+        context.settingsStore.edit { prefs ->
+            if (verdict == FormVerdict.UNREVIEWED) {
+                prefs.remove(Keys.formVerdict(exerciseId))
+            } else {
+                prefs[Keys.formVerdict(exerciseId)] = verdict.name
+            }
+        }
+    }
+
+    suspend fun setFormNote(exerciseId: String, note: String) {
+        context.settingsStore.edit { prefs ->
+            if (note.isBlank()) {
+                prefs.remove(Keys.formNote(exerciseId))
+            } else {
+                prefs[Keys.formNote(exerciseId)] = note.trim()
+            }
+        }
+    }
+
+    private fun String.removePrefixOrNull(prefix: String): String? =
+        if (startsWith(prefix)) removePrefix(prefix) else null
 
     /** Null when no override is set, meaning "use the protocol's value". */
     val restSecondsOverride: Flow<Int?> =

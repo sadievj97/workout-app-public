@@ -39,7 +39,7 @@ import com.cutcoach.data.protocol.ProtocolRepository
 import com.cutcoach.data.settings.SettingsRepository
 import com.cutcoach.ui.body.BodyScreen
 import com.cutcoach.ui.exercise.CueCardScreen
-import com.cutcoach.ui.figure.FigurePreviewScreen
+import com.cutcoach.ui.figure.FormCheckScreen
 import com.cutcoach.ui.history.ExerciseHistoryScreen
 import com.cutcoach.ui.history.HistoryScreen
 import com.cutcoach.ui.session.SessionPlayerScreen
@@ -166,7 +166,7 @@ private fun NavGraph(
         }
 
         composable(Routes.FIGURES) {
-            FigurePreviewScreen(repo = repo, onBack = { navController.popBackStack() })
+            FormCheckScreen(repo = repo, onBack = { navController.popBackStack() })
         }
 
         composable(Routes.HISTORY) {

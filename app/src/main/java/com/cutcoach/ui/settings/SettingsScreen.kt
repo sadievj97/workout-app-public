@@ -76,13 +76,11 @@ fun SettingsScreen(
     ) {
         Text("Settings", style = MaterialTheme.typography.displaySmall, color = Mist)
 
-        // Temporary: replaced by the Form check screen once all fifteen
-        // figures exist.
         CutCard {
             SectionLabel("Figures")
             TextButton(onClick = onOpenFigures) {
                 Text(
-                    "Preview the first three figures",
+                    "Form check: review all fifteen figures",
                     style = MaterialTheme.typography.bodyLarge,
                     color = CoolSky,
                 )

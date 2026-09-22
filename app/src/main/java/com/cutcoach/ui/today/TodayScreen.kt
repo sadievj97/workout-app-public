@@ -1,6 +1,7 @@
 package com.cutcoach.ui.today
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -18,16 +20,28 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.cutcoach.data.protocol.ProtocolRepository
 import com.cutcoach.data.protocol.ScheduledDay
 import com.cutcoach.data.protocol.SessionDefinition
+import com.cutcoach.data.poses.PoseLoad
+import com.cutcoach.data.poses.PoseRepository
+import com.cutcoach.ui.figure.AnimatedStickFigure
+import com.cutcoach.ui.figure.FigureRender
 import com.cutcoach.ui.components.CutCard
+import com.cutcoach.ui.components.CutIcon
+import com.cutcoach.ui.components.CutIconView
 import com.cutcoach.ui.components.LabelledValue
 import com.cutcoach.ui.components.SectionLabel
 import com.cutcoach.ui.theme.CoolSky
@@ -61,6 +75,8 @@ fun TodayScreen(
     /** What the rules engine makes of all of it. Suggestions only. */
     advice: List<com.cutcoach.rules.Recommendation> = emptyList(),
     onStartSession: () -> Unit,
+    /** Opening one exercise's cue card, from a suggestion or from the list. */
+    onOpenExercise: (String) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val week = repo.programWeek(today)
@@ -82,7 +98,7 @@ fun TodayScreen(
         if (isDeload) DeloadBanner(repo.protocol.progressionRules.deload.rule)
 
         // Above the session card: a pain report has to be read before you start.
-        AdviceCard(advice)
+        AdviceCard(advice, onOpenExercise = onOpenExercise)
 
         if (schedule != null && session != null) {
             SessionCard(
@@ -91,6 +107,7 @@ fun TodayScreen(
                 session = session,
                 programWeek = week,
                 onStartSession = onStartSession,
+                onOpenExercise = onOpenExercise,
             )
         }
 
@@ -177,6 +194,7 @@ private fun SessionCard(
     session: SessionDefinition,
     programWeek: Int?,
     onStartSession: () -> Unit,
+    onOpenExercise: (String) -> Unit,
 ) {
     CutCard {
         SectionLabel("Today's session")
@@ -210,6 +228,12 @@ private fun SessionCard(
                         append("$sets x ${item.target.describe()}")
                         if (item.eachSide) append(" each side")
                     },
+                    // The figure is already drawn for every exercise; showing a
+                    // small one here means you can see what a name means
+                    // without opening anything.
+                    exerciseId = item.exerciseId,
+                    muscles = repo.exercise(item.exerciseId)?.muscles.orEmpty(),
+                    onOpen = { onOpenExercise(item.exerciseId) },
                 )
             }
         } else {
@@ -256,15 +280,57 @@ private fun SessionCard(
 }
 
 @Composable
-private fun ExerciseLine(name: String, detail: String) {
-    Column(verticalArrangement = Arrangement.spacedBy(1.dp)) {
-        Text(name, style = MaterialTheme.typography.bodyLarge, color = Mist)
-        if (detail.isNotBlank()) {
-            Text(
-                detail,
-                style = MaterialTheme.typography.bodySmall.tabular(),
-                color = MistDim,
+private fun ExerciseLine(
+    name: String,
+    detail: String,
+    exerciseId: String? = null,
+    muscles: List<String> = emptyList(),
+    onOpen: (() -> Unit)? = null,
+) {
+    val context = LocalContext.current
+    val poses = remember { PoseRepository.load(context) as? PoseLoad.Success }
+    val animation = exerciseId?.let { poses?.library?.animationFor(it) }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(
+                if (onOpen != null) {
+                    Modifier
+                        .clip(RoundedCornerShape(10.dp))
+                        .clickable(onClick = onOpen)
+                        .heightIn(min = 56.dp)
+                        .padding(vertical = 2.dp)
+                } else {
+                    Modifier
+                },
+            ),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        // Small and still: a moving figure on every row would turn the card
+        // into a fairground. It animates on the cue card, where you are
+        // looking at one.
+        if (animation != null && poses != null) {
+            AnimatedStickFigure(
+                animation = animation,
+                style = poses.library.figure,
+                muscles = muscles,
+                library = poses.library,
+                render = FigureRender.LINES,
+                paused = true,
+                modifier = Modifier.size(46.dp),
             )
+        }
+        Column(verticalArrangement = Arrangement.spacedBy(1.dp)) {
+            Text(name, style = MaterialTheme.typography.bodyLarge, color = Mist)
+            if (detail.isNotBlank()) {
+                Text(
+                    detail,
+                    style = MaterialTheme.typography.bodySmall.tabular(),
+                    color = MistDim,
+                )
+            }
         }
     }
 }
@@ -278,20 +344,36 @@ private fun TimelineCard(repo: ProtocolRepository, now: LocalTime) {
     val entries = repo.protocol.dailyTimeline
     val currentIndex = entries.indexOfLast { LocalTime.parse(it.time) <= now }
 
+    // Ten rows is most of a screen, and nine of them are behind or ahead of
+    // you. Collapsed, it shows where you are and what is next.
+    var expanded by remember { mutableStateOf(false) }
+    val window = if (expanded) {
+        entries.indices
+    } else {
+        val from = currentIndex.coerceAtLeast(0)
+        from..(from + TIMELINE_AHEAD).coerceAtMost(entries.lastIndex)
+    }
+
     CutCard {
         SectionLabel("The day")
         entries.forEachIndexed { index, entry ->
+            if (index !in window) return@forEachIndexed
             val isNow = index == currentIndex
+            val isPast = index < currentIndex
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                Box(
-                    Modifier
-                        .size(8.dp)
-                        .clip(CircleShape)
-                        .background(if (isNow) SunriseAmber else SlateEdge),
+                CutIconView(
+                    icon = timelineIcon(entry.label),
+                    tint = when {
+                        isNow -> SunriseAmber
+                        isPast -> SlateEdge
+                        else -> MistDim
+                    },
+                    size = 18.dp,
                 )
                 Text(
                     entry.time,
@@ -305,6 +387,40 @@ private fun TimelineCard(repo: ProtocolRepository, now: LocalTime) {
                 )
             }
         }
+
+        TextButton(onClick = { expanded = !expanded }) {
+            Text(
+                if (expanded) "Show less" else "The whole day",
+                style = MaterialTheme.typography.labelMedium,
+                color = CoolSky,
+            )
+        }
+    }
+}
+
+/** How many entries after the current one to show while collapsed. */
+private const val TIMELINE_AHEAD = 2
+
+/**
+ * An icon for a timeline entry, chosen from what the entry is about.
+ *
+ * Matched on the label's own words rather than on a field in protocol.json,
+ * because a wrong icon costs a moment's confusion while a wrong schema costs an
+ * edit to the source of truth. Anything unrecognised gets a plain dot, which is
+ * what every row had before.
+ */
+private fun timelineIcon(label: String): CutIcon {
+    val text = label.lowercase()
+    return when {
+        text.contains("lights out") -> CutIcon.MOON
+        text.contains("bedroom") || text.contains("screens") || text.contains("lamps") ->
+            CutIcon.LAMP
+        text.contains("up,") || text.contains("wake") -> CutIcon.SUNRISE
+        text.contains("train") -> CutIcon.BARBELL
+        text.contains("tennis") || text.contains("walk") -> CutIcon.SHOE
+        text.contains("lunch") || text.contains("dinner") || text.contains("food") ||
+            text.contains("whey") || text.contains("caffeine") -> CutIcon.PLATE
+        else -> CutIcon.DOT
     }
 }
 

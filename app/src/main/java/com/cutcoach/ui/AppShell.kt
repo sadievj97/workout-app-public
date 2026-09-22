@@ -184,6 +184,7 @@ private fun NavGraph(
                 health = health.value,
                 lastNight = lastNight.value,
                 advice = advice.value,
+                onOpenExercise = { navController.navigate(Routes.cueCard(it)) },
                 onStartSession = {
                     repo.scheduleFor(today.dayOfWeek)?.let {
                         navController.navigate(Routes.session(it.sessionId))

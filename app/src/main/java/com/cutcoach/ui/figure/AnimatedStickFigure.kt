@@ -55,6 +55,14 @@ fun AnimatedStickFigure(
     extraElevation: Float = 0f,
     /** 0 to 1 for a timed hold's countdown ring. Null draws no ring. */
     holdProgress: Float? = null,
+    /**
+     * Hold the first pose instead of animating.
+     *
+     * For the small figures beside a list of exercises: a row of moving
+     * figures turns a card into a fairground, and the point there is only to
+     * show what the name means.
+     */
+    paused: Boolean = false,
 ) {
     val camera = remember(animation, extraAzimuth, extraElevation) {
         animation.camera.turnedBy(extraAzimuth, extraElevation)
@@ -67,7 +75,7 @@ fun AnimatedStickFigure(
 
     if (timeline.segments.isEmpty()) return
 
-    if (reduceMotion && !timeline.isStatic) {
+    if (reduceMotion && !timeline.isStatic && !paused) {
         ReducedMotionPair(
             animation = animation,
             style = style,
@@ -86,7 +94,7 @@ fun AnimatedStickFigure(
 
     val elapsed = remember(timeline) { mutableFloatStateOf(0f) }
 
-    if (!timeline.isStatic) {
+    if (!timeline.isStatic && !paused) {
         LaunchedEffect(timeline) {
             var previous = 0L
             while (true) {

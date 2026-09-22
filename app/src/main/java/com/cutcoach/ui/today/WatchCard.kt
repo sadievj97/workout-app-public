@@ -2,11 +2,14 @@ package com.cutcoach.ui.today
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.cutcoach.data.protocol.ProtocolRepository
@@ -14,12 +17,16 @@ import com.cutcoach.health.DailyHealth
 import com.cutcoach.health.ZoneVerdict
 import com.cutcoach.health.describeRampGap
 import com.cutcoach.ui.components.CutCard
+import com.cutcoach.ui.components.CutIcon
+import com.cutcoach.ui.components.CutIconView
+import com.cutcoach.ui.components.ProgressRing
 import com.cutcoach.ui.components.LabelledValue
 import com.cutcoach.ui.components.SectionLabel
 import com.cutcoach.ui.theme.CoolSky
 import com.cutcoach.ui.theme.Mist
 import com.cutcoach.ui.theme.MistDim
 import com.cutcoach.ui.theme.SunriseAmber
+import com.cutcoach.ui.theme.tabular
 import java.time.format.DateTimeFormatter
 
 /**
@@ -150,19 +157,53 @@ private fun Steps(repo: ProtocolRepository, steps: Long?) {
     val target = repo.protocol.dailyTargets.steps
 
     if (steps == null) {
-        Text(
-            "No steps recorded today.",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MistDim,
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            CutIconView(CutIcon.FOOTSTEPS, MistDim, size = 18.dp)
+            Text(
+                "No steps recorded today.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MistDim,
+            )
+        }
         return
     }
 
-    LabelledValue(
-        "Steps",
-        "$steps of $target",
-        valueColor = if (steps >= target) CoolSky else Mist,
-    )
+    val done = steps >= target
+    val colour = if (done) CoolSky else SunriseAmber
+
+    // A ring rather than a line of text: this is the one number on the card
+    // that changes all day, and the point is where you are, not the digits.
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        ProgressRing(
+            progress = steps.toFloat() / target,
+            colour = colour,
+            size = 72.dp,
+            label = "${(steps * 100 / target)}%",
+        )
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(
+                "$steps steps",
+                style = MaterialTheme.typography.titleMedium.tabular(),
+                color = Mist,
+            )
+            Text(
+                if (done) {
+                    "Past the $target target."
+                } else {
+                    "${target - steps} to go, of $target."
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = MistDim,
+            )
+        }
+    }
 }
 
 @Composable

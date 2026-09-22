@@ -375,28 +375,29 @@
       "working_limbs": ["arms", "torso"],
       "props": [
         {"type": "floor", "y": 0.300, "from_x": -0.5, "to_x": 0.5, "depth": 0.22},
-        {"type": "bar", "y": -0.080, "from_x": 0.120, "to_x": 0.300, "z": 0.0}
+        {"type": "chair", "y": -0.060, "from_x": 0.020, "to_x": 0.280, "z": 0.0, "height": 0.360}
       ],
+      "props_note": "The bar is drawn as a chair so it gets uprights down to the floor. A bare horizontal line above a figure reads as nothing in particular.",
       "poses": {
         "hang": {
-          "head":  [ 0.252, 0.060,  0.000],
-          "neck":  [ 0.198, 0.112,  0.000],
-          "hip":   [-0.015, 0.262,  0.000],
-          "elbow": [ 0.215, 0.008,  0.055],
-          "wrist": [ 0.210, -0.080, 0.055],
-          "knee":  [-0.126, 0.285,  0.045],
-          "ankle": [-0.261, 0.291,  0.045],
-          "toe":   [-0.281, 0.245,  0.045]
+          "head":  [ 0.221, 0.106,  0.000],
+          "neck":  [ 0.150, 0.130,  0.000],
+          "hip":   [-0.096, 0.215,  0.000],
+          "elbow": [ 0.106, 0.035,  0.048],
+          "wrist": [ 0.150, -0.060, 0.055],
+          "knee":  [-0.224, 0.259,  0.045],
+          "ankle": [-0.352, 0.303,  0.045],
+          "toe":   [-0.337, 0.256,  0.045]
         },
         "top": {
-          "head":  [ 0.234, -0.022, 0.000],
-          "neck":  [ 0.180, 0.030,  0.000],
-          "hip":   [-0.033, 0.180,  0.000],
-          "elbow": [ 0.128, -0.038, 0.055],
-          "wrist": [ 0.210, -0.080, 0.055],
-          "knee":  [-0.144, 0.203,  0.045],
-          "ankle": [-0.279, 0.209,  0.045],
-          "toe":   [-0.299, 0.163,  0.045]
+          "head":  [ 0.187, 0.026,  0.000],
+          "neck":  [ 0.120, 0.060,  0.000],
+          "hip":   [-0.111, 0.179,  0.000],
+          "elbow": [ 0.054, -0.020, 0.048],
+          "wrist": [ 0.150, -0.060, 0.055],
+          "knee":  [-0.231, 0.241,  0.045],
+          "ankle": [-0.351, 0.303,  0.045],
+          "toe":   [-0.336, 0.256,  0.045]
         }
       },
       "sequence": [
@@ -588,15 +589,15 @@
       "working_limbs": ["legs"],
       "props": [
         {"type": "floor", "y": 0.300, "from_x": -0.5, "to_x": 0.5, "depth": 0.22},
-        {"type": "chair", "y": 0.060, "from_x": 0.180, "to_x": 0.360, "z": 0.0, "height": 0.240}
+        {"type": "chair", "y": 0.070, "from_x": 0.150, "to_x": 0.400, "z": 0.0, "height": 0.230}
       ],
       "poses": {
         "down": {
           "head":  [ 0.276, 0.062, 0.000],
           "neck":  [ 0.202, 0.074, 0.000],
           "hip":   [-0.054, 0.117, 0.000],
-          "elbow": [ 0.215, 0.178, 0.062],
-          "wrist": [ 0.230, 0.282, 0.062],
+          "elbow": [ 0.130, 0.140, 0.062],
+          "wrist": [ 0.040, 0.175, 0.062],
           "knee":  [-0.176, 0.176, 0.038],
           "ankle": [-0.175, 0.300, 0.038],
           "toe":   [-0.125, 0.300, 0.038],
@@ -608,8 +609,8 @@
           "head":  [ 0.276, 0.062, 0.000],
           "neck":  [ 0.202, 0.074, 0.000],
           "hip":   [-0.056, 0.075, 0.000],
-          "elbow": [ 0.215, 0.178, 0.062],
-          "wrist": [ 0.230, 0.282, 0.062],
+          "elbow": [ 0.130, 0.140, 0.062],
+          "wrist": [ 0.040, 0.175, 0.062],
           "knee":  [-0.141, 0.180, 0.038],
           "ankle": [-0.175, 0.300, 0.038],
           "toe":   [-0.125, 0.300, 0.038],
@@ -627,27 +628,30 @@
     },
 
     "side_plank": {
-      "camera": {"azimuth": 18, "elevation": 10},
+      "camera": {"azimuth": 16, "elevation": 16},
       "facing": [0.0, 0.0, 1.0],
       "facing_note": "On your side, so the front of the body points at the viewer.",
-      "symmetry": "none",
+      "stacking_note": "The legs are stacked one above the other rather than side by side, because lying on your side turns the body's left-right axis vertical. That is what mirror_y means here: the shoulders and hips stack too, instead of sitting side by side and reading as lying face down with a propped arm. Both limbs are still written out, because a side plank's two sides genuinely differ.",
+      "symmetry": "mirror_y",
       "working_limbs": ["torso"],
       "props": [
-        {"type": "floor", "y": 0.300, "from_x": -0.5, "to_x": 0.5, "depth": 0.22}
+        {"type": "floor", "y": 0.312, "from_x": -0.5, "to_x": 0.5, "depth": 0.22}
       ],
       "poses": {
         "hold": {
-          "head":  [ 0.268, -0.135, 0.000],
-          "neck":  [ 0.196, -0.114, 0.000],
-          "hip":   [-0.054,  0.058, 0.000],
-          "elbow": [ 0.186, -0.009, 0.060],
-          "wrist": [ 0.120,  0.072, 0.060],
-          "knee":  [-0.188,  0.078, 0.030],
-          "ankle": [-0.322,  0.094, 0.030],
-          "toe":   [-0.368,  0.114, 0.030],
-          "knee_other":  [-0.188, 0.118, -0.030],
-          "ankle_other": [-0.322, 0.134, -0.030],
-          "toe_other":   [-0.368, 0.154, -0.030]
+          "head":  [ 0.252, 0.147, 0.020],
+          "neck":  [ 0.180, 0.167, 0.020],
+          "hip":   [-0.071, 0.235, 0.020],
+          "elbow": [ 0.180, 0.312, 0.020],
+          "wrist": [ 0.075, 0.312, 0.020],
+          "elbow_other": [ 0.180, 0.022, 0.020],
+          "wrist_other": [ 0.180, -0.083, 0.020],
+          "knee":  [-0.201, 0.270, 0.020],
+          "ankle": [-0.331, 0.305, 0.020],
+          "toe":   [-0.380, 0.313, 0.020],
+          "knee_other":  [-0.206, 0.208, 0.020],
+          "ankle_other": [-0.336, 0.243, 0.020],
+          "toe_other":   [-0.385, 0.251, 0.020]
         }
       },
       "sequence": [

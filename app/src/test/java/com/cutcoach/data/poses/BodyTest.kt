@@ -43,7 +43,7 @@ class BodyTest {
     fun `the written-down arm hangs from the shoulder on its own side`() {
         library.exercises.forEach { (id, animation) ->
             val symmetry = animation.symmetryMode
-            val lateralAxis = if (symmetry == Symmetry.MIRROR_X) 0 else 2
+            val lateralAxis = symmetry.lateralAxis
 
             animation.poses.forEach { (name, pose) ->
                 val elbow = pose.armA().first()
@@ -336,6 +336,9 @@ class BodyTest {
                 kotlin.math.abs(capsule.radiusTo - form.radiusTo) < 1e-5f
         }?.id ?: "unknown"
 
-    private fun lateralOf(point: Vec3, axis: Int): Float =
-        if (axis == 0) point.x else point.z
+    private fun lateralOf(point: Vec3, axis: Int): Float = when (axis) {
+        0 -> point.x
+        1 -> point.y
+        else -> point.z
+    }
 }

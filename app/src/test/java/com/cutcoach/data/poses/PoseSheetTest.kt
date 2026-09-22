@@ -39,6 +39,7 @@ class PoseSheetTest {
             File("src/main/assets/exercises.json").readText(),
         ).let { it as com.cutcoach.data.protocol.ProtocolLoad.Success }.repository
 
+
         val rows = library.exercises.flatMap { (id, animation) ->
             animation.poses.keys.map { Triple(id, it, animation) }
         }
@@ -113,20 +114,27 @@ class PoseSheetTest {
             } else {
                 listOf(prop.z)
             }
-            val heights = if (prop.type == "chair" || prop.type == "step") {
-                listOf(prop.y)
-            } else {
-                listOf(prop.y)
+            fun line(from: Vec3, to: Vec3) {
+                val a = from.project(camera)
+                val b = to.project(camera)
+                sb.append(
+                    "<line x1='${sx(a)}' y1='${sy(a)}' x2='${sx(b)}' y2='${sy(b)}' " +
+                        "stroke='#2C3E5C' stroke-width='${stroke * 0.7}' " +
+                        "stroke-linecap='round'/>",
+                )
             }
+
             zs.forEach { z ->
-                heights.forEach { y ->
-                    val a = Vec3(prop.fromX, y, z).project(camera)
-                    val b = Vec3(prop.toX, y, z).project(camera)
-                    sb.append(
-                        "<line x1='${sx(a)}' y1='${sy(a)}' x2='${sx(b)}' y2='${sy(b)}' " +
-                            "stroke='#2C3E5C' stroke-width='${stroke * 0.7}' " +
-                            "stroke-linecap='round'/>",
-                    )
+                line(Vec3(prop.fromX, prop.y, z), Vec3(prop.toX, prop.y, z))
+            }
+
+            // A chair, step or bar stands on something. Drawing only its top
+            // edge here while the app drew the uprights meant the sheet was
+            // quietly hiding the furniture, which is how a bar with no posts
+            // and a bench with no legs both passed review.
+            if (prop.type == "chair" || prop.type == "step") {
+                listOf(prop.fromX, prop.toX).forEach { x ->
+                    line(Vec3(x, prop.y, prop.z), Vec3(x, prop.y + prop.height, prop.z))
                 }
             }
         }

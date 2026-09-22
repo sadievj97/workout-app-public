@@ -62,7 +62,7 @@ private const val TORSO = "torso"
  * nearer limbs cover further ones.
  */
 fun Pose.body(symmetry: Symmetry, style: BodyStyle): List<BodyPart> {
-    val lateral = if (symmetry == Symmetry.MIRROR_X) Vec3(1f, 0f, 0f) else Vec3(0f, 0f, 1f)
+    val lateral = symmetry.lateralVector()
 
     val neck = neckAt
     val pelvis = hipAt
@@ -148,4 +148,11 @@ internal fun Vec3.length(): Float = sqrt(x * x + y * y + z * z)
 internal fun Vec3.normalisedOrZero(): Vec3 {
     val len = length()
     return if (len < 1e-5f) Vec3(0f, 0f, 0f) else Vec3(x / len, y / len, z / len)
+}
+
+/** The body's own left-to-right direction, as a unit vector. */
+internal fun Symmetry.lateralVector(): Vec3 = when (lateralAxis) {
+    0 -> Vec3(1f, 0f, 0f)
+    1 -> Vec3(0f, 1f, 0f)
+    else -> Vec3(0f, 0f, 1f)
 }

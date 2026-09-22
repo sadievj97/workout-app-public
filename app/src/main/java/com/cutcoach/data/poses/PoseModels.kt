@@ -105,13 +105,39 @@ enum class Symmetry {
     /** Reflect across x: for exercises facing the camera, such as a pull-up. */
     MIRROR_X,
 
+    /**
+     * Reflect across y: for exercises lying on your side, where the body's own
+     * left-right axis points up and down. Without it a side plank puts the
+     * shoulders side by side and reads as lying face down with a propped arm.
+     */
+    MIRROR_Y,
+
     /** The sides genuinely differ, as in a split squat. Both are written out. */
     NONE,
     ;
 
+    /** Which way the body's left and right lie. */
+    val lateralAxis: Int
+        get() = when (this) {
+            MIRROR_X -> 0
+            MIRROR_Y -> 1
+            else -> 2
+        }
+
+    /**
+     * Which axis to negate to show the same movement on the other side.
+     *
+     * For a side-lying exercise this is deliberately not the lateral axis:
+     * negating up-and-down would stand the figure on its head. Turning it
+     * around is what "the other side" looks like.
+     */
+    val mirrorAxis: Int
+        get() = if (this == MIRROR_Y) 0 else lateralAxis
+
     companion object {
         fun parse(value: String?): Symmetry = when (value?.lowercase()) {
             "mirror_x" -> MIRROR_X
+            "mirror_y" -> MIRROR_Y
             "none" -> NONE
             else -> MIRROR_Z
         }
@@ -236,7 +262,7 @@ data class Pose(
      * the movement stays the same movement and only the side changes.
      */
     fun mirrored(symmetry: Symmetry): Pose {
-        val axis = if (symmetry == Symmetry.MIRROR_X) 0 else 2
+        val axis = symmetry.mirrorAxis
         fun flip(p: List<Float>): List<Float> =
             p.mapIndexed { index, value -> if (index == axis) -value else value }
         fun flipOrNull(p: List<Float>?): List<Float>? = p?.let { flip(it) }
@@ -270,8 +296,9 @@ data class Pose(
         if (a == null || b == null) null else lerp(a, b, t)
 }
 
-private fun Vec3.reflect(symmetry: Symmetry): Vec3 = when (symmetry) {
-    Symmetry.MIRROR_X -> negateX()
+private fun Vec3.reflect(symmetry: Symmetry): Vec3 = when (symmetry.lateralAxis) {
+    0 -> negateX()
+    1 -> copy(y = -y)
     else -> negateZ()
 }
 
@@ -291,8 +318,8 @@ data class Prop(
     val depth: Float = 0f,
     val height: Float = 0f,
 ) {
-    fun mirrored(symmetry: Symmetry): Prop = when (symmetry) {
-        Symmetry.MIRROR_X -> copy(fromX = -toX, toX = -fromX)
+    fun mirrored(symmetry: Symmetry): Prop = when (symmetry.mirrorAxis) {
+        0 -> copy(fromX = -toX, toX = -fromX)
         else -> copy(z = -z)
     }
 }

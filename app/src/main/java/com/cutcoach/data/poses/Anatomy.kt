@@ -80,7 +80,7 @@ fun Pose.anatomy(
     if (anatomy.forms.isEmpty()) return emptyList()
 
     val worked = workedMuscles.map { it.trim().lowercase() }.toSet()
-    val lateralAxis = if (symmetry == Symmetry.MIRROR_X) Vec3(1f, 0f, 0f) else Vec3(0f, 0f, 1f)
+    val lateralAxis = symmetry.lateralVector()
     val front = facing.normalisedOrZero()
 
     val neck = neckAt

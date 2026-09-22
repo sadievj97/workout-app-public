@@ -1,0 +1,4 @@
+node_modules/
+.wrangler/
+# Wrangler writes a local copy of secrets here when you use `wrangler dev`.
+.dev.vars

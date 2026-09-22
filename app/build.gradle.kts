@@ -1,5 +1,6 @@
 // Since AGP 9.0 the Android plugin brings Kotlin support with it, so there is
 // no separate org.jetbrains.kotlin.android plugin here. Applying it is an error.
+import java.util.Properties
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.testing.Test
 
@@ -20,6 +21,32 @@ android {
         targetSdk = 37
         versionCode = 1
         versionName = "0.1"
+
+        // The Claude proxy's address and the secret the app presents to it.
+        //
+        // Both are read from local.properties, which is gitignored, so neither
+        // reaches the repository. Missing values become empty strings rather
+        // than failing the build: every phase before this one works without
+        // them, and the app says plainly when the layer is not configured.
+        //
+        // The Anthropic API key is deliberately absent. It lives only as a
+        // Cloudflare secret, so it is not here to be leaked.
+        val local = Properties().apply {
+            rootProject.file("local.properties")
+                .takeIf { it.exists() }
+                ?.inputStream()
+                ?.use { load(it) }
+        }
+        buildConfigField(
+            "String",
+            "CLAUDE_PROXY_URL",
+            "\"${local.getProperty("cutcoach.proxyUrl", "")}\"",
+        )
+        buildConfigField(
+            "String",
+            "CLAUDE_PROXY_SECRET",
+            "\"${local.getProperty("cutcoach.proxySecret", "")}\"",
+        )
     }
 
     buildTypes {
@@ -30,6 +57,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     compileOptions {

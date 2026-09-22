@@ -1,0 +1,24 @@
+# The Cloudflare Worker that holds the Anthropic API key.
+#
+# Nothing secret lives in this file, and nothing secret ever should: it is
+# committed. Both secrets are set with `wrangler secret put`, which stores them
+# encrypted on Cloudflare's side and never writes them to disk here.
+#
+#   npx wrangler secret put ANTHROPIC_API_KEY
+#   npx wrangler secret put SHARED_SECRET
+#
+# To see which are set without seeing their values:
+#
+#   npx wrangler secret list
+
+name = "cutcoach-proxy"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+
+# No KV, no D1, no R2, no queues. The Worker holds no state at all, so there is
+# nowhere for a health summary to come to rest on somebody else's computer.
+
+[observability]
+# Off deliberately. Cloudflare's log stream would capture request bodies, and
+# those carry the summaries this app is otherwise careful to keep on the phone.
+enabled = false

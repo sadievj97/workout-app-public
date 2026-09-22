@@ -277,6 +277,70 @@
               "toe":   [-0.265, 0.280,  0.042]
             }
           }
+        },
+        {
+          "rung": 1,
+          "note": "Arms by sides, legs straight. The base pose already has the legs straight; only the arms come down, to the same positions the tuck uses.",
+          "poses": {
+            "hold": {
+              "head":  [ 0.185, 0.242,  0.000],
+              "neck":  [ 0.105, 0.257,  0.000],
+              "hip":   [-0.140, 0.345,  0.000],
+              "elbow": [-0.014, 0.317,  0.050],
+              "wrist": [-0.115, 0.292,  0.050],
+              "knee":  [-0.261, 0.286,  0.042],
+              "ankle": [-0.383, 0.227,  0.042],
+              "toe":   [-0.428, 0.205,  0.042]
+            }
+          }
+        },
+        {
+          "rung": 3,
+          "note": "Legs lower while the back stays down. The torso and arms are the base pose; the legs swing nearer the floor, which is what makes it harder. Thigh, shin and foot keep their base lengths.",
+          "poses": {
+            "hold": {
+              "head":  [ 0.185, 0.242,  0.000],
+              "neck":  [ 0.105, 0.257,  0.000],
+              "hip":   [-0.140, 0.345,  0.000],
+              "elbow": [ 0.190, 0.155,  0.050],
+              "wrist": [ 0.275, 0.095,  0.050],
+              "knee":  [-0.274, 0.332,  0.042],
+              "ankle": [-0.409, 0.322,  0.042],
+              "toe":   [-0.454, 0.300,  0.042]
+            }
+          }
+        },
+        {
+          "rung": 4,
+          "note": "Hollow rocks. The hollow shape does not change; the whole body rocks about the hip. Both poses are the base rotated six degrees either way, and a rigid rotation about one point preserves every distance, so no limb can stretch here.",
+          "poses": {
+            "back": {
+              "head":  [ 0.194, 0.277,  0.000],
+              "neck":  [ 0.113, 0.283,  0.000],
+              "hip":   [-0.140, 0.345,  0.000],
+              "elbow": [ 0.208, 0.191,  0.050],
+              "wrist": [ 0.299, 0.140,  0.050],
+              "knee":  [-0.254, 0.274,  0.042],
+              "ankle": [-0.369, 0.202,  0.042],
+              "toe":   [-0.412, 0.176,  0.042]
+            },
+            "forward": {
+              "head":  [ 0.172, 0.209,  0.000],
+              "neck":  [ 0.094, 0.232,  0.000],
+              "hip":   [-0.140, 0.345,  0.000],
+              "elbow": [ 0.168, 0.122,  0.050],
+              "wrist": [ 0.247, 0.053,  0.050],
+              "knee":  [-0.267, 0.299,  0.042],
+              "ankle": [-0.394, 0.253,  0.042],
+              "toe":   [-0.441, 0.236,  0.042]
+            }
+          },
+          "sequence": [
+            {"pose": "back",    "seconds": 0.0, "role": "start"},
+            {"pose": "forward", "seconds": 0.8, "role": "lower"},
+            {"pose": "back",    "seconds": 0.8, "role": "raise"}
+          ],
+          "hardest_pose": "forward"
         }
       ]
     },

@@ -547,18 +547,42 @@ class PoseTest {
 
     @Test
     fun `the app only claims a rung is drawn when it is`() {
-        // The hollow hold's base pose is arms overhead with straight legs,
-        // which is its third rung, not its first. Assuming zero would have the
-        // cue card claim the tuck was drawn when it was not.
+        // Written as the rule rather than as a list of which rungs happen to be
+        // drawn today, so adding a variant does not fail a test that was only
+        // recording a snapshot.
+        library.exercises.forEach { (id, animation) ->
+            val ladder = repo.exercise(id)?.ladder ?: return@forEach
+            ladder.indices.forEach { rung ->
+                val claimed = library.isDrawnAtRung(id, rung)
+                val reallyIs = rung == animation.baseRung || animation.variantFor(rung) != null
+                assertEquals("$id rung $rung", reallyIs, claimed)
+            }
+        }
+
+        // And the case the field exists for: the hollow hold's base pose is
+        // arms overhead with straight legs, which is its third rung. Assuming
+        // zero would have the cue card claim the tuck was drawn when it was not.
         assertEquals(2, library.animationFor("hollow_hold")!!.baseRung)
+    }
 
-        assertTrue(library.isDrawnAtRung("hollow_hold", 2))   // the base
-        assertTrue(library.isDrawnAtRung("hollow_hold", 0))   // the tuck variant
-        assertFalse(library.isDrawnAtRung("hollow_hold", 1))  // arms by sides: not yet
-        assertFalse(library.isDrawnAtRung("hollow_hold", 4))  // hollow rocks: not yet
-
-        assertTrue(library.isDrawnAtRung("push_up", 0))
-        assertTrue(library.isDrawnAtRung("push_up", 1))
+    @Test
+    fun `a rung that only changes tempo or load is left to the base figure`() {
+        // Variants are for body position. A "3-second lowering" rung needs no
+        // drawing of its own, and adding one would be geometry to maintain for
+        // a figure that already moves correctly.
+        library.exercises.forEach { (id, animation) ->
+            val ladder = repo.exercise(id)?.ladder ?: return@forEach
+            animation.variants.forEach { variant ->
+                val text = ladder[variant.rung].lowercase()
+                val tempoOnly = Tempo.fromLadderStep(ladder[variant.rung]) != Tempo.Default
+                val loadOnly = text.contains("backpack")
+                assertFalse(
+                    "$id rung ${variant.rung} (\"${ladder[variant.rung]}\") has a " +
+                        "variant, but only changes tempo or load",
+                    tempoOnly || loadOnly,
+                )
+            }
+        }
     }
 
     @Test

@@ -19,6 +19,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.withFrameNanos
+import com.cutcoach.data.poses.Camera
 import com.cutcoach.data.poses.ExerciseAnimation
 import com.cutcoach.data.poses.FigureStyle
 import com.cutcoach.data.poses.Tempo
@@ -41,9 +42,15 @@ fun AnimatedStickFigure(
     tempo: Tempo = Tempo.Default,
     mirrored: Boolean = false,
     highlightWorking: Boolean = true,
+    /** Extra turn on top of the exercise's own camera, from the viewer dragging. */
+    extraAzimuth: Float = 0f,
+    extraElevation: Float = 0f,
     /** 0 to 1 for a timed hold's countdown ring. Null draws no ring. */
     holdProgress: Float? = null,
 ) {
+    val camera = remember(animation, extraAzimuth, extraElevation) {
+        animation.camera.turnedBy(extraAzimuth, extraElevation)
+    }
     val context = LocalContext.current
     val reduceMotion = remember { context.prefersReducedMotion() } || LocalInspectionMode.current
     val timeline = remember(animation, tempo) { animation.timeline(tempo) }
@@ -55,6 +62,7 @@ fun AnimatedStickFigure(
         ReducedMotionPair(
             animation = animation,
             style = style,
+            camera = camera,
             working = working,
             highlightWorking = highlightWorking,
             mirrored = mirrored,
@@ -82,12 +90,13 @@ fun AnimatedStickFigure(
     StickFigure(
         pose = timeline.poseAt(elapsed.floatValue),
         style = style,
+        camera = camera,
+        symmetry = animation.symmetryMode,
         modifier = modifier,
         props = animation.props,
         workingLimbs = working,
         highlightWorking = highlightWorking,
         mirrored = mirrored,
-        view = animation.view,
         holdProgress = holdProgress,
     )
 }
@@ -100,6 +109,7 @@ fun AnimatedStickFigure(
 private fun ReducedMotionPair(
     animation: ExerciseAnimation,
     style: FigureStyle,
+    camera: Camera,
     working: Set<String>,
     highlightWorking: Boolean,
     mirrored: Boolean,
@@ -125,6 +135,8 @@ private fun ReducedMotionPair(
                     StickFigure(
                         pose = pose,
                         style = style,
+                        camera = camera,
+                        symmetry = animation.symmetryMode,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(160.dp),
@@ -132,7 +144,6 @@ private fun ReducedMotionPair(
                         workingLimbs = working,
                         highlightWorking = highlightWorking && label == "End",
                         mirrored = mirrored,
-                        view = animation.view,
                     )
                 }
                 Text(label, style = MaterialTheme.typography.labelSmall, color = MistDim)

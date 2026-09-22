@@ -34,7 +34,7 @@ Later, Claude adds substitutions, harder variations, and weekly reviews.
 - Kotlin, Jetpack Compose, Material 3
 - Room for local storage; all data stays on the phone
 - WorkManager for the daily Health Connect sync
-- Compose Canvas for the stick-figure animations; no third-party image or animation assets
+- Compose Canvas for the stick-figure animations, with three-dimensional joints projected in code; no 3D library, no model files, no third-party image or animation assets
 - Health Connect Jetpack client (`androidx.health.connect:connect-client`) from Phase 2
 - minSdk 28; targetSdk the latest stable version
 - No backend, no accounts, no analytics, no cloud sync (Phase 4 adds one small proxy, described below)
@@ -78,11 +78,13 @@ Build in order. Do not start a phase until the previous one works on the phone.
 Build right after the Phase 1 timers work on the phone.
 
 **Stick-figure animations (drawn in code, work offline)**
-- One simple 2D figure drawn with Compose Canvas: head, torso, upper and lower arms, upper and lower legs, feet. No image files and no third-party animation assets.
+- One simple figure drawn with Compose Canvas: head, torso, both upper and lower arms, both upper and lower legs, feet. No 3D library, no model files, no image files, no third-party animation assets.
+- Joints are three-dimensional and projected in code, so one set of poses can be shown from any angle. Parts further from the viewer are drawn first and faded, which is what stops a turned figure reading as a flat tangle of lines.
 - Each exercise is a short sequence of poses (keyframes) with smooth interpolation between them.
 - Store the poses as data in `app/src/main/assets/poses.json`, one entry per exercise id in `exercises.json`, so a wrong pose can be fixed without touching drawing code.
-- Draw props as simple shapes: floor line, pull-up bar, chair, table edge, step, towel.
-- Camera angle: side view by default; front view where that shows the key joint more clearly (for example the side plank).
+- Most exercises are symmetrical, so write down one arm and one leg and reflect the other. Write both out only where the sides genuinely differ, as in a split squat.
+- Draw props as simple shapes: floor plane, pull-up bar, chair, table edge, step, towel. They live in the same world as the figure and turn with the camera.
+- Each exercise names its own camera in `poses.json`, as an azimuth and an elevation in degrees, chosen to show that movement clearly. Dragging the figure turns the camera; a control returns it to the chosen angle.
 - Tempo follows the current ladder step:
   - Default: about 1 second up and 1 second down.
   - On a "3-second lowering" step, the lowering takes 3 seconds.
@@ -108,6 +110,8 @@ Build right after the Phase 1 timers work on the phone.
 **Checks before Phase 2**
 - A unit test fails if any exercise in `protocol.json` has no pose.
 - On a "3-second lowering" step, the lowering phase lasts 3 seconds, within a small tolerance.
+- No limb changes length between the poses of one exercise, or part way through a rep.
+- Every figure stays inside its frame at its own camera angle and when turned right around.
 - Mirroring works for every each-side exercise.
 - The reduced-motion fallback works.
 - The whole session player works in airplane mode.

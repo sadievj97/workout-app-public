@@ -6,12 +6,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.StrokeCap
+import com.cutcoach.data.poses.Camera
 import com.cutcoach.data.poses.FigureStyle
 import com.cutcoach.data.poses.Pose
+import com.cutcoach.data.poses.Projected
 import com.cutcoach.data.poses.Prop
+import com.cutcoach.data.poses.Symmetry
+import com.cutcoach.data.poses.Vec3
+import com.cutcoach.data.poses.project
 import com.cutcoach.ui.theme.CoolSky
 import com.cutcoach.ui.theme.Mist
 import com.cutcoach.ui.theme.SlateEdge
@@ -23,56 +28,55 @@ private const val LEGS = "legs"
 private const val TORSO = "torso"
 
 /**
- * One stick figure, drawn from a pose.
+ * One stick figure, projected from its three-dimensional pose.
  *
  * The figure is mist; the limbs doing the work go amber during a work phase, so
  * a glance says both what the movement is and which part of you should be
- * feeling it. Props are drawn behind in a dimmer colour so they read as
- * furniture rather than as part of the body.
+ * feeling it. Parts further from the viewer are drawn first and faded, which is
+ * what stops a turned figure reading as a flat tangle of lines.
  */
 @Composable
 fun StickFigure(
     pose: Pose,
     style: FigureStyle,
+    camera: Camera,
+    symmetry: Symmetry,
     modifier: Modifier = Modifier,
     props: List<Prop> = emptyList(),
     workingLimbs: Set<String> = emptySet(),
     highlightWorking: Boolean = false,
     mirrored: Boolean = false,
-    /** "side" or "front". A front view draws both limbs equally; a side view dims the far one. */
-    view: String = "side",
     /** 0 to 1 around the figure, for a timed hold. Null draws no ring. */
     holdProgress: Float? = null,
 ) {
-    val shown = if (mirrored) pose.mirrored() else pose
-    val shownProps = if (mirrored) props.map { it.mirrored() } else props
+    val shown = if (mirrored) pose.mirrored(symmetry) else pose
+    val shownProps = if (mirrored) props.map { it.mirrored(symmetry) } else props
 
     Canvas(modifier = modifier) {
         val box = squareBox(size)
 
-        shownProps.forEach { drawProp(it, box) }
+        shownProps.forEach { drawProp(it, box, camera) }
 
         holdProgress?.let { drawHoldRing(it, box, style) }
 
         drawFigure(
             pose = shown,
             style = style,
+            camera = camera,
+            symmetry = symmetry,
             box = box,
             workingLimbs = workingLimbs,
             highlight = highlightWorking,
-            view = view,
         )
     }
 }
 
 /**
- * Poses are authored inside a square, so the drawing is squared and centred
- * rather than stretched to whatever shape the caller gives it.
+ * Poses project into a square, so the drawing is squared and centred rather
+ * than stretched to whatever shape the caller gives it.
  */
 private data class Box(val left: Float, val top: Float, val side: Float) {
-    fun at(point: List<Float>): Offset =
-        Offset(left + point[0] * side, top + point[1] * side)
-
+    fun at(point: Projected): Offset = Offset(left + point.x * side, top + point.y * side)
     fun scale(value: Float): Float = value * side
 }
 
@@ -85,110 +89,133 @@ private fun squareBox(size: Size): Box {
     )
 }
 
+/** One limb segment, ready to draw, with the depth it ended up at. */
+private data class Bone(
+    val from: Projected,
+    val to: Projected,
+    val group: String,
+) {
+    val depth: Float get() = (from.depth + to.depth) / 2f
+}
+
 private fun DrawScope.drawFigure(
     pose: Pose,
     style: FigureStyle,
+    camera: Camera,
+    symmetry: Symmetry,
     box: Box,
     workingLimbs: Set<String>,
     highlight: Boolean,
-    view: String,
 ) {
-    val width = box.scale(style.strokeWidth)
+    fun at(point: Vec3) = point.project(camera)
 
-    // In a side view the far arm and leg sit behind the body, so they are
-    // drawn faintly to give depth. In a front view both sides are equally in
-    // front of you, so they are drawn the same.
-    val farAlpha = if (view == "front") 1f else 0.45f
+    val neck = at(pose.neckAt)
+    val hip = at(pose.hipAt)
+    val head = at(pose.headAt)
 
-    fun colourFor(group: String, alpha: Float): Color {
-        val base = if (highlight && group in workingLimbs) SunriseAmber else Mist
-        return if (alpha >= 1f) base else base.copy(alpha = alpha)
+    val armA = pose.armA().map(::at)
+    val armB = pose.armB(symmetry).map(::at)
+    val legA = pose.legA().map(::at)
+    val legB = pose.legB(symmetry).map(::at)
+
+    val bones = buildList {
+        add(Bone(neck, hip, TORSO))
+        listOf(armA, armB).forEach { arm ->
+            add(Bone(neck, arm[0], ARMS))
+            add(Bone(arm[0], arm[1], ARMS))
+        }
+        listOf(legA, legB).forEach { leg ->
+            add(Bone(hip, leg[0], LEGS))
+            add(Bone(leg[0], leg[1], LEGS))
+            add(Bone(leg[1], leg[2], LEGS))
+        }
     }
 
-    fun bone(a: List<Float>, b: List<Float>, group: String, alpha: Float = 1f) {
+    // Fade is worked out from the figure's own depth range, so it holds up at
+    // any camera angle instead of relying on a tuned constant.
+    val depths = bones.map { it.depth } + head.depth
+    val nearest = depths.max()
+    val furthest = depths.min()
+    val spread = nearest - furthest
+
+    fun fadeAt(depth: Float): Float {
+        if (spread < 0.01f) return 1f
+        val howNear = (depth - furthest) / spread
+        return style.farFade + (1f - style.farFade) * howNear
+    }
+
+    fun colourFor(group: String, fade: Float): Color {
+        val base = if (highlight && group in workingLimbs) SunriseAmber else Mist
+        return if (fade >= 0.999f) base else base.copy(alpha = fade)
+    }
+
+    val width = box.scale(style.strokeWidth)
+
+    // Furthest first, so nearer limbs sit on top.
+    bones.sortedBy { it.depth }.forEach { bone ->
         drawLine(
-            color = colourFor(group, alpha),
-            start = box.at(a),
-            end = box.at(b),
+            color = colourFor(bone.group, fadeAt(bone.depth)),
+            start = box.at(bone.from),
+            end = box.at(bone.to),
             strokeWidth = width,
             cap = StrokeCap.Round,
         )
     }
 
-    // Far side first, so the near limbs read as being in front of it.
-    if (pose.hasFarLeg) {
-        bone(pose.hip, pose.kneeFar!!, LEGS, farAlpha)
-        bone(pose.kneeFar, pose.ankleFar!!, LEGS, farAlpha)
-        bone(pose.ankleFar, pose.toeFar!!, LEGS, farAlpha)
-    }
-    if (pose.hasFarArm) {
-        bone(pose.neck, pose.elbowFar!!, ARMS, farAlpha)
-        bone(pose.elbowFar, pose.wristFar!!, ARMS, farAlpha)
-    }
-
-    bone(pose.hip, pose.knee, LEGS)
-    bone(pose.knee, pose.ankle, LEGS)
-    bone(pose.ankle, pose.toe, LEGS)
-
-    bone(pose.neck, pose.hip, TORSO)
-
-    bone(pose.neck, pose.elbow, ARMS)
-    bone(pose.elbow, pose.wrist, ARMS)
-
     drawCircle(
-        color = colourFor(TORSO, 1f),
+        color = colourFor(TORSO, fadeAt(head.depth)),
         radius = box.scale(style.headRadius),
-        center = box.at(pose.head),
+        center = box.at(head),
         style = Stroke(width = width),
     )
 }
 
-private fun DrawScope.drawProp(prop: Prop, box: Box) {
+private fun DrawScope.drawProp(prop: Prop, box: Box, camera: Camera) {
     val width = box.scale(0.012f)
 
-    when (prop.type) {
-        "floor", "bar", "table" -> drawLine(
+    fun line(fromX: Float, toX: Float, y: Float, z: Float, stroke: Float = width) {
+        drawLine(
             color = SlateEdge,
-            start = box.at(listOf(prop.fromX, prop.y)),
-            end = box.at(listOf(prop.toX, prop.y)),
-            strokeWidth = width,
+            start = box.at(Vec3(fromX, y, z).project(camera)),
+            end = box.at(Vec3(toX, y, z).project(camera)),
+            strokeWidth = stroke,
             cap = StrokeCap.Round,
         )
+    }
 
-        // A chair or step is a line with two short legs dropping from it.
+    when (prop.type) {
+        // A floor with any depth is drawn as its two edges, so it reads as a
+        // plane once the camera turns off dead-on.
+        "floor", "table" -> if (prop.depth > 0f) {
+            line(prop.fromX, prop.toX, prop.y, prop.z - prop.depth / 2f)
+            line(prop.fromX, prop.toX, prop.y, prop.z + prop.depth / 2f)
+        } else {
+            line(prop.fromX, prop.toX, prop.y, prop.z)
+        }
+
+        "bar" -> line(prop.fromX, prop.toX, prop.y, prop.z)
+
+        "towel" -> line(prop.fromX, prop.toX, prop.y, prop.z, box.scale(0.02f))
+
+        // A chair or step is its top edge with two short legs dropping from it.
         "chair", "step" -> {
-            drawLine(
-                color = SlateEdge,
-                start = box.at(listOf(prop.fromX, prop.y)),
-                end = box.at(listOf(prop.toX, prop.y)),
-                strokeWidth = width,
-                cap = StrokeCap.Round,
-            )
-            val bottom = prop.y + prop.height
+            line(prop.fromX, prop.toX, prop.y, prop.z)
             listOf(prop.fromX, prop.toX).forEach { x ->
                 drawLine(
                     color = SlateEdge,
-                    start = box.at(listOf(x, prop.y)),
-                    end = box.at(listOf(x, bottom)),
+                    start = box.at(Vec3(x, prop.y, prop.z).project(camera)),
+                    end = box.at(Vec3(x, prop.y + prop.height, prop.z).project(camera)),
                     strokeWidth = width,
                     cap = StrokeCap.Round,
                 )
             }
         }
-
-        "towel" -> drawLine(
-            color = SlateEdge,
-            start = box.at(listOf(prop.fromX, prop.y)),
-            end = box.at(listOf(prop.toX, prop.y)),
-            strokeWidth = box.scale(0.02f),
-            cap = StrokeCap.Round,
-        )
     }
 }
 
 /** The ring around a timed hold, filling as the countdown runs out. */
 private fun DrawScope.drawHoldRing(progress: Float, box: Box, style: FigureStyle) {
-    val inset = box.scale(0.04f)
+    val inset = box.scale(0.03f)
     val ringWidth = box.scale(style.strokeWidth * 0.8f)
     val topLeft = Offset(box.left + inset, box.top + inset)
     val ringSize = Size(box.side - inset * 2, box.side - inset * 2)

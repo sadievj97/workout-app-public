@@ -7,8 +7,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -82,6 +84,8 @@ fun FigurePreviewScreen(
 
                 library.exercises.forEach { (id, animation) ->
                     var tempo by remember(id) { mutableStateOf(Tempo.Default) }
+                    var turn by remember(id) { mutableStateOf(0f) }
+                    var tilt by remember(id) { mutableStateOf(0f) }
 
                     CutCard {
                         SectionLabel(repo.exercise(id)?.name ?: id)
@@ -90,10 +94,31 @@ fun FigurePreviewScreen(
                             animation = animation,
                             style = library.figure,
                             tempo = tempo,
+                            extraAzimuth = turn,
+                            extraElevation = tilt,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(260.dp),
+                                .height(260.dp)
+                                // Drag to look at the movement from elsewhere. The
+                                // poses are three-dimensional, so this is a camera
+                                // move rather than a different set of drawings.
+                                .pointerInput(id) {
+                                    detectDragGestures { _, drag ->
+                                        turn -= drag.x * 0.4f
+                                        tilt -= drag.y * 0.3f
+                                    }
+                                },
                         )
+
+                        if (turn != 0f || tilt != 0f) {
+                            TextButton(onClick = { turn = 0f; tilt = 0f }) {
+                                Text(
+                                    "Back to the chosen angle",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = CoolSky,
+                                )
+                            }
+                        }
 
                         if (!animation.isStaticHold) {
                             Row(
@@ -120,7 +145,9 @@ fun FigurePreviewScreen(
                         }
 
                         Text(
-                            "Seen from the ${animation.view}.",
+                            "Camera at ${animation.camera.azimuth.toInt()} degrees round " +
+                                "and ${animation.camera.elevation.toInt()} up. Drag the " +
+                                "figure to look from somewhere else.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MistDim,
                         )

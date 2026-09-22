@@ -24,14 +24,45 @@ data class PoseLibrary(
 data class FigureStyle(
     val headRadius: Float,
     val strokeWidth: Float,
+    /** How faint the furthest part of the figure goes. 1 would be no depth at all. */
+    val farFade: Float = 0.45f,
 )
+
+/**
+ * How the two sides of the body relate.
+ *
+ * Most exercises are symmetrical, so only one arm and one leg are written down
+ * and the other is the same limb reflected. That halves the numbers to author
+ * and removes a whole class of typo.
+ */
+enum class Symmetry {
+    /** Reflect across z: for exercises laid out along x, such as a push-up. */
+    MIRROR_Z,
+
+    /** Reflect across x: for exercises facing the camera, such as a pull-up. */
+    MIRROR_X,
+
+    /** The sides genuinely differ, as in a split squat. Both are written out. */
+    NONE,
+    ;
+
+    companion object {
+        fun parse(value: String?): Symmetry = when (value?.lowercase()) {
+            "mirror_x" -> MIRROR_X
+            "none" -> NONE
+            else -> MIRROR_Z
+        }
+    }
+}
 
 @Serializable
 data class ExerciseAnimation(
-    /** "side" or "front". Side is the default; front is used where it shows the key joint better. */
-    val view: String = "side",
-    /** Why this view was chosen, for whoever edits the file later. Not used in code. */
-    val viewNote: String = "",
+    /** Where the viewer stands. Chosen per exercise to show the movement clearly. */
+    val camera: Camera = Camera(),
+    /** "mirror_z", "mirror_x" or "none". */
+    val symmetry: String = "mirror_z",
+    /** Why this camera was chosen, for whoever edits the file later. Not read by code. */
+    val cameraNote: String = "",
     /** Which limbs go amber during a work phase: "arms", "legs", "torso". */
     val workingLimbs: List<String> = emptyList(),
     val props: List<Prop> = emptyList(),
@@ -41,6 +72,8 @@ data class ExerciseAnimation(
     val hardestPose: String? = null,
 ) {
     val isStaticHold: Boolean get() = sequence.size <= 1
+
+    val symmetryMode: Symmetry get() = Symmetry.parse(symmetry)
 
     fun pose(name: String): Pose? = poses[name]
 }
@@ -58,10 +91,11 @@ data class Keyframe(
 )
 
 /**
- * Where each joint sits, normalised 0 to 1 inside a square box, y downward.
+ * Where each joint sits in the figure's world, as [x, y, z].
  *
  * Limbs are drawn between joints: neck to hip is the torso, neck to elbow to
- * wrist is the arm, hip to knee to ankle to toe is the leg.
+ * wrist is the arm, hip to knee to ankle to toe is the leg. Only one arm and
+ * one leg are written down unless the exercise's symmetry is "none".
  */
 @Serializable
 data class Pose(
@@ -73,17 +107,38 @@ data class Pose(
     val knee: List<Float>,
     val ankle: List<Float>,
     val toe: List<Float>,
-    // The far-side limbs, left out where one arm and one leg tell the whole
-    // story. A front view needs them: without a second arm a pull-up reads as
-    // a pole with a ball on it.
-    val elbowFar: List<Float>? = null,
-    val wristFar: List<Float>? = null,
-    val kneeFar: List<Float>? = null,
-    val ankleFar: List<Float>? = null,
-    val toeFar: List<Float>? = null,
+    // The other side, written out only where it genuinely differs.
+    val elbowOther: List<Float>? = null,
+    val wristOther: List<Float>? = null,
+    val kneeOther: List<Float>? = null,
+    val ankleOther: List<Float>? = null,
+    val toeOther: List<Float>? = null,
 ) {
-    val hasFarArm: Boolean get() = elbowFar != null && wristFar != null
-    val hasFarLeg: Boolean get() = kneeFar != null && ankleFar != null && toeFar != null
+    val headAt: Vec3 get() = Vec3.of(head)
+    val neckAt: Vec3 get() = Vec3.of(neck)
+    val hipAt: Vec3 get() = Vec3.of(hip)
+
+    /** The arm that was written down: elbow then wrist. */
+    fun armA(): List<Vec3> = listOf(Vec3.of(elbow), Vec3.of(wrist))
+
+    /** The leg that was written down: knee, ankle, toe. */
+    fun legA(): List<Vec3> = listOf(Vec3.of(knee), Vec3.of(ankle), Vec3.of(toe))
+
+    /** The other arm, reflected unless it was written out. */
+    fun armB(symmetry: Symmetry): List<Vec3> =
+        if (elbowOther != null && wristOther != null) {
+            listOf(Vec3.of(elbowOther), Vec3.of(wristOther))
+        } else {
+            armA().map { it.reflect(symmetry) }
+        }
+
+    /** The other leg, reflected unless it was written out. */
+    fun legB(symmetry: Symmetry): List<Vec3> =
+        if (kneeOther != null && ankleOther != null && toeOther != null) {
+            listOf(Vec3.of(kneeOther), Vec3.of(ankleOther), Vec3.of(toeOther))
+        } else {
+            legA().map { it.reflect(symmetry) }
+        }
 
     /** Straight-line blend toward another pose. Positions, so nothing can wander off-model. */
     fun blendTo(other: Pose, t: Float): Pose = Pose(
@@ -95,51 +150,76 @@ data class Pose(
         knee = lerp(knee, other.knee, t),
         ankle = lerp(ankle, other.ankle, t),
         toe = lerp(toe, other.toe, t),
-        elbowFar = lerpOrNull(elbowFar, other.elbowFar, t),
-        wristFar = lerpOrNull(wristFar, other.wristFar, t),
-        kneeFar = lerpOrNull(kneeFar, other.kneeFar, t),
-        ankleFar = lerpOrNull(ankleFar, other.ankleFar, t),
-        toeFar = lerpOrNull(toeFar, other.toeFar, t),
+        elbowOther = lerpOrNull(elbowOther, other.elbowOther, t),
+        wristOther = lerpOrNull(wristOther, other.wristOther, t),
+        kneeOther = lerpOrNull(kneeOther, other.kneeOther, t),
+        ankleOther = lerpOrNull(ankleOther, other.ankleOther, t),
+        toeOther = lerpOrNull(toeOther, other.toeOther, t),
     )
 
-    /** Mirrored left to right, for the second side of an each-side exercise. */
-    fun mirrored(): Pose = Pose(
-        head = flip(head),
-        neck = flip(neck),
-        hip = flip(hip),
-        elbow = flip(elbow),
-        wrist = flip(wrist),
-        knee = flip(knee),
-        ankle = flip(ankle),
-        toe = flip(toe),
-        elbowFar = flipOrNull(elbowFar),
-        wristFar = flipOrNull(wristFar),
-        kneeFar = flipOrNull(kneeFar),
-        ankleFar = flipOrNull(ankleFar),
-        toeFar = flipOrNull(toeFar),
-    )
+    /**
+     * The same pose performed on the other side, for the second half of an
+     * each-side exercise. It reflects across the body's own left-right axis, so
+     * the movement stays the same movement and only the side changes.
+     */
+    fun mirrored(symmetry: Symmetry): Pose {
+        val axis = if (symmetry == Symmetry.MIRROR_X) 0 else 2
+        fun flip(p: List<Float>): List<Float> =
+            p.mapIndexed { index, value -> if (index == axis) -value else value }
+        fun flipOrNull(p: List<Float>?): List<Float>? = p?.let { flip(it) }
+
+        return Pose(
+            head = flip(head),
+            neck = flip(neck),
+            hip = flip(hip),
+            elbow = flip(elbow),
+            wrist = flip(wrist),
+            knee = flip(knee),
+            ankle = flip(ankle),
+            toe = flip(toe),
+            elbowOther = flipOrNull(elbowOther),
+            wristOther = flipOrNull(wristOther),
+            kneeOther = flipOrNull(kneeOther),
+            ankleOther = flipOrNull(ankleOther),
+            toeOther = flipOrNull(toeOther),
+        )
+    }
 
     private fun lerp(a: List<Float>, b: List<Float>, t: Float): List<Float> =
-        listOf(a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t)
+        List(maxOf(a.size, b.size)) { i ->
+            val from = a.getOrElse(i) { 0f }
+            val to = b.getOrElse(i) { 0f }
+            from + (to - from) * t
+        }
 
     /** Named apart from [lerp] because both erase to the same JVM signature. */
     private fun lerpOrNull(a: List<Float>?, b: List<Float>?, t: Float): List<Float>? =
         if (a == null || b == null) null else lerp(a, b, t)
-
-    private fun flip(p: List<Float>): List<Float> = listOf(1f - p[0], p[1])
-
-    private fun flipOrNull(p: List<Float>?): List<Float>? = p?.let { flip(it) }
 }
 
-/** Simple furniture: a floor line, a bar, a chair. Drawn as plain shapes. */
+private fun Vec3.reflect(symmetry: Symmetry): Vec3 = when (symmetry) {
+    Symmetry.MIRROR_X -> negateX()
+    else -> negateZ()
+}
+
+/**
+ * Simple furniture: a floor line, a bar, a chair. Drawn as plain shapes in the
+ * same world as the figure, so they turn with the camera.
+ */
 @Serializable
 data class Prop(
     /** "floor", "bar", "chair", "step", "table", "towel". */
     val type: String,
     val y: Float = 0f,
-    val fromX: Float = 0f,
-    val toX: Float = 1f,
+    val fromX: Float = -0.5f,
+    val toX: Float = 0.5f,
+    val z: Float = 0f,
+    /** How deep the prop runs, so a floor reads as a plane rather than a line. */
+    val depth: Float = 0f,
     val height: Float = 0f,
 ) {
-    fun mirrored(): Prop = copy(fromX = 1f - toX, toX = 1f - fromX)
+    fun mirrored(symmetry: Symmetry): Prop = when (symmetry) {
+        Symmetry.MIRROR_X -> copy(fromX = -toX, toX = -fromX)
+        else -> copy(z = -z)
+    }
 }

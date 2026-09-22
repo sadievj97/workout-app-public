@@ -162,14 +162,17 @@ class HealthConnectManager(private val context: Context) {
             .filter { nightOf(it.start, zone) == date }
 
         val night = mainSleep(sleepWindows)?.let { sleep ->
+            val plausible = looksLikeANight(sleep.start, zone)
             SleepNight(
                 start = sleep.start,
                 end = sleep.end,
                 duration = sleep.duration,
                 sleepingHeartRate = sleepingHeartRate(heartOvernight, sleep),
-                minutesAfterTarget = lightsOutTarget?.let {
-                    minutesAfterTarget(sleep.start, it, date, zone)
-                },
+                // Only measured against the ramp when it plausibly is a night.
+                minutesAfterTarget = lightsOutTarget
+                    ?.takeIf { plausible }
+                    ?.let { minutesAfterTarget(sleep.start, it, date, zone) },
+                looksLikeANight = plausible,
             ).also { it.fragmentCount = sleepWindows.size }
         }
 

@@ -1,6 +1,7 @@
 package com.cutcoach.health
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -234,6 +235,26 @@ class HealthMetricsTest {
         assertNull(
             isSleepingHeartRateElevated(null, List(14) { 60 }, 5, 14),
         )
+    }
+
+    // ---- Does it even look like a night? --------------------------------
+
+    @Test
+    fun `a normal bedtime looks like a night`() {
+        listOf("21:30", "22:45", "23:59", "00:40", "02:15").forEach { time ->
+            val day = if (time < "12:00" && time > "04:00") "2026-09-22" else "2026-09-22"
+            assertTrue(time, looksLikeANight(at(day, time), zone))
+        }
+    }
+
+    @Test
+    fun `a sleep beginning in the morning is not a night`() {
+        // The phone really produced this: a session starting at 04:50, which is
+        // arithmetically 365 minutes after a 22:45 target. Reporting that as
+        // being late would be true and useless.
+        assertFalse(looksLikeANight(at("2026-09-22", "04:50"), zone))
+        assertFalse(looksLikeANight(at("2026-09-22", "09:00"), zone))
+        assertFalse(looksLikeANight(at("2026-09-22", "14:30"), zone))
     }
 
     // ---- Sleep duration --------------------------------------------------

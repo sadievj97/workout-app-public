@@ -54,6 +54,26 @@ fun nightOf(start: Instant, zone: ZoneId): LocalDate {
 private const val EVENING_STARTS_AT = 16
 
 /**
+ * Whether a recorded sleep plausibly is a night, rather than a nap or a
+ * fragment the watch caught after you were already up.
+ *
+ * This matters because the ramp comparison is meaningless otherwise. A session
+ * beginning at 04:50 is arithmetically 365 minutes after a 22:45 target, and
+ * reporting that as "365 minutes late" would be true and useless. Better to say
+ * what was recorded and decline to judge it.
+ */
+fun looksLikeANight(start: Instant, zone: ZoneId): Boolean {
+    val hour = ZonedDateTime.ofInstant(start, zone).hour
+    return hour >= EARLIEST_PLAUSIBLE_BEDTIME || hour <= LATEST_PLAUSIBLE_BEDTIME
+}
+
+/** Going to bed before this hour is a nap, not a night. */
+private const val EARLIEST_PLAUSIBLE_BEDTIME = 18
+
+/** Going to bed after this hour is a very late night, but still a night. */
+private const val LATEST_PLAUSIBLE_BEDTIME = 4
+
+/**
  * How late lights-out was against the ramp target for that night, in minutes.
  *
  * Positive is late, negative is early. Reported rather than judged: the app

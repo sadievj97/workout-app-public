@@ -35,7 +35,14 @@ data class SleepNight(
     val duration: Duration,
     /** Mean heart rate across the night. Null if the watch recorded none. */
     val sleepingHeartRate: Int? = null,
+    /** Null when there is no ramp target, or when this does not look like a night. */
     val minutesAfterTarget: Long? = null,
+    /**
+     * False when the recorded sleep began at an hour no one goes to bed at.
+     * The ramp comparison is then withheld rather than reported as a huge
+     * lateness, which would be arithmetically true and completely useless.
+     */
+    val looksLikeANight: Boolean = true,
 ) {
     val fragments: Int get() = fragmentCount
     internal var fragmentCount: Int = 1

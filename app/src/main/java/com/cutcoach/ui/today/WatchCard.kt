@@ -90,13 +90,25 @@ private fun LastNight(repo: ProtocolRepository, night: com.cutcoach.health.Sleep
 
     val hours = night.duration.toHours()
     val minutes = night.duration.toMinutes() % 60
-    LabelledValue("Slept", "${hours}h ${minutes}m")
-
     val formatter = DateTimeFormatter.ofPattern("HH:mm")
+    val zone = java.time.ZoneId.systemDefault()
+
+    LabelledValue("Slept", "${hours}h ${minutes}m")
     LabelledValue(
-        "Lights out",
-        night.start.atZone(java.time.ZoneId.systemDefault()).format(formatter),
+        if (night.looksLikeANight) "Lights out" else "Recorded from",
+        night.start.atZone(zone).format(formatter),
     )
+
+    if (!night.looksLikeANight) {
+        // Reported, not judged. The ramp comparison would be arithmetically
+        // true and completely useless against a sleep that began at 04:50.
+        Text(
+            "That does not look like a night's sleep, so it is not measured " +
+                "against the ramp. A nap, or the watch caught only part of the night.",
+            style = MaterialTheme.typography.bodySmall,
+            color = SunriseAmber,
+        )
+    }
 
     night.minutesAfterTarget?.let { late ->
         val text = when {

@@ -17,6 +17,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -34,6 +36,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cutcoach.data.protocol.ProtocolRepository
 import com.cutcoach.data.settings.SettingsRepository
+import com.cutcoach.reminders.ReminderNotifier
+import com.cutcoach.reminders.ReminderWorker
 import com.cutcoach.ui.components.CutCard
 import com.cutcoach.ui.components.LabelledValue
 import com.cutcoach.ui.components.SectionLabel
@@ -43,7 +47,10 @@ import com.cutcoach.ui.theme.MistDim
 import com.cutcoach.ui.theme.SlateEdge
 import com.cutcoach.ui.theme.SunriseAmber
 import com.cutcoach.ui.theme.tabular
+import com.cutcoach.ui.theme.PreDawnNavy
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 /**
  * The few things worth changing from the phone.
@@ -103,6 +110,8 @@ fun SettingsScreen(
                 color = MistDim,
             )
         }
+
+        EveningReminders(repo)
 
         // Read-only, and the screen says why.
         CutCard {
@@ -228,6 +237,125 @@ fun SettingsScreen(
         }
     }
 }
+
+/**
+ * Which moments of the day carry a notification.
+ *
+ * Every entry in the timeline is offered, not just the evening ones: the 15:30
+ * "do not skip" is as easy to forget as lights out. The evening ones are on to
+ * begin with because those are the ones that decide whether 05:00 is possible.
+ *
+ * The lights-out row shows tonight's ramp target rather than the timeline's
+ * 21:30, because during the ramp they differ and the reminder fires at the
+ * former.
+ */
+@Composable
+private fun EveningReminders(repo: ProtocolRepository) {
+    val context = LocalContext.current
+    val settings = remember { SettingsRepository.get(context) }
+    val scope = rememberCoroutineScope()
+
+    val on by settings.remindersOn.collectAsStateWithLifecycle(true)
+    val chosen by settings.reminderChoices.collectAsStateWithLifecycle(emptyMap())
+    val moments = remember(repo) { repo.reminderMoments(LocalDate.now()) }
+    val canPost = remember(on) { ReminderNotifier.canPost(context) }
+
+    /** What the timeline writes for lights out, which the ramp only reaches later. */
+    val endState = remember(repo) {
+        repo.protocol.dailyTimeline.firstOrNull { it.isLightsOut }?.time.orEmpty()
+    }
+
+    // Any change re-aims the next job, so a switch takes effect tonight rather
+    // than after the next launch.
+    fun reschedule() {
+        scope.launch {
+            if (settings.remindersOn.first()) {
+                ReminderWorker.schedule(context, repo, settings.reminderChoices.first())
+            } else {
+                ReminderWorker.cancel(context)
+            }
+        }
+    }
+
+    CutCard {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(Modifier.weight(1f)) { SectionLabel("Reminders") }
+            Switch(
+                checked = on,
+                onCheckedChange = { wanted ->
+                    scope.launch {
+                        settings.setRemindersOn(wanted)
+                        reschedule()
+                    }
+                },
+                colors = switchColours(),
+            )
+        }
+
+        if (!canPost) {
+            Text(
+                "Android is blocking notifications for CutCoach. Turn them on in " +
+                    "the phone's app settings, or these will stay silent.",
+                style = MaterialTheme.typography.bodySmall,
+                color = SunriseAmber,
+            )
+        }
+
+        if (on) {
+            moments.forEach { moment ->
+                val enabled = chosen[moment.id] ?: moment.onByDefault
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text(
+                            "${moment.time} ${moment.label}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = if (enabled) Mist else MistDim,
+                        )
+                        if (moment.isLightsOut && moment.time.toString() != endState) {
+                            Text(
+                                "Tonight's ramp target. The timeline says $endState, " +
+                                    "which the ramp reaches later.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MistDim,
+                            )
+                        }
+                    }
+                    Switch(
+                        checked = enabled,
+                        onCheckedChange = { wanted ->
+                            scope.launch {
+                                settings.setReminder(moment.id, wanted)
+                                reschedule()
+                            }
+                        },
+                        colors = switchColours(),
+                    )
+                }
+            }
+        }
+
+        Text(
+            repo.protocol.reminders.lieInGuardrail,
+            style = MaterialTheme.typography.bodySmall,
+            color = MistDim,
+        )
+    }
+}
+
+@Composable
+private fun switchColours() = SwitchDefaults.colors(
+    checkedThumbColor = PreDawnNavy,
+    checkedTrackColor = SunriseAmber,
+    uncheckedThumbColor = MistDim,
+    uncheckedTrackColor = SlateEdge,
+    uncheckedBorderColor = SlateEdge,
+)
 
 @Composable
 private fun VideoLinkRow(

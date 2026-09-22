@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import com.cutcoach.data.protocol.ProtocolRepository
 import com.cutcoach.health.DailyHealth
 import com.cutcoach.health.ZoneVerdict
+import com.cutcoach.health.describeRampGap
 import com.cutcoach.ui.components.CutCard
 import com.cutcoach.ui.components.LabelledValue
 import com.cutcoach.ui.components.SectionLabel
@@ -20,7 +21,6 @@ import com.cutcoach.ui.theme.Mist
 import com.cutcoach.ui.theme.MistDim
 import com.cutcoach.ui.theme.SunriseAmber
 import java.time.format.DateTimeFormatter
-import kotlin.math.abs
 
 /**
  * What the watch recorded, on the Today screen.
@@ -95,30 +95,25 @@ private fun LastNight(repo: ProtocolRepository, night: com.cutcoach.health.Sleep
 
     LabelledValue("Slept", "${hours}h ${minutes}m")
     LabelledValue(
-        if (night.looksLikeANight) "Lights out" else "Recorded from",
+        if (night.isTheNight) "Lights out" else "Recorded from",
         night.start.atZone(zone).format(formatter),
     )
 
-    if (!night.looksLikeANight) {
-        // Reported, not judged. The ramp comparison would be arithmetically
-        // true and completely useless against a sleep that began at 04:50.
+    if (!night.isTheNight) {
+        // A doze has no bedtime to be late for. A very late night does, and is
+        // reported below however bad it looks.
         Text(
-            "That does not look like a night's sleep, so it is not measured " +
-                "against the ramp. A nap, or the watch caught only part of the night.",
+            "Too short to be the night, so it is not measured against the ramp. " +
+                "A nap, or the watch caught only part of the night.",
             style = MaterialTheme.typography.bodySmall,
-            color = SunriseAmber,
+            color = MistDim,
         )
     }
 
     night.minutesAfterTarget?.let { late ->
-        val text = when {
-            late > 0 -> "$late minutes late"
-            late < 0 -> "${abs(late)} minutes early"
-            else -> "on time"
-        }
         LabelledValue(
             "Against the ramp",
-            text,
+            describeRampGap(late),
             valueColor = if (late > LATE_ENOUGH_TO_MENTION) SunriseAmber else Mist,
         )
     }

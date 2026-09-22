@@ -1,0 +1,17 @@
+<!--
+  The status-bar icon for an evening reminder.
+
+  Android draws a small icon as a flat silhouette and throws the colour away,
+  so this is one opaque path with no fill colours worth setting: a crescent,
+  which reads as night at 24 dp where anything more detailed turns to mush.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
+    android:tint="#FFFFFFFF">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M12.5,2C7.26,2 3,6.26 3,11.5S7.26,21 12.5,21c2.64,0 5.03,-1.08 6.75,-2.82 -0.42,0.06 -0.85,0.09 -1.29,0.09 -4.69,0 -8.5,-3.81 -8.5,-8.5 0,-2.83 1.39,-5.34 3.52,-6.89C13.34,2.03 12.92,2 12.5,2z" />
+</vector>

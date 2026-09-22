@@ -28,6 +28,7 @@ suspend fun readTodayAndLastNight(
     val heartRate = repo.protocol.heartRate
     val zone2 = heartRate.zone2Bpm.minInt..heartRate.zone2Bpm.maxInt
     val intervals = heartRate.intervalsBpm.minInt..heartRate.intervalsBpm.maxInt
+    val napThreshold = repo.napThreshold
 
     suspend fun read(date: LocalDate): DailyHealth = manager.readDay(
         date = date,
@@ -36,6 +37,7 @@ suspend fun readTodayAndLastNight(
         intervals = intervals,
         lightsOutTarget = repo.lightsOutOn(date),
         isIntervalDay = repo.scheduleFor(date.dayOfWeek)?.sessionId == INTERVAL_SESSION,
+        napThreshold = napThreshold,
     )
 
     return read(today) to read(today.minusDays(1))

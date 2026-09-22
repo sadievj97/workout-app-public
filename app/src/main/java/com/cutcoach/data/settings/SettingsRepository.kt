@@ -3,6 +3,7 @@ package com.cutcoach.data.settings
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -44,6 +45,8 @@ class SettingsRepository(private val context: Context) {
     private object Keys {
         val REST_SECONDS = intPreferencesKey("rest_seconds")
         val REHAB_LIST = stringPreferencesKey("rehab_exercises")
+        val REMINDERS_ON = booleanPreferencesKey("reminders_on")
+        fun reminder(momentId: String) = booleanPreferencesKey("reminder_$momentId")
         fun videoUrl(exerciseId: String) = stringPreferencesKey("video_url_$exerciseId")
         fun videoStart(exerciseId: String) = stringPreferencesKey("video_start_$exerciseId")
         fun videoEnd(exerciseId: String) = stringPreferencesKey("video_end_$exerciseId")
@@ -93,6 +96,37 @@ class SettingsRepository(private val context: Context) {
 
     private fun String.removePrefixOrNull(prefix: String): String? =
         if (startsWith(prefix)) removePrefix(prefix) else null
+
+    // ---- Evening reminders -------------------------------------------------
+
+    /**
+     * The master switch. On by default: the evening half of the timeline is the
+     * part the owner will not open the app to read, which is the whole reason
+     * these exist.
+     */
+    val remindersOn: Flow<Boolean> =
+        context.settingsStore.data.map { it[Keys.REMINDERS_ON] ?: true }
+
+    suspend fun setRemindersOn(on: Boolean) {
+        context.settingsStore.edit { it[Keys.REMINDERS_ON] = on }
+    }
+
+    /**
+     * Per-moment overrides, keyed by the timeline's written time.
+     *
+     * A moment absent from this map has never been touched, and falls back to
+     * the protocol's own default rather than to off.
+     */
+    val reminderChoices: Flow<Map<String, Boolean>> = context.settingsStore.data.map { prefs ->
+        prefs.asMap()
+            .filterKeys { it.name.startsWith("reminder_") }
+            .mapKeys { (key, _) -> key.name.removePrefix("reminder_") }
+            .mapValues { (_, value) -> value as? Boolean ?: false }
+    }
+
+    suspend fun setReminder(momentId: String, on: Boolean) {
+        context.settingsStore.edit { it[Keys.reminder(momentId)] = on }
+    }
 
     /** Null when no override is set, meaning "use the protocol's value". */
     val restSecondsOverride: Flow<Int?> =

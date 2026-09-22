@@ -5,6 +5,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonNamingStrategy
 import java.time.DayOfWeek
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.temporal.ChronoUnit
@@ -99,6 +100,36 @@ class ProtocolRepository private constructor(
 
     val wakeTime: LocalTime get() = LocalTime.parse(protocol.sleep.wakeTime)
 
+    /**
+     * Shorter than this and a recorded sleep is a nap rather than the night.
+     * Read from the file, so "how short is a nap" stays adjustable.
+     */
+    val napThreshold: Duration
+        get() = Duration.ofMinutes((protocol.sleep.napThresholdHours * 60).toLong())
+
+    // ---- Reminders --------------------------------------------------------
+
+    /**
+     * The moments of the day that can carry a notification, in order, with
+     * tonight's real bedtime substituted for the timeline's end-state one.
+     *
+     * During the ramp those differ: the timeline says 21:30 because that is
+     * where the ramp lands, while tonight's target may still be 22:45. A
+     * reminder that fired at the wrong one would be worse than none.
+     */
+    fun reminderMoments(evening: LocalDate): List<ReminderMoment> =
+        protocol.dailyTimeline.map { entry ->
+            val scheduled = LocalTime.parse(entry.time)
+            val tonight = if (entry.isLightsOut) lightsOutOn(evening) ?: scheduled else scheduled
+            ReminderMoment(
+                id = entry.time,
+                label = entry.label,
+                time = tonight,
+                isLightsOut = entry.isLightsOut,
+                onByDefault = !scheduled.isBefore(LocalTime.parse(protocol.reminders.defaultOnFrom)),
+            )
+        }
+
     // ---- Convenience ------------------------------------------------------
 
     val restSeconds: Int get() = protocol.sessionDefaults.restSeconds
@@ -174,6 +205,20 @@ class ProtocolRepository private constructor(
             context.assets.open(name).bufferedReader().use { it.readText() }
     }
 }
+
+/**
+ * One moment in the day that can carry a reminder.
+ *
+ * [id] is the timeline's own written time, which is stable across the ramp;
+ * [time] is when it actually fires tonight.
+ */
+data class ReminderMoment(
+    val id: String,
+    val label: String,
+    val time: LocalTime,
+    val isLightsOut: Boolean,
+    val onByDefault: Boolean,
+)
 
 /** The outcome of reading the two protocol files. */
 sealed interface ProtocolLoad {

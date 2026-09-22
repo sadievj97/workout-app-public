@@ -120,6 +120,8 @@ class HealthConnectManager(private val context: Context) {
         intervals: IntRange,
         lightsOutTarget: LocalTime?,
         isIntervalDay: Boolean,
+        /** From `sleep.nap_threshold_hours`. Shorter sleeps are naps, not nights. */
+        napThreshold: Duration,
     ): DailyHealth {
         val healthConnect = client ?: return DailyHealth(date)
         val granted = grantedPermissions()
@@ -162,17 +164,17 @@ class HealthConnectManager(private val context: Context) {
             .filter { nightOf(it.start, zone) == date }
 
         val night = mainSleep(sleepWindows)?.let { sleep ->
-            val plausible = looksLikeANight(sleep.start, zone)
+            val theNight = isTheNight(sleep.duration, napThreshold)
             SleepNight(
                 start = sleep.start,
                 end = sleep.end,
                 duration = sleep.duration,
                 sleepingHeartRate = sleepingHeartRate(heartOvernight, sleep),
-                // Only measured against the ramp when it plausibly is a night.
+                // Withheld for a nap, which has no bedtime to be late for.
                 minutesAfterTarget = lightsOutTarget
-                    ?.takeIf { plausible }
+                    ?.takeIf { theNight }
                     ?.let { minutesAfterTarget(sleep.start, it, date, zone) },
-                looksLikeANight = plausible,
+                isTheNight = theNight,
             ).also { it.fragmentCount = sleepWindows.size }
         }
 
@@ -218,6 +220,9 @@ class HealthConnectManager(private val context: Context) {
             intervals = 0..0,
             lightsOutTarget = null,
             isIntervalDay = false,
+            // No ramp verdict is asked for here, so the nap cut-off only has to
+            // be something; the baseline wants every night's heart rate.
+            napThreshold = Duration.ZERO,
         ).night?.sleepingHeartRate
     }
 

@@ -6,6 +6,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 /**
@@ -54,24 +55,41 @@ fun nightOf(start: Instant, zone: ZoneId): LocalDate {
 private const val EVENING_STARTS_AT = 16
 
 /**
- * Whether a recorded sleep plausibly is a night, rather than a nap or a
- * fragment the watch caught after you were already up.
+ * Whether a recorded sleep is the night itself, rather than a nap or a fragment
+ * the watch caught after you were already up.
  *
- * This matters because the ramp comparison is meaningless otherwise. A session
- * beginning at 04:50 is arithmetically 365 minutes after a 22:45 target, and
- * reporting that as "365 minutes late" would be true and useless. Better to say
- * what was recorded and decline to judge it.
+ * Judged by length, from `sleep.nap_threshold_hours`. An earlier version asked
+ * whether the *start time* looked like a bedtime and decided 04:50 could not be
+ * one. It can. That was such a night, and calling it a nap hid the
+ * largest ramp miss in the log behind a reassuring sentence.
+ *
+ * Length is the honest test: four hours is the night, however grim the hour it
+ * began; twenty minutes is a doze whenever it happened.
  */
-fun looksLikeANight(start: Instant, zone: ZoneId): Boolean {
-    val hour = ZonedDateTime.ofInstant(start, zone).hour
-    return hour >= EARLIEST_PLAUSIBLE_BEDTIME || hour <= LATEST_PLAUSIBLE_BEDTIME
+fun isTheNight(duration: Duration, napThreshold: Duration): Boolean =
+    duration >= napThreshold
+
+/**
+ * The gap against the ramp target, said the way a person would say it.
+ *
+ * "365 minutes late" is arithmetically right and unreadable at a glance, which
+ * is the only way this is ever read. Past an hour it switches to hours.
+ */
+fun describeRampGap(minutes: Long): String {
+    if (minutes == 0L) return "on time"
+
+    val late = minutes > 0
+    val size = abs(minutes)
+    val direction = if (late) "late" else "early"
+
+    return if (size < MINUTES_PER_HOUR) {
+        "$size minutes $direction"
+    } else {
+        "${size / MINUTES_PER_HOUR}h ${size % MINUTES_PER_HOUR}m $direction"
+    }
 }
 
-/** Going to bed before this hour is a nap, not a night. */
-private const val EARLIEST_PLAUSIBLE_BEDTIME = 18
-
-/** Going to bed after this hour is a very late night, but still a night. */
-private const val LATEST_PLAUSIBLE_BEDTIME = 4
+private const val MINUTES_PER_HOUR = 60L
 
 /**
  * How late lights-out was against the ramp target for that night, in minutes.

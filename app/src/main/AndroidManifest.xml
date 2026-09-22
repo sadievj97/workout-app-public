@@ -11,6 +11,13 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <!--
+      The evening reminders: lamps down, phone out of the bedroom, lights out.
+      Nothing else posts a notification, and no reminder ever suggests a later
+      wake or a lie-in, which protocol.json forbids.
+    -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!--
       Health Connect, read only. Every string below was checked against the
       official documentation rather than recalled, because a wrong permission
       name does not fail to build: it fails silently at runtime with no data.

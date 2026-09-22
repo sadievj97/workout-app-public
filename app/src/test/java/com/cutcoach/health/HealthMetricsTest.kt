@@ -237,24 +237,69 @@ class HealthMetricsTest {
         )
     }
 
-    // ---- Does it even look like a night? --------------------------------
+    // ---- Is it the night, or a nap? -------------------------------------
+
+    private val napThreshold: Duration = Duration.ofHours(2)
 
     @Test
-    fun `a normal bedtime looks like a night`() {
-        listOf("21:30", "22:45", "23:59", "00:40", "02:15").forEach { time ->
-            val day = if (time < "12:00" && time > "04:00") "2026-09-22" else "2026-09-22"
-            assertTrue(time, looksLikeANight(at(day, time), zone))
-        }
+    fun `a five in the morning bedtime is still the night`() {
+        // A phone really produced a night like this: a long sleep beginning at 04:50,
+        // because that is genuinely when the owner went to bed. An earlier
+        // version judged this by start time and called it a nap, which hid the
+        // largest ramp miss in the log behind a reassuring sentence.
+        val fiveAm = SleepWindow(at("2026-09-22", "04:50"), at("2026-09-22", "09:30"))
+        assertTrue(isTheNight(fiveAm.duration, napThreshold))
     }
 
     @Test
-    fun `a sleep beginning in the morning is not a night`() {
-        // The phone really produced this: a session starting at 04:50, which is
-        // arithmetically 365 minutes after a 22:45 target. Reporting that as
-        // being late would be true and useless.
-        assertFalse(looksLikeANight(at("2026-09-22", "04:50"), zone))
-        assertFalse(looksLikeANight(at("2026-09-22", "09:00"), zone))
-        assertFalse(looksLikeANight(at("2026-09-22", "14:30"), zone))
+    fun `a short doze is not the night, whatever hour it happened`() {
+        val eveningNap = SleepWindow(at("2026-09-22", "19:40"), at("2026-09-22", "20:05"))
+        val afternoonNap = SleepWindow(at("2026-09-22", "14:30"), at("2026-09-22", "15:10"))
+
+        assertFalse(isTheNight(eveningNap.duration, napThreshold))
+        assertFalse(isTheNight(afternoonNap.duration, napThreshold))
+    }
+
+    @Test
+    fun `an ordinary night is the night`() {
+        val night = SleepWindow(at("2026-09-22", "22:50"), at("2026-09-23", "05:00"))
+        assertTrue(isTheNight(night.duration, napThreshold))
+    }
+
+    @Test
+    fun `the threshold itself counts as the night`() {
+        assertTrue(isTheNight(Duration.ofHours(2), napThreshold))
+        assertFalse(isTheNight(Duration.ofMinutes(119), napThreshold))
+    }
+
+    // ---- Saying the gap out loud ----------------------------------------
+
+    @Test
+    fun `a big gap is said in hours, not in hundreds of minutes`() {
+        // 22:45 to 04:50 is 365 minutes. True, and unreadable at a glance.
+        assertEquals("6h 5m late", describeRampGap(365))
+    }
+
+    @Test
+    fun `under an hour stays in minutes`() {
+        assertEquals("45 minutes late", describeRampGap(45))
+        assertEquals("59 minutes late", describeRampGap(59))
+    }
+
+    @Test
+    fun `early reads as early, in the same shapes`() {
+        assertEquals("25 minutes early", describeRampGap(-25))
+        assertEquals("1h 5m early", describeRampGap(-65))
+    }
+
+    @Test
+    fun `exactly on target says so rather than showing a zero`() {
+        assertEquals("on time", describeRampGap(0))
+    }
+
+    @Test
+    fun `an exact hour does not lose its minutes field`() {
+        assertEquals("1h 0m late", describeRampGap(60))
     }
 
     // ---- Sleep duration --------------------------------------------------

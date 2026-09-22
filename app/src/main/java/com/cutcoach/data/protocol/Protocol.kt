@@ -20,6 +20,7 @@ data class Protocol(
     val meta: Meta,
     val sessionDefaults: SessionDefaults,
     val dailyTimeline: List<TimelineEntry>,
+    val reminders: Reminders = Reminders(),
     /** Keyed by "MON" ... "SUN". */
     val weeklySchedule: Map<String, ScheduledDay>,
     /** Keyed by session id, for example "strength_a". */
@@ -69,6 +70,28 @@ data class TimelineEntry(
     /** 24-hour "HH:mm". */
     val time: String,
     val label: String,
+    /**
+     * The one entry that means bedtime.
+     *
+     * Its [time] is the end-state target. During the ramp the real target for
+     * tonight comes from `bedtime_ramp` instead, which is why this needs
+     * marking rather than being found by matching the label text.
+     */
+    val isLightsOut: Boolean = false,
+)
+
+/**
+ * Which parts of the day are worth a notification.
+ *
+ * The evening half of the timeline is the machinery that makes a 05:00 wake
+ * possible, and it is the half the owner will not open the app to read.
+ */
+@Serializable
+data class Reminders(
+    /** Timeline entries at or after this time are on by default. "HH:mm". */
+    val defaultOnFrom: String = "20:00",
+    val note: String = "",
+    val lieInGuardrail: String = "",
 )
 
 @Serializable
@@ -181,6 +204,14 @@ data class Sleep(
     /** ISO date of night 1 of the ramp. */
     val rampStartDate: String? = null,
     val bedtimeRamp: List<RampStep>,
+    /**
+     * Shorter than this and a recorded sleep is a nap, not the night.
+     *
+     * Judged by length rather than by the hour it started, because a 5 a.m.
+     * bedtime is a very late night and the ramp needs to say so.
+     */
+    val napThresholdHours: Double = 2.0,
+    val napThresholdNote: String = "",
     val notes: List<String> = emptyList(),
 )
 

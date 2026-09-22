@@ -202,6 +202,49 @@ class ProtocolLoadTest {
     }
 
     @Test
+    fun `exactly one timeline entry is marked as lights out`() {
+        // The reminders substitute tonight's ramp target for this one entry.
+        // Two of them, or none, and the substitution goes somewhere wrong.
+        val marked = repo.protocol.dailyTimeline.filter { it.isLightsOut }
+        assertEquals(1, marked.size)
+        assertEquals("21:30", marked.single().time)
+    }
+
+    @Test
+    fun `the lights-out reminder uses tonight's ramp target, not the timeline`() {
+        // Ramp night 2 targets 22:45, while the timeline says 21:30 because
+        // that is where the ramp eventually lands.
+        val night2 = LocalDate.parse("2026-09-22")
+        val lightsOut = repo.reminderMoments(night2).single { it.isLightsOut }
+
+        assertEquals(LocalTime.of(22, 45), lightsOut.time)
+        assertEquals("21:30", lightsOut.id)
+    }
+
+    @Test
+    fun `the evening is reminded by default and the rest of the day is not`() {
+        val moments = repo.reminderMoments(LocalDate.parse("2026-09-22"))
+        val on = moments.filter { it.onByDefault }.map { it.id }
+
+        assertEquals(listOf("20:00", "21:00", "21:30"), on)
+    }
+
+    @Test
+    fun `no reminder can be generated for the wake time`() {
+        // The lie-in guardrail, in arithmetic rather than in prose: the wake
+        // time is not among the moments at all, so nothing here can ever
+        // schedule or move it.
+        val moments = repo.reminderMoments(LocalDate.parse("2026-09-22"))
+        assertTrue(moments.none { it.time == repo.wakeTime && it.onByDefault })
+    }
+
+    @Test
+    fun `the nap threshold is read from the file`() {
+        assertEquals(2.0, repo.protocol.sleep.napThresholdHours, 0.001)
+        assertEquals(120L, repo.napThreshold.toMinutes())
+    }
+
+    @Test
     fun `sunday rehab is empty and untouched by the app`() {
         val sunday = repo.sessionFor(LocalDate.of(2026, 9, 27).dayOfWeek)
         assertNotNull(sunday)

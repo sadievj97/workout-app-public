@@ -198,6 +198,7 @@
       "facing_note": "Hanging and facing the viewer, which is why this one is drawn almost straight on.",
       "camera_note": "Almost straight on, because the arms spread sideways and that is the whole shape. A few degrees of turn keeps it from looking flat.",
       "symmetry": "mirror_x",
+      "base_rung": 1,
       "working_limbs": ["arms", "torso"],
       "props": [
         {"type": "bar", "y": -0.380, "from_x": -0.300, "to_x": 0.300, "z": 0.020}
@@ -361,6 +362,7 @@
       "camera": {"azimuth": 12, "elevation": 6},
       "facing": [0.0, 0.0, 1.0],
       "symmetry": "mirror_x",
+      "base_rung": 1,
       "working_limbs": ["arms", "torso"],
       "props": [
         {"type": "bar", "y": -0.380, "from_x": -0.300, "to_x": 0.300, "z": 0.020}
@@ -399,6 +401,7 @@
       "camera": {"azimuth": 24, "elevation": 12},
       "facing": [0.0, -1.0, 0.0],
       "symmetry": "mirror_z",
+      "base_rung": 1,
       "working_limbs": ["arms", "torso"],
       "props": [
         {"type": "floor", "y": 0.300, "from_x": -0.5, "to_x": 0.5, "depth": 0.22},
@@ -439,6 +442,7 @@
       "camera": {"azimuth": 70, "elevation": 8},
       "facing": [0.0, 0.0, 1.0],
       "symmetry": "mirror_x",
+      "base_rung": 1,
       "working_limbs": ["torso"],
       "props": [
         {"type": "bar", "y": -0.400, "from_x": -0.300, "to_x": 0.300, "z": 0.020}
@@ -613,6 +617,7 @@
       "facing": [0.0, -1.0, 0.0],
       "facing_note": "Shoulders on a bench and hips up, so the front of the body points at the ceiling.",
       "symmetry": "none",
+      "base_rung": 1,
       "working_limbs": ["legs"],
       "props": [
         {"type": "floor", "y": 0.300, "from_x": -0.5, "to_x": 0.5, "depth": 0.22},
@@ -715,6 +720,7 @@
       "camera": {"azimuth": 22, "elevation": 12},
       "facing": [0.0, -1.0, 0.0],
       "symmetry": "mirror_z",
+      "base_rung": 1,
       "working_limbs": ["legs"],
       "props": [
         {"type": "floor", "y": 0.300, "from_x": -0.5, "to_x": 0.5, "depth": 0.22},
@@ -754,6 +760,7 @@
       "camera": {"azimuth": 24, "elevation": 8},
       "facing": [1.0, 0.0, 0.0],
       "symmetry": "none",
+      "base_rung": 2,
       "working_limbs": ["legs"],
       "props": [
         {"type": "floor", "y": 0.205, "from_x": -0.5, "to_x": 0.5, "depth": 0.22},

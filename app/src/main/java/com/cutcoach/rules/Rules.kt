@@ -6,6 +6,8 @@ import com.cutcoach.health.DailyHealth
 import com.cutcoach.health.ZoneVerdict
 import com.cutcoach.health.describeRampGap
 import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import kotlin.math.abs
 
@@ -45,6 +47,8 @@ data class RuleInput(
     val lastSets: Map<String, List<SetResult>> = emptyMap(),
     /** Which rung each exercise is currently on. */
     val rungs: Map<String, Int> = emptyMap(),
+    /** Needed to say what time a recorded session started. */
+    val zone: ZoneId = ZoneId.systemDefault(),
 )
 
 /** What to do with one exercise next time. */
@@ -439,8 +443,10 @@ private fun heartRateRecommendations(input: RuleInput): List<Recommendation> =
 
         // Name the session. The watch often records several in a day, and
         // three identical "That sat in Zone 2" lines say nothing about which.
+        // The watch leaves most sessions untitled, and two of the same length
+        // in one day read identically, so fall back to when it started.
         val what = session.title?.takeIf { it.isNotBlank() }
-            ?: "The ${session.total.toMinutes()}-minute session"
+            ?: "The ${SESSION_CLOCK.format(session.start.atZone(input.zone))} session"
 
         when (session.verdict) {
             ZoneVerdict.ABOVE -> Recommendation(
@@ -520,3 +526,6 @@ private fun readinessRecommendation(
         else -> null
     }
 }
+
+/** Short enough to sit inside a headline. */
+private val SESSION_CLOCK: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")

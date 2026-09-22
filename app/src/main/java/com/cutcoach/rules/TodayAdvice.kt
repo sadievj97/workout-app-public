@@ -61,6 +61,7 @@ suspend fun adviceForToday(
             rehabExercises = settings.rehabExercises.first(),
             lastSets = lastSets,
             rungs = rungs,
+            zone = zone,
         ),
     )
 }

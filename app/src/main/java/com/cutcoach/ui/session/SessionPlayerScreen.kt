@@ -39,6 +39,7 @@ import com.cutcoach.data.poses.PoseRepository
 import com.cutcoach.data.session.SessionStep
 import com.cutcoach.data.session.Side
 import com.cutcoach.ui.figure.AnimatedStickFigure
+import com.cutcoach.ui.figure.FigureRender
 import com.cutcoach.ui.theme.CoolSky
 import com.cutcoach.ui.theme.Mist
 import com.cutcoach.ui.theme.MistDim
@@ -427,9 +428,12 @@ private fun ExerciseFigure(
         style = poses.library.figure,
         modifier = Modifier
             .fillMaxWidth()
-            .height(140.dp),
+            .height(150.dp),
         mirrored = side == Side.RIGHT,
         highlightWorking = working,
+        // Small and mid-set, a shaded body would be a smudge. The bare
+        // skeleton stays legible at this size.
+        render = FigureRender.LINES,
         holdProgress = holdProgress,
     )
 }

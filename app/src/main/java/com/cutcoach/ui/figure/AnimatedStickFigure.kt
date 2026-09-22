@@ -42,6 +42,7 @@ fun AnimatedStickFigure(
     tempo: Tempo = Tempo.Default,
     mirrored: Boolean = false,
     highlightWorking: Boolean = true,
+    render: FigureRender = FigureRender.SOLID,
     /** Extra turn on top of the exercise's own camera, from the viewer dragging. */
     extraAzimuth: Float = 0f,
     extraElevation: Float = 0f,
@@ -66,6 +67,7 @@ fun AnimatedStickFigure(
             working = working,
             highlightWorking = highlightWorking,
             mirrored = mirrored,
+            render = render,
             modifier = modifier,
         )
         return
@@ -97,6 +99,7 @@ fun AnimatedStickFigure(
         workingLimbs = working,
         highlightWorking = highlightWorking,
         mirrored = mirrored,
+        render = render,
         holdProgress = holdProgress,
     )
 }
@@ -113,6 +116,7 @@ private fun ReducedMotionPair(
     working: Set<String>,
     highlightWorking: Boolean,
     mirrored: Boolean,
+    render: FigureRender,
     modifier: Modifier,
 ) {
     val startName = animation.sequence.first().pose
@@ -144,6 +148,7 @@ private fun ReducedMotionPair(
                         workingLimbs = working,
                         highlightWorking = highlightWorking && label == "End",
                         mirrored = mirrored,
+                        render = render,
                     )
                 }
                 Text(label, style = MaterialTheme.typography.labelSmall, color = MistDim)

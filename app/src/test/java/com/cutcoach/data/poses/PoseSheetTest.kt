@@ -111,53 +111,104 @@ class PoseSheetTest {
             }
         }
 
-        val neck = pose.neckAt.project(camera)
-        val hip = pose.hipAt.project(camera)
-        val head = pose.headAt.project(camera)
-        val armA = pose.armA().map { it.project(camera) }
-        val armB = pose.armB(symmetry).map { it.project(camera) }
-        val legA = pose.legA().map { it.project(camera) }
-        val legB = pose.legB(symmetry).map { it.project(camera) }
-
-        val bones = buildList {
-            add(Triple(neck, hip, "torso"))
-            listOf(armA, armB).forEach { arm ->
-                add(Triple(neck, arm[0], "arms"))
-                add(Triple(arm[0], arm[1], "arms"))
-            }
-            listOf(legA, legB).forEach { leg ->
-                add(Triple(hip, leg[0], "legs"))
-                add(Triple(leg[0], leg[1], "legs"))
-                add(Triple(leg[1], leg[2], "legs"))
-            }
+        // The solid figure, built and depth-sorted exactly as the app does it.
+        val body = pose.body(symmetry, style.body)
+        val withDepth = body.map { part ->
+            part to part.points.map { it.project(camera).depth }.average().toFloat()
         }
-
-        val depths = bones.map { (it.first.depth + it.second.depth) / 2f } + head.depth
-        val nearest = depths.max()
-        val furthest = depths.min()
+        val nearest = withDepth.maxOf { it.second }
+        val furthest = withDepth.minOf { it.second }
         val spread = nearest - furthest
 
-        fun fade(depth: Float): Float =
-            if (spread < 0.01f) 1f else style.farFade + (1f - style.farFade) * ((depth - furthest) / spread)
-
-        bones.sortedBy { (it.first.depth + it.second.depth) / 2f }.forEach { (from, to, _) ->
-            val opacity = fade((from.depth + to.depth) / 2f)
-            sb.append(
-                "<line x1='${sx(from)}' y1='${sy(from)}' x2='${sx(to)}' y2='${sy(to)}' " +
-                    "stroke='#D5DDE8' stroke-opacity='$opacity' stroke-width='$stroke' " +
-                    "stroke-linecap='round'/>",
-            )
+        fun fade(depth: Float): Float = if (spread < 0.01f) {
+            1f
+        } else {
+            style.body.farFade + (1f - style.body.farFade) * ((depth - furthest) / spread)
         }
 
-        sb.append(
-            "<circle cx='${sx(head)}' cy='${sy(head)}' r='${style.headRadius * side}' " +
-                "fill='none' stroke='#D5DDE8' stroke-opacity='${fade(head.depth)}' " +
-                "stroke-width='$stroke'/>",
-        )
+        val outline = style.body.outline * side
+
+        withDepth.sortedBy { it.second }.forEach { (part, depth) ->
+            val shade = mixToward(0xD5DDE8, 0x101B2D, 1f - fade(depth))
+            val rim = "#101B2D"
+            when (part) {
+                is Capsule -> {
+                    val a = part.from.project(camera)
+                    val b = part.to.project(camera)
+                    val ra = part.radiusFrom * side
+                    val rb = part.radiusTo * side
+                    sb.append(capsuleSvg(sx(a), sy(a), sx(b), sy(b), ra + outline, rb + outline, rim))
+                    sb.append(capsuleSvg(sx(a), sy(a), sx(b), sy(b), ra, rb, shade))
+                }
+                is Slab -> {
+                    val pts = part.corners.map { it.project(camera) }
+                    val poly = pts.joinToString(" ") { "${sx(it)},${sy(it)}" }
+                    val r = part.radius * side
+                    sb.append(
+                        "<polygon points='$poly' fill='$rim' stroke='$rim' " +
+                            "stroke-width='${(r + outline) * 2}' stroke-linejoin='round'/>",
+                    )
+                    sb.append(
+                        "<polygon points='$poly' fill='$shade' stroke='$shade' " +
+                            "stroke-width='${r * 2}' stroke-linejoin='round'/>",
+                    )
+                }
+                is Ball -> {
+                    val c = part.centre.project(camera)
+                    val r = part.radius * side
+                    sb.append(
+                        "<circle cx='${sx(c)}' cy='${sy(c)}' r='${r + outline}' fill='$rim'/>",
+                    )
+                    sb.append("<circle cx='${sx(c)}' cy='${sy(c)}' r='$r' fill='$shade'/>")
+                }
+            }
+        }
+
         sb.append(
             "<text x='${originX + side / 2}' y='${originY + side - 6}' fill='#7FB2E5' " +
                 "font-size='12' text-anchor='middle' font-family='sans-serif'>$label</text>",
         )
         return sb.toString()
+    }
+
+    /** A capsule as its quad plus its two end circles, same as the app draws it. */
+    private fun capsuleSvg(
+        ax: Float,
+        ay: Float,
+        bx: Float,
+        by: Float,
+        ra: Float,
+        rb: Float,
+        fill: String,
+    ): String {
+        val dx = bx - ax
+        val dy = by - ay
+        val length = kotlin.math.sqrt(dx * dx + dy * dy)
+        val body = if (length < 0.001f) {
+            ""
+        } else {
+            val px = -dy / length
+            val py = dx / length
+            val points = listOf(
+                (ax + px * ra) to (ay + py * ra),
+                (bx + px * rb) to (by + py * rb),
+                (bx - px * rb) to (by - py * rb),
+                (ax - px * ra) to (ay - py * ra),
+            ).joinToString(" ") { "${it.first},${it.second}" }
+            "<polygon points='$points' fill='$fill'/>"
+        }
+        return body +
+            "<circle cx='$ax' cy='$ay' r='$ra' fill='$fill'/>" +
+            "<circle cx='$bx' cy='$by' r='$rb' fill='$fill'/>"
+    }
+
+    /** Fades a colour toward the background, matching the renderer's depth fade. */
+    private fun mixToward(from: Int, to: Int, amount: Float): String {
+        fun channel(shift: Int): Int {
+            val a = (from shr shift) and 0xFF
+            val b = (to shr shift) and 0xFF
+            return (a + (b - a) * amount).toInt().coerceIn(0, 255)
+        }
+        return "#%02X%02X%02X".format(channel(16), channel(8), channel(0))
     }
 }

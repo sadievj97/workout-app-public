@@ -26,6 +26,38 @@ data class FigureStyle(
     val strokeWidth: Float,
     /** How faint the furthest part of the figure goes. 1 would be no depth at all. */
     val farFade: Float = 0.45f,
+    val body: BodyStyle = BodyStyle(),
+)
+
+/**
+ * How thick each part of the body is.
+ *
+ * The joint centres in a pose are a skeleton. These numbers turn it into a
+ * body, so nothing in poses.json has to describe shape as well as position.
+ * Shoulders and hips are placed out to each side along the body's own
+ * left-right axis, which the exercise's symmetry already names.
+ */
+@Serializable
+data class BodyStyle(
+    val headRadius: Float = 0.055f,
+    val neckRadius: Float = 0.020f,
+    val shoulderHalfWidth: Float = 0.058f,
+    val hipHalfWidth: Float = 0.044f,
+    val chestRadius: Float = 0.042f,
+    val waistRadius: Float = 0.034f,
+    val upperArmRadius: Float = 0.026f,
+    val forearmRadius: Float = 0.020f,
+    val handRadius: Float = 0.019f,
+    val handLength: Float = 0.042f,
+    val thighRadius: Float = 0.035f,
+    val shinRadius: Float = 0.025f,
+    val footRadius: Float = 0.019f,
+    /** A dark rim drawn behind each part, so overlapping limbs stay separate. */
+    val outline: Float = 0.007f,
+    /** Milder than the line figure's, because shading already carries depth. */
+    val farFade: Float = 0.62f,
+    /** Which way the light comes from, in screen space. */
+    val lightFrom: List<Float> = listOf(-0.45f, -0.80f),
 )
 
 /**

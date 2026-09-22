@@ -16,6 +16,7 @@ import com.cutcoach.data.poses.Projected
 import com.cutcoach.data.poses.Prop
 import com.cutcoach.data.poses.Symmetry
 import com.cutcoach.data.poses.Vec3
+import com.cutcoach.data.poses.body
 import com.cutcoach.data.poses.project
 import com.cutcoach.ui.theme.CoolSky
 import com.cutcoach.ui.theme.Mist
@@ -26,6 +27,16 @@ import com.cutcoach.ui.theme.SunriseAmber
 private const val ARMS = "arms"
 private const val LEGS = "legs"
 private const val TORSO = "torso"
+
+/**
+ * How much of a body to draw.
+ *
+ * [SOLID] is the real figure: a shaded mannequin with volume, which is what a
+ * cue card wants. [LINES] is the bare skeleton, which stays legible at the
+ * small size the session player shows it at, where a shaded body would just be
+ * a smudge.
+ */
+enum class FigureRender { SOLID, LINES }
 
 /**
  * One stick figure, projected from its three-dimensional pose.
@@ -46,6 +57,7 @@ fun StickFigure(
     workingLimbs: Set<String> = emptySet(),
     highlightWorking: Boolean = false,
     mirrored: Boolean = false,
+    render: FigureRender = FigureRender.SOLID,
     /** 0 to 1 around the figure, for a timed hold. Null draws no ring. */
     holdProgress: Float? = null,
 ) {
@@ -59,15 +71,26 @@ fun StickFigure(
 
         holdProgress?.let { drawHoldRing(it, box, style) }
 
-        drawFigure(
-            pose = shown,
-            style = style,
-            camera = camera,
-            symmetry = symmetry,
-            box = box,
-            workingLimbs = workingLimbs,
-            highlight = highlightWorking,
-        )
+        when (render) {
+            FigureRender.SOLID -> drawMannequin(
+                parts = shown.body(symmetry, style.body),
+                style = style.body,
+                camera = camera,
+                box = box,
+                workingLimbs = workingLimbs,
+                highlight = highlightWorking,
+            )
+
+            FigureRender.LINES -> drawFigure(
+                pose = shown,
+                style = style,
+                camera = camera,
+                symmetry = symmetry,
+                box = box,
+                workingLimbs = workingLimbs,
+                highlight = highlightWorking,
+            )
+        }
     }
 }
 
@@ -75,14 +98,9 @@ fun StickFigure(
  * Poses project into a square, so the drawing is squared and centred rather
  * than stretched to whatever shape the caller gives it.
  */
-private data class Box(val left: Float, val top: Float, val side: Float) {
-    fun at(point: Projected): Offset = Offset(left + point.x * side, top + point.y * side)
-    fun scale(value: Float): Float = value * side
-}
-
-private fun squareBox(size: Size): Box {
+private fun squareBox(size: Size): FigureBox {
     val side = minOf(size.width, size.height)
-    return Box(
+    return FigureBox(
         left = (size.width - side) / 2f,
         top = (size.height - side) / 2f,
         side = side,
@@ -103,7 +121,7 @@ private fun DrawScope.drawFigure(
     style: FigureStyle,
     camera: Camera,
     symmetry: Symmetry,
-    box: Box,
+    box: FigureBox,
     workingLimbs: Set<String>,
     highlight: Boolean,
 ) {
@@ -170,7 +188,7 @@ private fun DrawScope.drawFigure(
     )
 }
 
-private fun DrawScope.drawProp(prop: Prop, box: Box, camera: Camera) {
+private fun DrawScope.drawProp(prop: Prop, box: FigureBox, camera: Camera) {
     val width = box.scale(0.012f)
 
     fun line(fromX: Float, toX: Float, y: Float, z: Float, stroke: Float = width) {
@@ -214,7 +232,7 @@ private fun DrawScope.drawProp(prop: Prop, box: Box, camera: Camera) {
 }
 
 /** The ring around a timed hold, filling as the countdown runs out. */
-private fun DrawScope.drawHoldRing(progress: Float, box: Box, style: FigureStyle) {
+private fun DrawScope.drawHoldRing(progress: Float, box: FigureBox, style: FigureStyle) {
     val inset = box.scale(0.03f)
     val ringWidth = box.scale(style.strokeWidth * 0.8f)
     val topLeft = Offset(box.left + inset, box.top + inset)

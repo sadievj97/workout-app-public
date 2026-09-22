@@ -77,9 +77,13 @@ Build in order. Do not start a phase until the previous one works on the phone.
 
 Build right after the Phase 1 timers work on the phone.
 
-**Stick-figure animations (drawn in code, work offline)**
-- One simple figure drawn with Compose Canvas: head, torso, both upper and lower arms, both upper and lower legs, feet. No 3D library, no model files, no image files, no third-party animation assets.
-- Joints are three-dimensional and projected in code, so one set of poses can be shown from any angle. Parts further from the viewer are drawn first and faded, which is what stops a turned figure reading as a flat tangle of lines.
+**Figure animations (drawn in code, work offline)**
+- A three-dimensional figure drawn with Compose Canvas: head, torso, both upper and lower arms, both upper and lower legs, hands, feet. No 3D library, no model files, no image files, no third-party animation assets. A rigged human model would be a licensed asset and would break the clean public repo in Phase 6.
+- Joints are three-dimensional and projected in code, so one set of poses can be shown from any angle.
+- The body is built from those joint centres as rounded solids: a smooth artist's mannequin, not a realistic person. Shoulders and hips are placed out to each side along the body's own left-right axis, and every thickness lives in one `body` block in `poses.json`, so a pose only ever describes position, never shape.
+- Three things make it read as solid: parts are drawn furthest first so nearer limbs cover the ones behind, each part is shaded across its width from a fixed light, and each part carries a dark rim so an arm crossing the chest stays legible.
+- Keep a proportion check in the tests. The first attempt had a torso as wide as it was long, which read as a slab and swallowed the head.
+- The session player shows the bare skeleton rather than the solid body, because at that size a shaded body is a smudge.
 - Each exercise is a short sequence of poses (keyframes) with smooth interpolation between them.
 - Store the poses as data in `app/src/main/assets/poses.json`, one entry per exercise id in `exercises.json`, so a wrong pose can be fixed without touching drawing code.
 - Most exercises are symmetrical, so write down one arm and one leg and reflect the other. Write both out only where the sides genuinely differ, as in a split squat.

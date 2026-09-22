@@ -1,5 +1,8 @@
 // Since AGP 9.0 the Android plugin brings Kotlin support with it, so there is
 // no separate org.jetbrains.kotlin.android plugin here. Applying it is an error.
+import org.gradle.api.tasks.PathSensitivity
+import org.gradle.api.tasks.testing.Test
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -46,6 +49,16 @@ kotlin {
 // crash on the phone.
 ksp {
     arg("room.schemaLocation", "$projectDir/schemas")
+}
+
+// The unit tests read protocol.json, exercises.json and poses.json straight
+// off disk, so that a typo in one of them fails on the desktop in seconds.
+// Gradle cannot see that on its own and would report the tests up to date after
+// an asset was edited, which quietly hides a real failure.
+tasks.withType<Test>().configureEach {
+    inputs.dir(layout.projectDirectory.dir("src/main/assets"))
+        .withPropertyName("protocolAssets")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
 }
 
 dependencies {

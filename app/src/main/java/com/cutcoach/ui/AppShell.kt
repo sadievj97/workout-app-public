@@ -16,9 +16,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -40,6 +42,8 @@ import com.cutcoach.data.protocol.ProtocolRepository
 import com.cutcoach.data.settings.SettingsRepository
 import com.cutcoach.ui.body.BodyScreen
 import com.cutcoach.ui.exercise.CueCardScreen
+
+import com.cutcoach.ui.exercise.LadderScreen
 import com.cutcoach.health.DataCheckScreen
 import com.cutcoach.ui.figure.FormCheckScreen
 import com.cutcoach.ui.history.ExerciseHistoryScreen
@@ -68,6 +72,7 @@ object Routes {
     const val EXERCISE_HISTORY = "exerciseHistory/{exerciseId}"
     const val FIGURES = "figures"
     const val DATA_CHECK = "dataCheck"
+    const val LADDERS = "ladders"
 
     fun session(id: String) = "session/$id"
     fun cueCard(id: String) = "cue/$id"
@@ -178,6 +183,7 @@ private fun NavGraph(
                 repo = repo,
                 onOpenFigures = { navController.navigate(Routes.FIGURES) },
                 onOpenDataCheck = { navController.navigate(Routes.DATA_CHECK) },
+                onOpenLadders = { navController.navigate(Routes.LADDERS) },
             )
         }
 
@@ -187,6 +193,10 @@ private fun NavGraph(
 
         composable(Routes.DATA_CHECK) {
             DataCheckScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(Routes.LADDERS) {
+            LadderScreen(repo = repo, onBack = { navController.popBackStack() })
         }
 
         composable(Routes.HISTORY) {
@@ -242,11 +252,19 @@ private fun NavGraph(
                 val segment by settings.videoSegment(exerciseId)
                     .collectAsStateWithLifecycle(null)
 
+                val training = remember { TrainingRepository.get(context) }
+                val scope = rememberCoroutineScope()
+                val step by training.ladderStepFlow(exerciseId)
+                    .collectAsStateWithLifecycle(0)
+
                 CueCardScreen(
                     exercise = exercise,
-                    // Until progression is stored, everyone starts on rung one.
-                    // Phase 3 replaces this with the exercise's real position.
-                    currentLadderStep = 0,
+                    currentLadderStep = step,
+                    onLadderStepChange = { index ->
+                        scope.launch {
+                            training.setLadderStep(exerciseId, index, exercise.ladder.size)
+                        }
+                    },
                     videoUrl = override.ifBlank { exercise.videoUrl },
                     videoStartS = segment?.first ?: exercise.videoStartS,
                     videoEndS = segment?.second ?: exercise.videoEndS,

@@ -2,6 +2,7 @@ package com.cutcoach.data.db
 
 import android.content.Context
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import java.time.LocalDate
 
 /**
@@ -82,16 +83,33 @@ class TrainingRepository(private val db: CutCoachDatabase) {
     suspend fun ladderStep(exerciseId: String): Int =
         db.exerciseStateDao().forExercise(exerciseId)?.ladderStep ?: 0
 
-    suspend fun setLadderStep(exerciseId: String, step: Int) =
+    /**
+     * Where an exercise sits on its ladder.
+     *
+     * [rungs] is the length of that exercise's ladder, and the step is clamped
+     * to it. An index past the end would leave [ladderStep] pointing at nothing:
+     * the cue card would show no rung as current and the figure would fall back
+     * to the default tempo, both silently.
+     */
+    suspend fun setLadderStep(exerciseId: String, step: Int, rungs: Int) =
         db.exerciseStateDao().upsert(
             ExerciseStateEntity(
                 exerciseId = exerciseId,
-                ladderStep = step,
+                ladderStep = step.coerceIn(0, (rungs - 1).coerceAtLeast(0)),
                 updatedAt = System.currentTimeMillis(),
             ),
         )
 
     fun allLadderSteps(): Flow<List<ExerciseStateEntity>> = db.exerciseStateDao().all()
+
+    /** Every exercise's rung, keyed by id, for the screens that show them all. */
+    val ladderSteps: Flow<Map<String, Int>> =
+        db.exerciseStateDao().all().map { rows -> rows.associate { it.exerciseId to it.ladderStep } }
+
+    fun ladderStepFlow(exerciseId: String): Flow<Int> =
+        db.exerciseStateDao().all().map { rows ->
+            rows.firstOrNull { it.exerciseId == exerciseId }?.ladderStep ?: 0
+        }
 
     // ---- Body -------------------------------------------------------------
 

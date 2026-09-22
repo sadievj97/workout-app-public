@@ -64,6 +64,7 @@ fun SettingsScreen(
     repo: ProtocolRepository,
     onOpenFigures: () -> Unit,
     onOpenDataCheck: () -> Unit,
+    onOpenLadders: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -83,6 +84,24 @@ fun SettingsScreen(
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         Text("Settings", style = MaterialTheme.typography.displaySmall, color = Mist)
+
+        CutCard {
+            SectionLabel("Difficulty")
+            TextButton(onClick = onOpenLadders) {
+                Text(
+                    "Starting rungs: where you begin on each ladder",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = CoolSky,
+                )
+            }
+            Text(
+                "Everything starts on its first rung. If you can already do the " +
+                    "harder version, say so here rather than working up to where " +
+                    "you already are.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MistDim,
+            )
+        }
 
         CutCard {
             SectionLabel("Figures")

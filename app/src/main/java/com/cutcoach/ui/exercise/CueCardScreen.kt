@@ -2,6 +2,7 @@ package com.cutcoach.ui.exercise
 
 import android.content.Intent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -55,6 +57,8 @@ import com.cutcoach.ui.theme.SunriseAmber
 fun CueCardScreen(
     exercise: Exercise,
     currentLadderStep: Int,
+    /** Tapping a rung says where you actually are, which sets tempo and difficulty. */
+    onLadderStepChange: (Int) -> Unit,
     /** The link to use: a Settings override if there is one, otherwise the library's. */
     videoUrl: String,
     /** The seconds of that clip worth looping. */
@@ -188,8 +192,24 @@ fun CueCardScreen(
                     number = index + 1,
                     isCurrent = index == currentLadderStep,
                     isDone = index < currentLadderStep,
+                    onSelect = { onLadderStepChange(index) },
                 )
             }
+            Text(
+                "Tap the rung you are actually on. It sets the difficulty and the " +
+                    "tempo; it changes nothing about the sets or the schedule.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MistDim,
+            )
+            // Said plainly rather than letting the picture quietly mislead. The
+            // figure applies a rung's tempo but not its body position, because
+            // poses.json has no variant poses yet.
+            Text(
+                "The figure draws one version of the movement. A rung that changes " +
+                    "your body position is not drawn yet, though its tempo is applied.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MistDim,
+            )
             exercise.ladderEndNote?.let {
                 Box(Modifier.height(4.dp))
                 Text(it, style = MaterialTheme.typography.bodySmall, color = MistDim)
@@ -281,9 +301,21 @@ private fun Bullet(text: String, dotColor: androidx.compose.ui.graphics.Color) {
 }
 
 @Composable
-private fun LadderRung(text: String, number: Int, isCurrent: Boolean, isDone: Boolean) {
+private fun LadderRung(
+    text: String,
+    number: Int,
+    isCurrent: Boolean,
+    isDone: Boolean,
+    onSelect: () -> Unit,
+) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(10.dp))
+            .clickable(onClick = onSelect)
+            // 56 dp, as the brief asks for anything tapped with one hand.
+            .heightIn(min = 56.dp)
+            .padding(vertical = 8.dp, horizontal = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.Top,
     ) {

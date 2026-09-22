@@ -11,9 +11,9 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import com.cutcoach.data.poses.Camera
 import com.cutcoach.data.poses.FigureStyle
-import com.cutcoach.data.poses.MuscleRegion
+import com.cutcoach.data.poses.Anatomy
 import com.cutcoach.data.poses.Pose
-import com.cutcoach.data.poses.musclePatches
+import com.cutcoach.data.poses.anatomy
 import com.cutcoach.data.poses.Projected
 import com.cutcoach.data.poses.Prop
 import com.cutcoach.data.poses.Symmetry
@@ -60,8 +60,10 @@ fun StickFigure(
     highlightWorking: Boolean = false,
     mirrored: Boolean = false,
     render: FigureRender = FigureRender.SOLID,
-    /** Where the worked muscles sit, for the amber patches on the solid figure. */
-    muscleRegions: List<MuscleRegion> = emptyList(),
+    /** The muscles this exercise works, as named in exercises.json. */
+    workedMuscles: List<String> = emptyList(),
+    /** The anatomy that makes up the solid figure's shape. */
+    anatomy: Anatomy = Anatomy(),
     /** Which way the front of the body points. Needed before "front of the arm" means anything. */
     facing: Vec3 = Vec3(0f, 0f, 1f),
     /** 0 to 1 around the figure, for a timed hold. Null draws no ring. */
@@ -79,8 +81,11 @@ fun StickFigure(
 
         when (render) {
             FigureRender.SOLID -> drawMannequin(
-                parts = shown.body(symmetry, style.body),
-                patches = shown.musclePatches(symmetry, style.body, facing, muscleRegions),
+                // The frame and the muscles riding on it are drawn together, so
+                // a muscle on the far side is hidden by the body in front of it
+                // rather than floating over the top.
+                parts = shown.body(symmetry, style.body) +
+                    shown.anatomy(symmetry, style.body, facing, anatomy, workedMuscles),
                 style = style.body,
                 camera = camera,
                 box = box,

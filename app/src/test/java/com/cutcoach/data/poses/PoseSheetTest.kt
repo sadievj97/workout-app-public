@@ -50,7 +50,7 @@ class PoseSheetTest {
                         add(animation.camera.turnedBy(it) to "turned ${it.toInt()} more")
                     }
                 }
-                val regions = library.regionsFor(exercises.exercise(id)?.muscles.orEmpty())
+                val worked = exercises.exercise(id)?.muscles.orEmpty()
                 cameras.forEachIndexed { column, (camera, label) ->
                     append(
                         panel(
@@ -58,7 +58,8 @@ class PoseSheetTest {
                             animation = animation,
                             style = library.figure,
                             camera = camera,
-                            regions = regions,
+                            worked = worked,
+                            anatomy = library.anatomy,
                             originX = column * side,
                             originY = row * side,
                             label = label,
@@ -80,7 +81,8 @@ class PoseSheetTest {
         animation: ExerciseAnimation,
         style: FigureStyle,
         camera: Camera,
-        regions: List<MuscleRegion>,
+        worked: List<String>,
+        anatomy: Anatomy,
         originX: Int,
         originY: Int,
         label: String,
@@ -119,7 +121,8 @@ class PoseSheetTest {
         }
 
         // The solid figure, built and depth-sorted exactly as the app does it.
-        val body = pose.body(symmetry, style.body)
+        val body = pose.body(symmetry, style.body) +
+            pose.anatomy(symmetry, style.body, animation.facingAt, anatomy, worked)
         val withDepth = body.map { part ->
             part to part.points.map { it.project(camera).depth }.average().toFloat()
         }
@@ -134,17 +137,20 @@ class PoseSheetTest {
         }
 
         val outline = style.body.outline * side
+        val muscleOutline = style.body.muscleOutline * side
 
         withDepth.sortedBy { it.second }.forEach { (part, depth) ->
-            val shade = mixToward(0xD5DDE8, 0x101B2D, 1f - fade(depth))
+            val isWorked = part is Capsule && part.worked
+            val shade = mixToward(if (isWorked) 0xF2A541 else 0xD5DDE8, 0x101B2D, 1f - fade(depth))
             val rim = "#101B2D"
+            val edge = if (part.group == "muscle") muscleOutline else outline
             when (part) {
                 is Capsule -> {
                     val a = part.from.project(camera)
                     val b = part.to.project(camera)
                     val ra = part.radiusFrom * side
                     val rb = part.radiusTo * side
-                    sb.append(capsuleSvg(sx(a), sy(a), sx(b), sy(b), ra + outline, rb + outline, rim))
+                    sb.append(capsuleSvg(sx(a), sy(a), sx(b), sy(b), ra + edge, rb + edge, rim))
                     sb.append(capsuleSvg(sx(a), sy(a), sx(b), sy(b), ra, rb, shade))
                 }
                 is Slab -> {
@@ -153,7 +159,7 @@ class PoseSheetTest {
                     val r = part.radius * side
                     sb.append(
                         "<polygon points='$poly' fill='$rim' stroke='$rim' " +
-                            "stroke-width='${(r + outline) * 2}' stroke-linejoin='round'/>",
+                            "stroke-width='${(r + edge) * 2}' stroke-linejoin='round'/>",
                     )
                     sb.append(
                         "<polygon points='$poly' fill='$shade' stroke='$shade' " +
@@ -164,43 +170,13 @@ class PoseSheetTest {
                     val c = part.centre.project(camera)
                     val r = part.radius * side
                     sb.append(
-                        "<circle cx='${sx(c)}' cy='${sy(c)}' r='${r + outline}' fill='$rim'/>",
+                        "<circle cx='${sx(c)}' cy='${sy(c)}' r='${r + edge}' fill='$rim'/>",
                     )
                     sb.append("<circle cx='${sx(c)}' cy='${sy(c)}' r='$r' fill='$shade'/>")
                 }
             }
         }
 
-        // The worked muscles, amber, over the finished body.
-        pose.musclePatches(symmetry, style.body, animation.facingAt, regions).forEach { patch ->
-            val depth = patch.points.map { it.project(camera).depth }.average().toFloat()
-            val toward = patch.outward?.facesViewer(camera)
-            val visible = toward == null || toward > 0.08f
-            val tone = if (visible) 0xF2A541 else blend(0xD5DDE8, 0xF2A541, 0.38f)
-            val amber = mixToward(tone, 0x101B2D, 1f - fade(depth))
-
-            when (patch) {
-                is PatchCapsule -> {
-                    val a = patch.from.project(camera)
-                    val b = patch.to.project(camera)
-                    sb.append(
-                        capsuleSvg(
-                            sx(a), sy(a), sx(b), sy(b),
-                            patch.radiusFrom * side, patch.radiusTo * side, amber,
-                        ),
-                    )
-                }
-                is PatchQuad -> {
-                    val pts = patch.corners.map { it.project(camera) }
-                    val poly = pts.joinToString(" ") { "${sx(it)},${sy(it)}" }
-                    val r = patch.radius * side
-                    sb.append(
-                        "<polygon points='$poly' fill='$amber' stroke='$amber' " +
-                            "stroke-width='${r * 2}' stroke-linejoin='round'/>",
-                    )
-                }
-            }
-        }
 
         sb.append(
             "<text x='${originX + side / 2}' y='${originY + side - 6}' fill='#7FB2E5' " +

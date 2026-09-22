@@ -22,7 +22,7 @@ import androidx.compose.runtime.withFrameNanos
 import com.cutcoach.data.poses.Camera
 import com.cutcoach.data.poses.ExerciseAnimation
 import com.cutcoach.data.poses.FigureStyle
-import com.cutcoach.data.poses.MuscleRegion
+import com.cutcoach.data.poses.Anatomy
 import com.cutcoach.data.poses.PoseLibrary
 import com.cutcoach.data.poses.Tempo
 import com.cutcoach.data.poses.Vec3
@@ -48,7 +48,7 @@ fun AnimatedStickFigure(
     render: FigureRender = FigureRender.SOLID,
     /** The muscles this exercise works, as named in exercises.json. */
     muscles: List<String> = emptyList(),
-    /** The library the muscle map lives in. Needed to turn those names into regions. */
+    /** The pose library, which carries the anatomy that gives the figure its shape. */
     library: PoseLibrary? = null,
     /** Extra turn on top of the exercise's own camera, from the viewer dragging. */
     extraAzimuth: Float = 0f,
@@ -63,9 +63,7 @@ fun AnimatedStickFigure(
     val reduceMotion = remember { context.prefersReducedMotion() } || LocalInspectionMode.current
     val timeline = remember(animation, tempo) { animation.timeline(tempo) }
     val working = remember(animation) { animation.workingLimbs.toSet() }
-    val regions = remember(library, muscles) {
-        library?.regionsFor(muscles).orEmpty()
-    }
+    val anatomy = remember(library) { library?.anatomy ?: Anatomy() }
 
     if (timeline.segments.isEmpty()) return
 
@@ -78,7 +76,8 @@ fun AnimatedStickFigure(
             highlightWorking = highlightWorking,
             mirrored = mirrored,
             render = render,
-            regions = regions,
+            anatomy = anatomy,
+            muscles = muscles,
             facing = animation.facingAt,
             modifier = modifier,
         )
@@ -112,7 +111,8 @@ fun AnimatedStickFigure(
         highlightWorking = highlightWorking,
         mirrored = mirrored,
         render = render,
-        muscleRegions = regions,
+        workedMuscles = muscles,
+        anatomy = anatomy,
         facing = animation.facingAt,
         holdProgress = holdProgress,
     )
@@ -131,7 +131,8 @@ private fun ReducedMotionPair(
     highlightWorking: Boolean,
     mirrored: Boolean,
     render: FigureRender,
-    regions: List<MuscleRegion>,
+    anatomy: Anatomy,
+    muscles: List<String>,
     facing: Vec3,
     modifier: Modifier,
 ) {
@@ -165,7 +166,8 @@ private fun ReducedMotionPair(
                         highlightWorking = highlightWorking && label == "End",
                         mirrored = mirrored,
                         render = render,
-                        muscleRegions = regions,
+                        workedMuscles = muscles,
+                        anatomy = anatomy,
                         facing = facing,
                     )
                 }

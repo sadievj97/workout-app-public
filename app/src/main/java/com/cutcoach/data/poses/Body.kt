@@ -20,13 +20,15 @@ sealed interface BodyPart {
     val points: List<Vec3>
 }
 
-/** A limb: a tapered tube with rounded ends. */
+/** A limb, or a muscle riding on one: a tapered tube with rounded ends. */
 data class Capsule(
     val from: Vec3,
     val to: Vec3,
     val radiusFrom: Float,
     val radiusTo: Float,
     override val group: String,
+    /** True for a muscle this exercise works, which is what goes amber. */
+    val worked: Boolean = false,
 ) : BodyPart {
     override val points: List<Vec3> get() = listOf(from, to)
 }
@@ -81,12 +83,17 @@ fun Pose.body(symmetry: Symmetry, style: BodyStyle): List<BodyPart> {
     val hipA = pelvis + lateral * (style.hipHalfWidth * legSide)
     val hipB = pelvis - lateral * (style.hipHalfWidth * legSide)
 
+    // The frame is drawn slim, because the muscles riding on it are what make
+    // the silhouette. Head, hands and feet keep their full size: they have no
+    // muscle forms to give them shape.
+    val core = style.coreScale
+
     return buildList {
         // Torso first in the list; the renderer sorts by depth anyway.
         add(
             Slab(
                 corners = listOf(shoulderA, shoulderB, hipB, hipA),
-                radius = (style.chestRadius + style.waistRadius) / 2f,
+                radius = (style.chestRadius + style.waistRadius) / 2f * core,
                 group = TORSO,
             ),
         )
@@ -97,8 +104,8 @@ fun Pose.body(symmetry: Symmetry, style: BodyStyle): List<BodyPart> {
         listOf(shoulderA to armA, shoulderB to armB).forEach { (shoulder, arm) ->
             val elbow = arm[0]
             val wrist = arm[1]
-            add(Capsule(shoulder, elbow, style.upperArmRadius, style.forearmRadius, ARMS))
-            add(Capsule(elbow, wrist, style.forearmRadius, style.handRadius, ARMS))
+            add(Capsule(shoulder, elbow, style.upperArmRadius * core, style.forearmRadius * core, ARMS))
+            add(Capsule(elbow, wrist, style.forearmRadius * core, style.handRadius * core, ARMS))
 
             // A short hand carrying on past the wrist, so the arm does not
             // simply stop.
@@ -118,8 +125,8 @@ fun Pose.body(symmetry: Symmetry, style: BodyStyle): List<BodyPart> {
             val knee = leg[0]
             val ankle = leg[1]
             val toe = leg[2]
-            add(Capsule(hip, knee, style.thighRadius, style.shinRadius, LEGS))
-            add(Capsule(knee, ankle, style.shinRadius, style.footRadius, LEGS))
+            add(Capsule(hip, knee, style.thighRadius * core, style.shinRadius * core, LEGS))
+            add(Capsule(knee, ankle, style.shinRadius * core, style.footRadius * core, LEGS))
             add(Capsule(ankle, toe, style.footRadius, style.footRadius * 0.85f, LEGS))
         }
     }

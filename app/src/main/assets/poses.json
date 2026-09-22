@@ -45,46 +45,102 @@
     }
   },
 
-  "muscles": {
-    "note": "Where each muscle named in exercises.json sits on the body. A region is a segment, a stretch along it from 0 at the joint nearer the body to 1 at the far joint, and which side of it. Sides are relative to the body, not the screen: an exercise's facing says which way its front points, so front means the chest side whether you are standing, hanging or lying face down.",
-    "segments": "torso runs from the shoulder line to the hip line. upper_arm is shoulder to elbow, forearm elbow to wrist, hand past the wrist. thigh is hip to knee, shin knee to ankle, foot ankle to toe.",
-    "not_really_muscles": "Grip, Core, Balance and trunk and Shoulder stabilizers are functional descriptions rather than single muscles. They are mapped to the regions that do the work, and are listed here so the choice is visible and can be corrected.",
+  "anatomy": {
+    "note": "The muscles are the body. Each form is a shaped mass riding on a bone: the ones an exercise works go amber, the rest stay mist, and together they make the figure's silhouette. Drawn in code, so no anatomical model is licensed or bundled.",
+    "segments": "torso runs from the shoulder line to the hip line. upper_arm is shoulder to elbow, forearm elbow to wrist, thigh hip to knee, shin knee to ankle.",
+    "fields": "from and to run along the segment. side is which way the mass sits, relative to the body. lift is how far out from the bone, as a multiple of the form's own radius. across shifts it sideways: on the torso in fractions of the half width, on a limb in fractions of its radius. mirror repeats it at the opposite across. Limb forms are always drawn on both limbs.",
+    "not_really_muscles": "Grip, Core, Balance and trunk and Shoulder stabilizers are functional descriptions rather than single muscles. Each is attached to the forms that do the work, and they are listed here so the choice is visible and can be corrected.",
+    "fidelity": "Smooth masses, not sculpted anatomy. There are no striations and the contours are approximations, which is why the cue card says the shading is schematic.",
 
-    "regions": {
-    "chest":              [{"segment": "torso", "from": 0.05, "to": 0.45, "side": "front"}],
-    "upper chest":          [{"segment": "torso", "from": 0.00, "to": 0.30, "side": "front"}],
-    "abs":                  [{"segment": "torso", "from": 0.50, "to": 0.95, "side": "front"}],
-    "core": [
-      {"segment": "torso", "from": 0.45, "to": 1.00, "side": "front"},
-      {"segment": "torso", "from": 0.50, "to": 0.95, "side": "lateral"}
-    ],
-    "obliques":             [{"segment": "torso", "from": 0.50, "to": 0.95, "side": "lateral"}],
-    "balance and trunk":    [{"segment": "torso", "from": 0.35, "to": 0.95, "side": "front"}],
-    "lats":                 [{"segment": "torso", "from": 0.10, "to": 0.60, "side": "back"}],
-    "upper back":           [{"segment": "torso", "from": 0.00, "to": 0.40, "side": "back"}],
+    "forms": [
+      {"id": "pectoralis_major", "muscles": ["chest", "upper chest"], "segment": "torso",
+       "from": 0.02, "to": 0.40, "side": "front", "lift": 0.85, "across": 0.52,
+       "radius": 0.034, "radius_to": 0.022, "mirror": true},
 
-    "shoulders":            [{"segment": "upper_arm", "from": 0.00, "to": 0.25, "side": "all"}],
-    "front shoulders":      [{"segment": "upper_arm", "from": 0.00, "to": 0.25, "side": "front"}],
-    "rear shoulders":       [{"segment": "upper_arm", "from": 0.00, "to": 0.25, "side": "back"}],
-    "shoulder stabilizers": [{"segment": "upper_arm", "from": 0.00, "to": 0.25, "side": "all"}],
-    "biceps":               [{"segment": "upper_arm", "from": 0.25, "to": 0.85, "side": "front"}],
-    "triceps":              [{"segment": "upper_arm", "from": 0.25, "to": 0.90, "side": "back"}],
-    "grip": [
-      {"segment": "forearm", "from": 0.35, "to": 1.00, "side": "all"},
-      {"segment": "hand", "from": 0.00, "to": 1.00, "side": "all"}
-    ],
+      {"id": "rectus_abdominis_upper", "muscles": ["abs", "core"], "segment": "torso",
+       "from": 0.44, "to": 0.58, "side": "front", "lift": 0.80, "across": 0.24,
+       "radius": 0.019, "radius_to": 0.019, "mirror": true},
+      {"id": "rectus_abdominis_middle", "muscles": ["abs", "core"], "segment": "torso",
+       "from": 0.60, "to": 0.74, "side": "front", "lift": 0.80, "across": 0.24,
+       "radius": 0.019, "radius_to": 0.018, "mirror": true},
+      {"id": "rectus_abdominis_lower", "muscles": ["abs", "core"], "segment": "torso",
+       "from": 0.76, "to": 0.92, "side": "front", "lift": 0.78, "across": 0.22,
+       "radius": 0.018, "radius_to": 0.016, "mirror": true},
 
-    "quads":                [{"segment": "thigh", "from": 0.15, "to": 0.90, "side": "front"}],
-    "hamstrings":           [{"segment": "thigh", "from": 0.15, "to": 0.90, "side": "back"}],
-    "adductors":            [{"segment": "thigh", "from": 0.10, "to": 0.80, "side": "medial"}],
-    "hip flexors":          [{"segment": "thigh", "from": 0.00, "to": 0.25, "side": "front"}],
-    "glutes": [
-      {"segment": "torso", "from": 0.85, "to": 1.00, "side": "back"},
-      {"segment": "thigh", "from": 0.00, "to": 0.20, "side": "back"}
-    ],
-    "glute medius":         [{"segment": "torso", "from": 0.80, "to": 1.00, "side": "lateral"}],
-    "calves":               [{"segment": "shin", "from": 0.10, "to": 0.75, "side": "back"}]
-    }
+      {"id": "external_oblique", "muscles": ["obliques", "core"], "segment": "torso",
+       "from": 0.46, "to": 0.90, "side": "lateral", "lift": 0.75, "across": 0.70,
+       "radius": 0.022, "radius_to": 0.017, "mirror": true},
+
+      {"id": "trapezius", "muscles": ["upper back"], "segment": "torso",
+       "from": 0.00, "to": 0.30, "side": "back", "lift": 0.80, "across": 0.30,
+       "radius": 0.030, "radius_to": 0.022, "mirror": true},
+      {"id": "latissimus_dorsi", "muscles": ["lats"], "segment": "torso",
+       "from": 0.20, "to": 0.68, "side": "back", "lift": 0.80, "across": 0.50,
+       "radius": 0.030, "radius_to": 0.018, "mirror": true},
+      {"id": "erector_spinae", "muscles": ["balance and trunk"], "segment": "torso",
+       "from": 0.40, "to": 0.96, "side": "back", "lift": 0.70, "across": 0.16,
+       "radius": 0.017, "radius_to": 0.015, "mirror": true},
+
+      {"id": "gluteus_maximus", "muscles": ["glutes"], "segment": "torso",
+       "from": 0.84, "to": 1.02, "side": "back", "lift": 0.85, "across": 0.44,
+       "radius": 0.034, "radius_to": 0.028, "mirror": true},
+      {"id": "gluteus_medius", "muscles": ["glute medius"], "segment": "torso",
+       "from": 0.80, "to": 0.98, "side": "lateral", "lift": 0.80, "across": 0.78,
+       "radius": 0.022, "radius_to": 0.018, "mirror": true},
+
+      {"id": "deltoid_anterior", "muscles": ["front shoulders", "shoulders", "shoulder stabilizers"],
+       "segment": "upper_arm", "from": 0.00, "to": 0.30, "side": "front", "lift": 0.75,
+       "radius": 0.024, "radius_to": 0.018},
+      {"id": "deltoid_lateral", "muscles": ["shoulders", "shoulder stabilizers"],
+       "segment": "upper_arm", "from": 0.00, "to": 0.32, "side": "lateral", "lift": 0.75,
+       "radius": 0.026, "radius_to": 0.018},
+      {"id": "deltoid_posterior", "muscles": ["rear shoulders", "shoulders", "shoulder stabilizers"],
+       "segment": "upper_arm", "from": 0.00, "to": 0.30, "side": "back", "lift": 0.75,
+       "radius": 0.023, "radius_to": 0.017},
+
+      {"id": "biceps_brachii", "muscles": ["biceps"], "segment": "upper_arm",
+       "from": 0.28, "to": 0.84, "side": "front", "lift": 0.80,
+       "radius": 0.021, "radius_to": 0.015},
+      {"id": "triceps_brachii", "muscles": ["triceps"], "segment": "upper_arm",
+       "from": 0.24, "to": 0.90, "side": "back", "lift": 0.80,
+       "radius": 0.023, "radius_to": 0.015},
+
+      {"id": "forearm_flexors", "muscles": ["grip"], "segment": "forearm",
+       "from": 0.04, "to": 0.72, "side": "front", "lift": 0.75,
+       "radius": 0.020, "radius_to": 0.011},
+      {"id": "forearm_extensors", "muscles": ["grip"], "segment": "forearm",
+       "from": 0.04, "to": 0.70, "side": "back", "lift": 0.75,
+       "radius": 0.019, "radius_to": 0.011},
+
+      {"id": "rectus_femoris", "muscles": ["quads"], "segment": "thigh",
+       "from": 0.08, "to": 0.88, "side": "front", "lift": 0.80,
+       "radius": 0.024, "radius_to": 0.016},
+      {"id": "vastus_lateralis", "muscles": ["quads"], "segment": "thigh",
+       "from": 0.14, "to": 0.80, "side": "lateral", "lift": 0.75,
+       "radius": 0.024, "radius_to": 0.015},
+      {"id": "vastus_medialis", "muscles": ["quads"], "segment": "thigh",
+       "from": 0.52, "to": 0.94, "side": "medial", "lift": 0.70,
+       "radius": 0.021, "radius_to": 0.014},
+      {"id": "adductor_group", "muscles": ["adductors"], "segment": "thigh",
+       "from": 0.04, "to": 0.66, "side": "medial", "lift": 0.75,
+       "radius": 0.022, "radius_to": 0.014},
+      {"id": "iliopsoas", "muscles": ["hip flexors"], "segment": "thigh",
+       "from": 0.00, "to": 0.26, "side": "front", "lift": 0.70,
+       "radius": 0.021, "radius_to": 0.017},
+      {"id": "hamstring_group", "muscles": ["hamstrings"], "segment": "thigh",
+       "from": 0.08, "to": 0.90, "side": "back", "lift": 0.80,
+       "radius": 0.028, "radius_to": 0.017},
+
+      {"id": "gastrocnemius", "muscles": ["calves"], "segment": "shin",
+       "from": 0.02, "to": 0.56, "side": "back", "lift": 0.80,
+       "radius": 0.027, "radius_to": 0.013},
+      {"id": "soleus", "muscles": ["calves"], "segment": "shin",
+       "from": 0.34, "to": 0.84, "side": "back", "lift": 0.70,
+       "radius": 0.017, "radius_to": 0.010},
+      {"id": "tibialis_anterior", "muscles": [], "segment": "shin",
+       "from": 0.06, "to": 0.72, "side": "front", "lift": 0.65,
+       "radius": 0.015, "radius_to": 0.009}
+    ]
   },
 
   "exercises": {

@@ -174,10 +174,12 @@ class BodyTest {
         }
     }
 
-    // ---- Muscle highlighting ---------------------------------------------
+    // ---- The anatomy -----------------------------------------------------
+
+    private val anatomy get() = library.anatomy
 
     @Test
-    fun `every muscle the exercise library names has a place on the body`() {
+    fun `every muscle the exercise library names has a form on the body`() {
         val named = com.cutcoach.data.protocol.ProtocolRepository.parse(
             File("src/main/assets/protocol.json").readText(),
             File("src/main/assets/exercises.json").readText(),
@@ -188,103 +190,135 @@ class BodyTest {
 
         val unmapped = library.unmappedMuscles(named)
         assertTrue(
-            "These muscles are named in exercises.json but have no region: $unmapped",
+            "Named in exercises.json but with nothing to shade: $unmapped",
             unmapped.isEmpty(),
         )
     }
 
     @Test
-    fun `a region only ever names a segment the body actually has`() {
-        val known = setOf("torso", "upper_arm", "forearm", "hand", "thigh", "shin", "foot")
-        library.muscles.regions.forEach { (muscle, regions) ->
-            regions.forEach { region ->
-                assertTrue(
-                    "\"$muscle\" names segment \"${region.segment}\", which does not exist",
-                    region.segment in known,
-                )
-                assertTrue(
-                    "\"$muscle\" has a backwards or empty stretch: ${region.from} to ${region.to}",
-                    region.to > region.from,
-                )
-                assertTrue(
-                    "\"$muscle\" runs outside its segment",
-                    region.from >= 0f && region.to <= 1f,
-                )
-            }
+    fun `a form only ever rides a segment the body actually has`() {
+        val known = setOf("torso", "upper_arm", "forearm", "thigh", "shin")
+        anatomy.forms.forEach { form ->
+            assertTrue(
+                "\"${form.id}\" rides \"${form.segment}\", which does not exist",
+                form.segment in known,
+            )
+            assertTrue(
+                "\"${form.id}\" has a backwards or empty stretch",
+                form.to > form.from,
+            )
+            assertTrue("\"${form.id}\" has no size", form.radius > 0f && form.radiusTo > 0f)
         }
     }
 
     @Test
-    fun `working a limb muscle marks both sides of the body`() {
-        // Both arms press in a push-up, so a triceps highlight has to appear
-        // twice.
+    fun `form ids are unique`() {
+        val duplicates = anatomy.forms.groupBy { it.id }.filterValues { it.size > 1 }.keys
+        assertTrue("Duplicate form ids: $duplicates", duplicates.isEmpty())
+    }
+
+    @Test
+    fun `a limb muscle is placed on both limbs`() {
+        // Both arms press in a push-up, so the triceps has to appear twice.
         val animation = library.animationFor("push_up")!!
         val pose = animation.pose("top")!!
-        val patches = pose.musclePatches(
-            symmetry = animation.symmetryMode,
-            style = style,
-            facing = animation.facingAt,
-            regions = library.regionsFor(listOf("Triceps")),
+        val placed = pose.anatomy(
+            animation.symmetryMode, style, animation.facingAt, anatomy, listOf("Triceps"),
         )
-        assertEquals(2, patches.size)
+        assertEquals(2, placed.count { it.worked })
     }
 
     @Test
-    fun `a sided patch sits on the side it names`() {
+    fun `only the worked muscles are marked`() {
+        val animation = library.animationFor("push_up")!!
+        val pose = animation.pose("top")!!
+        val placed = pose.anatomy(
+            animation.symmetryMode, style, animation.facingAt, anatomy, listOf("Triceps"),
+        )
+        assertTrue("Nothing was marked", placed.any { it.worked })
+        assertTrue("Everything was marked", placed.any { !it.worked })
+    }
+
+    @Test
+    fun `front and back muscles end up on opposite sides of the same bone`() {
         val animation = library.animationFor("pull_up")!!
         val pose = animation.pose("hang")!!
-        val facing = animation.facingAt
-
-        val biceps = pose.musclePatches(
-            animation.symmetryMode, style, facing, library.regionsFor(listOf("Biceps")),
+        val placed = pose.anatomy(
+            animation.symmetryMode, style, animation.facingAt, anatomy, emptyList(),
         )
-        val triceps = pose.musclePatches(
-            animation.symmetryMode, style, facing, library.regionsFor(listOf("Triceps")),
-        )
+        val biceps = placed.first { it.id() == "biceps_brachii" }
+        val triceps = placed.first { it.id() == "triceps_brachii" }
 
-        // Front and back of the same limb must face opposite ways.
-        val front = biceps.first().outward!!
-        val back = triceps.first().outward!!
-        assertTrue("Biceps and triceps ended up on the same side", (front dot back) < 0f)
-    }
+        // The comparison has to be made sideways from the bone, not from a
+        // joint: both muscles start near the shoulder, so measuring from the
+        // elbow is dominated by the length of the arm and says nothing about
+        // which side they sit on.
+        val elbow = pose.armA().first()
+        val shoulder = pose.body(animation.symmetryMode, style)
+            .filterIsInstance<Capsule>()
+            .first { it.to == elbow }
+            .from
 
-    @Test
-    fun `a patch that faces away is still reported rather than dropped`() {
-        // The push-up's chest points at the floor. The patch must exist, with a
-        // normal that tells the renderer it is hidden, so the segment can be
-        // tinted instead of the highlight vanishing.
-        val animation = library.animationFor("push_up")!!
-        val pose = animation.pose("bottom")!!
-        val patches = pose.musclePatches(
-            animation.symmetryMode, style, animation.facingAt, library.regionsFor(listOf("Chest")),
-        )
+        fun offsetOf(muscle: Capsule, along: Float): Vec3 =
+            muscle.from - (shoulder + (elbow - shoulder) * along)
 
-        assertTrue("The chest produced no patch at all", patches.isNotEmpty())
-        val outward = patches.first().outward!!
+        val toBiceps = offsetOf(biceps, 0.28f)
+        val toTriceps = offsetOf(triceps, 0.24f)
+
         assertTrue(
-            "The chest should face away at this camera, so the renderer can tint instead",
-            outward.facesViewer(animation.camera) < 0.08f,
+            "Biceps and triceps ended up on the same side of the arm",
+            (toBiceps dot toTriceps) < 0f,
         )
     }
 
     @Test
-    fun `muscle patches stay on the body rather than floating beside it`() {
+    fun `the whole anatomy stays inside the frame`() {
         library.exercises.forEach { (id, animation) ->
-            val regions = library.muscles.regions.values.flatten()
             animation.poses.forEach { (name, pose) ->
-                pose.musclePatches(animation.symmetryMode, style, animation.facingAt, regions)
-                    .forEach { patch ->
-                        patch.points.forEach { point ->
+                pose.anatomy(animation.symmetryMode, style, animation.facingAt, anatomy, emptyList())
+                    .forEach { muscle ->
+                        val radius = maxOf(muscle.radiusFrom, muscle.radiusTo) + style.outline
+                        muscle.points.forEach { point ->
                             val flat = point.project(animation.camera)
                             assertTrue(
-                                "$id/$name: a muscle patch reaches (${flat.x}, ${flat.y})",
-                                flat.x in -0.05f..1.05f && flat.y in -0.05f..1.05f,
+                                "$id/$name: ${muscle.id()} reaches (${flat.x}, ${flat.y})",
+                                flat.x - radius > -0.05f && flat.x + radius < 1.05f &&
+                                    flat.y - radius > -0.05f && flat.y + radius < 1.05f,
                             )
                         }
                     }
             }
         }
     }
+
+    @Test
+    fun `a muscle sits on its bone rather than floating off it`() {
+        // Every mass must stay within a sensible reach of the segment it rides,
+        // which catches a lift or across that has been typed an order out.
+        library.exercises.forEach { (id, animation) ->
+            animation.poses.forEach { (name, pose) ->
+                val frame = pose.body(animation.symmetryMode, style)
+                    .filterIsInstance<Capsule>()
+                    .flatMap { it.points }
+                pose.anatomy(animation.symmetryMode, style, animation.facingAt, anatomy, emptyList())
+                    .forEach { muscle ->
+                        val nearest = frame.minOf { (it - muscle.from).length() }
+                        assertTrue(
+                            "$id/$name: ${muscle.id()} floats ${nearest} away from any bone",
+                            nearest < 0.14f,
+                        )
+                    }
+            }
+        }
+    }
+
+    private fun Capsule.id(): String = anatomyIdOf(this)
+
+    private fun anatomyIdOf(capsule: Capsule): String =
+        anatomy.forms.firstOrNull { form ->
+            kotlin.math.abs(capsule.radiusFrom - form.radius) < 1e-5f &&
+                kotlin.math.abs(capsule.radiusTo - form.radiusTo) < 1e-5f
+        }?.id ?: "unknown"
 
     private fun lateralOf(point: Vec3, axis: Int): Float =
         if (axis == 0) point.x else point.z

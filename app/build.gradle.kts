@@ -59,6 +59,11 @@ tasks.withType<Test>().configureEach {
     inputs.dir(layout.projectDirectory.dir("src/main/assets"))
         .withPropertyName("protocolAssets")
         .withPathSensitivity(PathSensitivity.RELATIVE)
+    // HealthPermissionsTest reads the manifest the same way, so an edit there
+    // has to invalidate the tests too.
+    inputs.file(layout.projectDirectory.file("src/main/AndroidManifest.xml"))
+        .withPropertyName("manifest")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
 }
 
 dependencies {
@@ -78,6 +83,7 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.health.connect)
 
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)

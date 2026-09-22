@@ -39,6 +39,7 @@ import com.cutcoach.data.protocol.ProtocolRepository
 import com.cutcoach.data.settings.SettingsRepository
 import com.cutcoach.ui.body.BodyScreen
 import com.cutcoach.ui.exercise.CueCardScreen
+import com.cutcoach.health.DataCheckScreen
 import com.cutcoach.ui.figure.FormCheckScreen
 import com.cutcoach.ui.history.ExerciseHistoryScreen
 import com.cutcoach.ui.history.HistoryScreen
@@ -65,6 +66,7 @@ object Routes {
     const val CUE_CARD = "cue/{exerciseId}"
     const val EXERCISE_HISTORY = "exerciseHistory/{exerciseId}"
     const val FIGURES = "figures"
+    const val DATA_CHECK = "dataCheck"
 
     fun session(id: String) = "session/$id"
     fun cueCard(id: String) = "cue/$id"
@@ -162,11 +164,16 @@ private fun NavGraph(
             SettingsScreen(
                 repo = repo,
                 onOpenFigures = { navController.navigate(Routes.FIGURES) },
+                onOpenDataCheck = { navController.navigate(Routes.DATA_CHECK) },
             )
         }
 
         composable(Routes.FIGURES) {
             FormCheckScreen(repo = repo, onBack = { navController.popBackStack() })
+        }
+
+        composable(Routes.DATA_CHECK) {
+            DataCheckScreen(onBack = { navController.popBackStack() })
         }
 
         composable(Routes.HISTORY) {

@@ -56,6 +56,7 @@ import kotlinx.coroutines.launch
 fun SettingsScreen(
     repo: ProtocolRepository,
     onOpenFigures: () -> Unit,
+    onOpenDataCheck: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -85,6 +86,22 @@ fun SettingsScreen(
                     color = CoolSky,
                 )
             }
+        }
+
+        CutCard {
+            SectionLabel("Watch data")
+            TextButton(onClick = onOpenDataCheck) {
+                Text(
+                    "Data check: what Health Connect actually has",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = CoolSky,
+                )
+            }
+            Text(
+                "Read only. Nothing in the app depends on watch data yet.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MistDim,
+            )
         }
 
         // Read-only, and the screen says why.

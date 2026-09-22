@@ -48,16 +48,40 @@ class PoseTest {
         }
     }
 
-    /**
-     * The full-coverage check the brief asks for before Phase 2. It is written
-     * now but only tightened once all fifteen exist; today it catches the
-     * opposite mistake, an animation for something that is not in the program.
-     */
+    /** The coverage check the brief asks for before Phase 2. */
+    @Test
+    fun `every exercise in the protocol has a figure`() {
+        val scheduled = repo.protocol.sessions.values
+            .flatMap { it.exercises }
+            .map { it.exerciseId }
+            .distinct()
+
+        val missing = library.missingFrom(scheduled)
+        assertTrue("Scheduled exercises with no figure: $missing", missing.isEmpty())
+
+        // And the whole library, not only what is scheduled today.
+        val allMissing = library.missingFrom(repo.library.exercises.map { it.id })
+        assertTrue("Library exercises with no figure: $allMissing", allMissing.isEmpty())
+    }
+
     @Test
     fun `every animation that exists belongs to a real exercise`() {
         val known = repo.library.exercises.map { it.id }.toSet()
         val strays = library.exercises.keys.filterNot { it in known }
         assertTrue("Animations for exercises that do not exist: $strays", strays.isEmpty())
+    }
+
+    @Test
+    fun `every exercise declares which way its body faces`() {
+        // Without it, "the front of the arm" means nothing and every muscle
+        // ends up on the wrong side.
+        library.exercises.forEach { (id, animation) ->
+            assertEquals("$id has a malformed facing", 3, animation.facing.size)
+            assertTrue(
+                "$id faces nowhere, so its muscles cannot be placed",
+                animation.facingAt.length() > 0.5f,
+            )
+        }
     }
 
     @Test

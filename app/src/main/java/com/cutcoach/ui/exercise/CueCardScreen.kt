@@ -21,7 +21,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -54,11 +57,20 @@ fun CueCardScreen(
     currentLadderStep: Int,
     /** The link to use: a Settings override if there is one, otherwise the library's. */
     videoUrl: String,
+    /** The seconds of that clip worth looping. */
+    videoStartS: Float,
+    videoEndS: Float,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     val hasVideo = videoUrl.isNotBlank()
+    val videoId = remember(videoUrl) { youTubeVideoId(videoUrl) }
+    // Checked once, on opening. Everything else here works offline, so an
+    // unreachable clip should cost nothing rather than leave a blank box.
+    var videoPlayable by remember(videoUrl) {
+        mutableStateOf(videoId != null && context.hasNetwork())
+    }
     val poses = remember { PoseRepository.load(context) as? PoseLoad.Success }
     val animation = poses?.library?.animationFor(exercise.id)
     val tempo = remember(exercise.id, currentLadderStep) {
@@ -84,6 +96,33 @@ fun CueCardScreen(
                 style = MaterialTheme.typography.bodySmall,
                 color = MistDim,
             )
+        }
+
+        // A real clip if there is one and it will play; the figure otherwise.
+        // The figure is always there underneath, which is what makes the
+        // fallback honest rather than a hole in the screen.
+        if (hasVideo && videoPlayable && videoId != null) {
+            CutCard {
+                SectionLabel("Demo")
+                VideoLoop(
+                    videoId = videoId,
+                    startSeconds = videoStartS,
+                    endSeconds = videoEndS,
+                    onUnavailable = { videoPlayable = false },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(220.dp),
+                )
+                Text(
+                    if (videoEndS > videoStartS) {
+                        "Looping ${videoStartS.toInt()}s to ${videoEndS.toInt()}s, muted."
+                    } else {
+                        "Playing muted. Set a start and end in Settings to loop a segment."
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MistDim,
+                )
+            }
         }
 
         // The movement, large, before any words about it.
@@ -172,7 +211,18 @@ fun CueCardScreen(
                     contentColor = MaterialTheme.colorScheme.onSecondary,
                 ),
             ) {
-                Text("Watch the demo", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    if (videoPlayable) "Open in YouTube" else "Open the demo in YouTube",
+                    style = MaterialTheme.typography.titleMedium,
+                )
+            }
+            if (!videoPlayable) {
+                Text(
+                    "The clip would not play here, so the figure above is standing in. " +
+                        "Offline, or the video does not allow embedding.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MistDim,
+                )
             }
         } else {
             // No link yet. Said plainly rather than shown as a dead button.

@@ -219,6 +219,8 @@ private fun NavGraph(
             } else {
                 val settings = remember { SettingsRepository.get(context) }
                 val override by settings.videoUrl(exerciseId).collectAsStateWithLifecycle("")
+                val segment by settings.videoSegment(exerciseId)
+                    .collectAsStateWithLifecycle(null)
 
                 CueCardScreen(
                     exercise = exercise,
@@ -226,6 +228,8 @@ private fun NavGraph(
                     // Phase 3 replaces this with the exercise's real position.
                     currentLadderStep = 0,
                     videoUrl = override.ifBlank { exercise.videoUrl },
+                    videoStartS = segment?.first ?: exercise.videoStartS,
+                    videoEndS = segment?.second ?: exercise.videoEndS,
                     onBack = { navController.popBackStack() },
                 )
             }

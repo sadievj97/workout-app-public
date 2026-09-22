@@ -113,7 +113,7 @@ Build right after the Phase 1 timers work on the phone.
 - After all 15 base animations are approved, add variant poses for ladder steps that change body position (feet elevated, knees bent, single leg, arms overhead). Steps that change only tempo reuse the base pose.
 
 **Looping demo clips (online, in the cue card)**
-- Add optional `video_start_s` and `video_end_s` fields to each exercise in `exercises.json`, editable in Settings next to the video link.
+- Optional `video_start_s` and `video_end_s` fields on each exercise, editable in Settings next to the video link. A whole demo video is mostly talking; the loop is for the rep.
 - When `video_url` is set, play that segment muted and on loop inside the cue card through YouTube's official embedded player (IFrame Player API). Loop by seeking back to `video_start_s` when playback reaches `video_end_s`.
 - Never download, cache, or re-host video files.
 - With no internet, or if a video does not allow embedding, fall back to the stick figure plus an "Open in YouTube" button.

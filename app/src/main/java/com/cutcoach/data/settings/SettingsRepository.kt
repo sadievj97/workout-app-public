@@ -45,6 +45,8 @@ class SettingsRepository(private val context: Context) {
         val REST_SECONDS = intPreferencesKey("rest_seconds")
         val REHAB_LIST = stringPreferencesKey("rehab_exercises")
         fun videoUrl(exerciseId: String) = stringPreferencesKey("video_url_$exerciseId")
+        fun videoStart(exerciseId: String) = stringPreferencesKey("video_start_$exerciseId")
+        fun videoEnd(exerciseId: String) = stringPreferencesKey("video_end_$exerciseId")
         fun formVerdict(exerciseId: String) = stringPreferencesKey("form_verdict_$exerciseId")
         fun formNote(exerciseId: String) = stringPreferencesKey("form_note_$exerciseId")
     }
@@ -134,6 +136,29 @@ class SettingsRepository(private val context: Context) {
             .mapKeys { (key, _) -> key.name.removePrefix("video_url_") }
             .mapValues { (_, value) -> value as? String ?: "" }
             .filterValues { it.isNotBlank() }
+    }
+
+    /** The segment worth looping, as seconds. Null means the exercise library's own. */
+    fun videoSegment(exerciseId: String): Flow<Pair<Float, Float>?> =
+        context.settingsStore.data.map { prefs ->
+            val start = prefs[Keys.videoStart(exerciseId)]?.toFloatOrNull()
+            val end = prefs[Keys.videoEnd(exerciseId)]?.toFloatOrNull()
+            if (start == null && end == null) null else (start ?: 0f) to (end ?: 0f)
+        }
+
+    suspend fun setVideoSegment(exerciseId: String, start: Float?, end: Float?) {
+        context.settingsStore.edit { prefs ->
+            if (start == null) {
+                prefs.remove(Keys.videoStart(exerciseId))
+            } else {
+                prefs[Keys.videoStart(exerciseId)] = start.toString()
+            }
+            if (end == null) {
+                prefs.remove(Keys.videoEnd(exerciseId))
+            } else {
+                prefs[Keys.videoEnd(exerciseId)] = end.toString()
+            }
+        }
     }
 
     suspend fun setVideoUrl(exerciseId: String, url: String) {

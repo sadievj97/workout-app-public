@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!--
+      The only thing the app ever reaches the network for in Phase 1b is
+      YouTube's own embedded player, showing a demo clip inside a cue card.
+      Nothing is downloaded, cached or re-hosted, and the whole session player
+      works in airplane mode.
+    -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
     <application
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"

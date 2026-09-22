@@ -195,10 +195,17 @@ fun SettingsScreen(
             )
             Box(Modifier.height(4.dp))
             repo.library.exercises.forEach { exercise ->
+                val segment by settings.videoSegment(exercise.id)
+                    .collectAsStateWithLifecycle(null)
                 VideoLinkRow(
                     name = exercise.name,
                     current = videoUrls[exercise.id] ?: exercise.videoUrl,
+                    startSeconds = segment?.first ?: exercise.videoStartS,
+                    endSeconds = segment?.second ?: exercise.videoEndS,
                     onSave = { scope.launch { settings.setVideoUrl(exercise.id, it) } },
+                    onSaveSegment = { start, end ->
+                        scope.launch { settings.setVideoSegment(exercise.id, start, end) }
+                    },
                 )
             }
         }
@@ -206,8 +213,17 @@ fun SettingsScreen(
 }
 
 @Composable
-private fun VideoLinkRow(name: String, current: String, onSave: (String) -> Unit) {
+private fun VideoLinkRow(
+    name: String,
+    current: String,
+    startSeconds: Float,
+    endSeconds: Float,
+    onSave: (String) -> Unit,
+    onSaveSegment: (Float?, Float?) -> Unit,
+) {
     var draft by remember(current) { mutableStateOf(current) }
+    var start by remember(startSeconds) { mutableStateOf(secondsText(startSeconds)) }
+    var end by remember(endSeconds) { mutableStateOf(secondsText(endSeconds)) }
     // Keep the field in step if the stored value changes underneath it.
     LaunchedEffect(current) { draft = current }
 
@@ -232,8 +248,49 @@ private fun VideoLinkRow(name: String, current: String, onSave: (String) -> Unit
                 Text("Save", style = MaterialTheme.typography.labelMedium, color = SunriseAmber)
             }
         }
+
+        // The few seconds worth watching. A whole demo video is usually mostly
+        // talking; the loop is for the rep itself.
+        if (draft.isNotBlank()) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                SecondsField("Loop from", start, { start = it }, Modifier.weight(1f))
+                SecondsField("to", end, { end = it }, Modifier.weight(1f))
+                TextButton(
+                    onClick = {
+                        onSaveSegment(start.toFloatOrNull(), end.toFloatOrNull())
+                    },
+                ) {
+                    Text("Set", style = MaterialTheme.typography.labelMedium, color = SunriseAmber)
+                }
+            }
+        }
     }
 }
+
+@Composable
+private fun SecondsField(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = { if (it.matches(Regex("^\\d{0,4}$"))) onValueChange(it) },
+        label = { Text(label, style = MaterialTheme.typography.labelSmall) },
+        singleLine = true,
+        textStyle = MaterialTheme.typography.bodySmall.tabular(),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        colors = fieldColours(),
+        modifier = modifier,
+    )
+}
+
+private fun secondsText(value: Float): String =
+    if (value <= 0f) "" else value.toInt().toString()
 
 @Composable
 private fun fieldColours() = OutlinedTextFieldDefaults.colors(

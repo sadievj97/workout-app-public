@@ -56,6 +56,12 @@ data class Exercise(
     val ladderEndNote: String? = null,
     /** Empty until the owner pastes a demo link. The cue card hides the button while it is. */
     val videoUrl: String = "",
+    /**
+     * The few seconds of that video worth watching, looped in the cue card.
+     * Zero to zero means play from the start with no loop point.
+     */
+    val videoStartS: Float = 0f,
+    val videoEndS: Float = 0f,
 ) {
     val isHold: Boolean get() = type == "hold"
     val hasVideo: Boolean get() = videoUrl.isNotBlank()

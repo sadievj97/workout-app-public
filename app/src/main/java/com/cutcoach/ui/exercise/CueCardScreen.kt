@@ -37,6 +37,8 @@ import com.cutcoach.data.poses.PoseLoad
 import com.cutcoach.data.poses.PoseRepository
 import com.cutcoach.data.poses.Tempo
 import com.cutcoach.data.protocol.Exercise
+import com.cutcoach.ui.claude.HarderCard
+import com.cutcoach.ui.claude.SubstituteCard
 import com.cutcoach.ui.components.CutCard
 import com.cutcoach.ui.figure.AnimatedStickFigure
 import com.cutcoach.ui.components.SectionLabel
@@ -55,6 +57,7 @@ import com.cutcoach.ui.theme.SunriseAmber
  */
 @Composable
 fun CueCardScreen(
+    repo: com.cutcoach.data.protocol.ProtocolRepository,
     exercise: Exercise,
     currentLadderStep: Int,
     /** Tapping a rung says where you actually are, which sets tempo and difficulty. */
@@ -221,6 +224,11 @@ fun CueCardScreen(
                 Text(it, style = MaterialTheme.typography.bodySmall, color = MistDim)
             }
         }
+
+        // The Claude layer: a swap when today will not allow this, and a
+        // harder version when the ladder has nothing left.
+        SubstituteCard(repo = repo, exerciseId = exercise.id)
+        HarderCard(repo = repo, exerciseId = exercise.id, currentRung = currentLadderStep)
 
         if (hasVideo) {
             Button(

@@ -41,6 +41,7 @@ import com.cutcoach.data.protocol.ProtocolLoad
 import com.cutcoach.data.protocol.ProtocolRepository
 import com.cutcoach.data.settings.SettingsRepository
 import com.cutcoach.ui.body.BodyScreen
+import com.cutcoach.ui.claude.WeeklyReviewScreen
 import com.cutcoach.ui.components.CutIcon
 import com.cutcoach.ui.components.CutIconView
 import com.cutcoach.ui.exercise.CueCardScreen
@@ -75,6 +76,7 @@ object Routes {
     const val FIGURES = "figures"
     const val DATA_CHECK = "dataCheck"
     const val LADDERS = "ladders"
+    const val WEEKLY_REVIEW = "weeklyReview"
 
     fun session(id: String) = "session/$id"
     fun cueCard(id: String) = "cue/$id"
@@ -205,6 +207,7 @@ private fun NavGraph(
                 onOpenFigures = { navController.navigate(Routes.FIGURES) },
                 onOpenDataCheck = { navController.navigate(Routes.DATA_CHECK) },
                 onOpenLadders = { navController.navigate(Routes.LADDERS) },
+                onOpenReview = { navController.navigate(Routes.WEEKLY_REVIEW) },
             )
         }
 
@@ -218,6 +221,10 @@ private fun NavGraph(
 
         composable(Routes.LADDERS) {
             LadderScreen(repo = repo, onBack = { navController.popBackStack() })
+        }
+
+        composable(Routes.WEEKLY_REVIEW) {
+            WeeklyReviewScreen(repo = repo, onBack = { navController.popBackStack() })
         }
 
         composable(Routes.HISTORY) {
@@ -279,6 +286,7 @@ private fun NavGraph(
                     .collectAsStateWithLifecycle(0)
 
                 CueCardScreen(
+                    repo = repo,
                     exercise = exercise,
                     currentLadderStep = step,
                     onLadderStepChange = { index ->

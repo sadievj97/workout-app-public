@@ -72,6 +72,7 @@ fun SettingsScreen(
     onOpenFigures: () -> Unit,
     onOpenDataCheck: () -> Unit,
     onOpenLadders: () -> Unit,
+    onOpenReview: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -93,6 +94,15 @@ fun SettingsScreen(
         Text("Settings", style = MaterialTheme.typography.displaySmall, color = Mist)
 
         PainCard()
+
+        CutCard {
+            SectionLabel("Claude")
+            NavRow(
+                icon = CutIcon.CLOCK,
+                label = "Weekly review: the week in plain language",
+                onClick = onOpenReview,
+            )
+        }
 
         CutCard {
             SectionLabel("Difficulty")

@@ -100,9 +100,9 @@ Build right after the Phase 1 timers work on the phone.
 - Each-side exercises: animate one side, and mirror the figure for the other side and during "Switch sides".
 - Placement: small and glanceable next to the set counter in the session player; large at the top of the cue card.
 - Styling: the figure in mist (#D5DDE8), with the worked muscles highlighted in sunrise amber (#F2A541) during work phases.
-- **Worked muscles:** `exercises.json` already names the muscles per exercise, so a `muscles` block in `poses.json` only has to say where each one sits: a segment, a stretch along it, and which side. Sides are relative to the body, so each exercise declares a `facing` direction; without it "the front of the arm" has no meaning when you are lying face down.
-- A muscle facing away from the camera is washed pale rather than dropped. On a push-up the chest points at the floor, so the muscle that matters most would otherwise vanish at the angle that best shows the movement. Wash it toward the body's own colour, not toward the background: darkening amber just makes brown, which reads as a stain.
-- Name the highlighted muscles in a legend beside the figure, and keep a test that fails if any muscle in `exercises.json` has no region. The shading is schematic, not anatomical, and the cue card says so.
+- **Worked muscles:** `exercises.json` already names the muscles per exercise, so each form in the `anatomy` block lists which of those names it answers to. Sides are relative to the body, so each exercise declares a `facing` direction; without it "the front of the arm" has no meaning when you are lying face down.
+- A muscle on the far side is hidden by the body in front of it, which is what an anatomy figure does. The legend names it either way.
+- Name the highlighted muscles in a legend beside the figure, and keep a test that fails if any muscle in `exercises.json` has no form. The shading is schematic, not anatomical, and the cue card says so.
 - Never imply that working a muscle reduces fat over it. See the `honest_core_expectations` guardrail.
 - Reduced motion: if the phone's "remove animations" setting is on, show the start and end poses side by side instead.
 

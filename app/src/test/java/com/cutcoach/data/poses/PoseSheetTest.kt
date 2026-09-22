@@ -40,7 +40,16 @@ class PoseSheetTest {
         ).let { it as com.cutcoach.data.protocol.ProtocolLoad.Success }.repository
 
 
-        val rows = library.exercises.flatMap { (id, animation) ->
+        // Variants are hand-authored exactly like base poses and go wrong the
+        // same ways, so they belong on the sheet. A borrowed one is skipped: it
+        // already appears under the exercise it borrows from.
+        val animations = library.exercises.flatMap { (id, animation) ->
+            listOf(id to animation) +
+                animation.variants
+                    .filter { it.sameAs == null }
+                    .map { "$id r${it.rung}" to animation.atRung(it.rung) }
+        }
+        val rows = animations.flatMap { (id, animation) ->
             animation.poses.keys.map { Triple(id, it, animation) }
         }
         val perPose = 1 + extraAngles.size

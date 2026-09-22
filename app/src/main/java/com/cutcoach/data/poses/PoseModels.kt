@@ -16,6 +16,28 @@ data class PoseLibrary(
 ) {
     fun animationFor(exerciseId: String): ExerciseAnimation? = exercises[exerciseId]
 
+    /**
+     * The animation for an exercise at a given ladder rung.
+     *
+     * A rung that changes body position is drawn by its own variant, which may
+     * borrow another exercise's animation wholesale: a feet-elevated push-up is
+     * already drawn by `push_up_feet_up`, so it is referenced rather than
+     * copied. Anything else falls back to the base, which is correct for the
+     * rungs that only change tempo or add load.
+     */
+    fun animationFor(exerciseId: String, rung: Int): ExerciseAnimation? {
+        val base = exercises[exerciseId] ?: return null
+        val borrowed = base.variantFor(rung)?.sameAs
+        if (borrowed != null) return exercises[borrowed] ?: base
+        return base.atRung(rung)
+    }
+
+    /** True when this rung is drawn as itself rather than as the base movement. */
+    fun isDrawnAtRung(exerciseId: String, rung: Int): Boolean {
+        val animation = exercises[exerciseId] ?: return true
+        return rung == animation.baseRung || animation.variantFor(rung) != null
+    }
+
     /** Exercise ids with no animation yet. Used by the Form check screen. */
     fun missingFrom(allExerciseIds: Collection<String>): List<String> =
         allExerciseIds.filterNot { it in exercises }
@@ -167,6 +189,23 @@ data class ExerciseAnimation(
     val sequence: List<Keyframe>,
     /** The pose a "pause" ladder step holds at. */
     val hardestPose: String? = null,
+    /**
+     * Which rung of the ladder the base poses actually depict.
+     *
+     * Usually the first, but not always: the hollow hold is drawn with the arms
+     * overhead and the legs straight, which is its third rung, and the side
+     * plank is drawn straight-legged, which is its second. Assuming zero would
+     * have the app claim a rung was drawn when it was not.
+     */
+    val baseRung: Int = 0,
+    /**
+     * Rungs of this exercise's ladder that change body position.
+     *
+     * Rungs that only change tempo or add load are not here: the same drawing
+     * is correct for them, and [Tempo] already handles the timing. A rung with
+     * no entry is drawn with the base animation.
+     */
+    val variants: List<ExerciseVariant> = emptyList(),
 ) {
     val isStaticHold: Boolean get() = sequence.size <= 1
 
@@ -175,7 +214,50 @@ data class ExerciseAnimation(
     val facingAt: Vec3 get() = Vec3.of(facing)
 
     fun pose(name: String): Pose? = poses[name]
+
+    fun variantFor(rung: Int): ExerciseVariant? = variants.firstOrNull { it.rung == rung }
+
+    /**
+     * This animation as it should be drawn at a given ladder rung.
+     *
+     * A variant overrides only what it states, so a rung that changes the legs
+     * does not have to restate the camera, the symmetry or the sequence.
+     */
+    fun atRung(rung: Int): ExerciseAnimation {
+        val variant = variantFor(rung) ?: return this
+        return copy(
+            camera = variant.camera ?: camera,
+            props = variant.props ?: props,
+            poses = variant.poses ?: poses,
+            sequence = variant.sequence ?: sequence,
+            hardestPose = variant.hardestPose ?: hardestPose,
+        )
+    }
 }
+
+/**
+ * One rung drawn differently from the base.
+ *
+ * [sameAs] names another exercise whose animation already is this rung — a
+ * feet-elevated push-up is drawn by `push_up_feet_up` — so the geometry is
+ * referenced rather than copied and cannot drift from it.
+ *
+ * Everything else is an override on the base animation. Null means "unchanged",
+ * which keeps a variant down to the handful of numbers that actually differ.
+ */
+@Serializable
+data class ExerciseVariant(
+    /** The index into this exercise's ladder in exercises.json. */
+    val rung: Int,
+    /** The rung's own words, so the file can be read against exercises.json. */
+    val note: String = "",
+    val sameAs: String? = null,
+    val camera: Camera? = null,
+    val props: List<Prop>? = null,
+    val poses: Map<String, Pose>? = null,
+    val sequence: List<Keyframe>? = null,
+    val hardestPose: String? = null,
+)
 
 /**
  * One moment in the movement. [seconds] is how long it takes to arrive here

@@ -182,7 +182,14 @@
         {"pose": "bottom", "seconds": 1.0, "role": "lower"},
         {"pose": "top",    "seconds": 1.0, "role": "raise"}
       ],
-      "hardest_pose": "bottom"
+      "hardest_pose": "bottom",
+      "variants": [
+        {
+          "rung": 1,
+          "note": "Feet elevated on a chair. push_up_feet_up already draws exactly this movement, so it is referenced rather than copied and cannot drift from it.",
+          "same_as": "push_up_feet_up"
+        }
+      ]
     },
 
     "pull_up": {
@@ -250,7 +257,27 @@
       "sequence": [
         {"pose": "hold", "seconds": 0.0, "role": "hold"}
       ],
-      "hardest_pose": "hold"
+      "hardest_pose": "hold",
+      "base_rung": 2,
+      "variants_note": "The base pose is rung 3 of the ladder: arms overhead, legs straight. Rung 1, the tuck, is where most people start and needs its own drawing.",
+      "variants": [
+        {
+          "rung": 0,
+          "note": "Tuck hollow. The torso is unchanged; the knees fold toward the chest and the arms come down beside the hips. Every limb keeps the length it has in the base pose.",
+          "poses": {
+            "hold": {
+              "head":  [ 0.185, 0.242,  0.000],
+              "neck":  [ 0.105, 0.257,  0.000],
+              "hip":   [-0.140, 0.345,  0.000],
+              "elbow": [-0.014, 0.317,  0.050],
+              "wrist": [-0.115, 0.292,  0.050],
+              "knee":  [-0.090, 0.220,  0.042],
+              "ankle": [-0.220, 0.258,  0.042],
+              "toe":   [-0.265, 0.280,  0.042]
+            }
+          }
+        }
+      ]
     },
 
     "push_up_feet_up": {
@@ -657,7 +684,31 @@
       "sequence": [
         {"pose": "hold", "seconds": 0.0, "role": "hold"}
       ],
-      "hardest_pose": "hold"
+      "base_rung": 1,
+      "hardest_pose": "hold",
+      "variants": [
+        {
+          "rung": 0,
+          "note": "Bent-knee side plank. The torso line is unchanged; the bottom knee comes down to the floor at y 0.312 and both shins fold back behind, still stacked one above the other. Every limb keeps the length it has in the base pose.",
+          "poses": {
+            "hold": {
+              "head":  [ 0.252, 0.147, 0.020],
+              "neck":  [ 0.180, 0.167, 0.020],
+              "hip":   [-0.071, 0.235, 0.020],
+              "elbow": [ 0.180, 0.312, 0.020],
+              "wrist": [ 0.075, 0.312, 0.020],
+              "elbow_other": [ 0.180, 0.022, 0.020],
+              "wrist_other": [ 0.180, -0.083, 0.020],
+              "knee":  [-0.181, 0.312, 0.020],
+              "ankle": [-0.313, 0.286, 0.020],
+              "toe":   [-0.361, 0.274, 0.020],
+              "knee_other":  [-0.208, 0.250, 0.020],
+              "ankle_other": [-0.340, 0.224, 0.020],
+              "toe_other":   [-0.388, 0.212, 0.020]
+            }
+          }
+        }
+      ]
     },
 
     "hamstring_bridge_curl": {

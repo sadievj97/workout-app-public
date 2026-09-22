@@ -76,7 +76,11 @@ fun CueCardScreen(
         mutableStateOf(videoId != null && context.hasNetwork())
     }
     val poses = remember { PoseRepository.load(context) as? PoseLoad.Success }
-    val animation = poses?.library?.animationFor(exercise.id)
+    val animation = remember(exercise.id, currentLadderStep, poses) {
+        poses?.library?.animationFor(exercise.id, currentLadderStep)
+    }
+    // Whether this rung is drawn as itself, or as the base movement.
+    val drawnAtRung = poses?.library?.isDrawnAtRung(exercise.id, currentLadderStep) ?: true
     val tempo = remember(exercise.id, currentLadderStep) {
         Tempo.fromLadderStep(exercise.ladder.getOrNull(currentLadderStep))
     }
@@ -201,15 +205,17 @@ fun CueCardScreen(
                 style = MaterialTheme.typography.bodySmall,
                 color = MistDim,
             )
-            // Said plainly rather than letting the picture quietly mislead. The
-            // figure applies a rung's tempo but not its body position, because
-            // poses.json has no variant poses yet.
-            Text(
-                "The figure draws one version of the movement. A rung that changes " +
-                    "your body position is not drawn yet, though its tempo is applied.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MistDim,
-            )
+            // Only said when it is true. A rung that only changes tempo or adds
+            // load is drawn correctly by the base figure; one that changes body
+            // position needs its own drawing, and some are not authored yet.
+            if (!drawnAtRung) {
+                Text(
+                    "This rung is not drawn yet, so the figure above shows the base " +
+                        "movement. Its tempo is still applied.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = SunriseAmber,
+                )
+            }
             exercise.ladderEndNote?.let {
                 Box(Modifier.height(4.dp))
                 Text(it, style = MaterialTheme.typography.bodySmall, color = MistDim)

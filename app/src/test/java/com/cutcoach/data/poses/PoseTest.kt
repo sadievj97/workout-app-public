@@ -4,6 +4,7 @@ import com.cutcoach.data.protocol.ProtocolLoad
 import com.cutcoach.data.protocol.ProtocolRepository
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -28,6 +29,23 @@ class PoseTest {
 
     /** The first three, built for approval before the other twelve. */
     private val pilotExercises = listOf("push_up", "pull_up", "hollow_hold")
+
+    /**
+     * Every animation worth checking: each exercise's base, plus each rung that
+     * is drawn differently.
+     *
+     * Variant poses are authored by hand exactly like base poses and go wrong
+     * the same ways, so every geometry check runs over them too. A variant that
+     * borrows another exercise's animation is skipped, because that animation
+     * is already checked under its own id.
+     */
+    private val allAnimations: List<Pair<String, ExerciseAnimation>>
+        get() = library.exercises.flatMap { (id, animation) ->
+            listOf(id to animation) +
+                animation.variants
+                    .filter { it.sameAs == null }
+                    .map { "$id rung ${it.rung}" to animation.atRung(it.rung) }
+        }
 
     @Before
     fun setUp() {
@@ -75,7 +93,7 @@ class PoseTest {
     fun `every exercise declares which way its body faces`() {
         // Without it, "the front of the arm" means nothing and every muscle
         // ends up on the wrong side.
-        library.exercises.forEach { (id, animation) ->
+        allAnimations.forEach { (id, animation) ->
             assertEquals("$id has a malformed facing", 3, animation.facing.size)
             assertTrue(
                 "$id faces nowhere, so its muscles cannot be placed",
@@ -86,7 +104,7 @@ class PoseTest {
 
     @Test
     fun `every pose referenced by a sequence exists`() {
-        library.exercises.forEach { (id, animation) ->
+        allAnimations.forEach { (id, animation) ->
             animation.sequence.forEach { frame ->
                 assertTrue(
                     "$id references pose \"${frame.pose}\" which is not defined",
@@ -104,7 +122,7 @@ class PoseTest {
 
     @Test
     fun `every joint carries all three coordinates`() {
-        library.exercises.forEach { (id, animation) ->
+        allAnimations.forEach { (id, animation) ->
             animation.poses.forEach { (name, pose) ->
                 jointsOf(pose).forEach { (joint, values) ->
                     assertEquals("$id/$name: $joint needs [x, y, z]", 3, values.size)
@@ -118,7 +136,7 @@ class PoseTest {
         // A limb that stretches between keyframes is the clearest sign of a
         // mistyped coordinate, so it is worth failing over. This caught the
         // push-up's torso shrinking by three hundredths on the first attempt.
-        library.exercises.forEach { (id, animation) ->
+        allAnimations.forEach { (id, animation) ->
             val symmetry = animation.symmetryMode
             val measured = animation.poses.mapValues { (_, pose) ->
                 val armA = pose.armA()
@@ -160,7 +178,7 @@ class PoseTest {
 
     @Test
     fun `left and right limbs are the same length as each other`() {
-        library.exercises.forEach { (id, animation) ->
+        allAnimations.forEach { (id, animation) ->
             val symmetry = animation.symmetryMode
             animation.poses.forEach { (name, pose) ->
                 val armA = pose.armA()
@@ -187,7 +205,7 @@ class PoseTest {
 
     @Test
     fun `figures stay inside the frame at their chosen camera`() {
-        library.exercises.forEach { (id, animation) ->
+        allAnimations.forEach { (id, animation) ->
             animation.poses.forEach { (name, pose) ->
                 allPoints(pose, animation.symmetryMode).forEach { (joint, point) ->
                     val flat = point.project(animation.camera)
@@ -204,7 +222,7 @@ class PoseTest {
     fun `figures stay inside the frame when turned right around`() {
         // A viewer can drag the figure, so it has to survive any angle rather
         // than only the one it was authored for.
-        library.exercises.forEach { (id, animation) ->
+        allAnimations.forEach { (id, animation) ->
             (0 until 360 step 30).forEach { turn ->
                 val camera = animation.camera.turnedBy(turn.toFloat())
                 animation.poses.forEach { (name, pose) ->
@@ -455,5 +473,139 @@ class PoseTest {
         val dy = a.y - b.y
         val dz = a.z - b.z
         return sqrt(dx * dx + dy * dy + dz * dz)
+    }
+
+    // ---- Variants ---------------------------------------------------------
+
+    @Test
+    fun `every variant names a rung its ladder actually has`() {
+        // A rung index past the end of the ladder would never be selectable,
+        // so the variant would sit in the file being silently never used.
+        library.exercises.forEach { (id, animation) ->
+            val ladder = repo.exercise(id)?.ladder ?: return@forEach
+            animation.variants.forEach { variant ->
+                assertTrue(
+                    "$id: variant for rung ${variant.rung}, but the ladder has ${ladder.size}",
+                    variant.rung in ladder.indices,
+                )
+            }
+            assertTrue(
+                "$id: base_rung ${animation.baseRung} is outside its ladder",
+                animation.baseRung in ladder.indices,
+            )
+        }
+    }
+
+    @Test
+    fun `no rung is drawn twice`() {
+        library.exercises.forEach { (id, animation) ->
+            val rungs = animation.variants.map { it.rung }
+            assertEquals("$id has two variants for one rung", rungs.size, rungs.distinct().size)
+            assertTrue(
+                "$id: rung ${animation.baseRung} is both the base and a variant",
+                animation.variants.none { it.rung == animation.baseRung },
+            )
+        }
+    }
+
+    @Test
+    fun `a borrowed variant points at an animation that exists`() {
+        library.exercises.forEach { (id, animation) ->
+            animation.variants.mapNotNull { it.sameAs }.forEach { borrowed ->
+                assertTrue(
+                    "$id borrows '$borrowed', which is not in the library",
+                    borrowed in library.exercises,
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `asking for a rung gives the drawing for that rung`() {
+        // The push-up's feet-elevated rung is drawn by push_up_feet_up, so the
+        // two must come back identical rather than merely similar.
+        val elevated = library.animationFor("push_up", 1)
+        assertEquals(library.animationFor("push_up_feet_up"), elevated)
+
+        // A tempo-only rung keeps the base drawing.
+        assertEquals(library.animationFor("push_up"), library.animationFor("push_up", 2))
+    }
+
+    @Test
+    fun `a variant changes the pose and keeps everything it did not state`() {
+        val base = library.animationFor("hollow_hold")!!
+        val tuck = library.animationFor("hollow_hold", 0)!!
+
+        assertNotEquals(base.poses, tuck.poses)
+        // Unstated fields are inherited rather than reset.
+        assertEquals(base.camera, tuck.camera)
+        assertEquals(base.symmetry, tuck.symmetry)
+        assertEquals(base.facing, tuck.facing)
+        assertEquals(base.sequence, tuck.sequence)
+        assertEquals(base.props, tuck.props)
+    }
+
+    @Test
+    fun `the app only claims a rung is drawn when it is`() {
+        // The hollow hold's base pose is arms overhead with straight legs,
+        // which is its third rung, not its first. Assuming zero would have the
+        // cue card claim the tuck was drawn when it was not.
+        assertEquals(2, library.animationFor("hollow_hold")!!.baseRung)
+
+        assertTrue(library.isDrawnAtRung("hollow_hold", 2))   // the base
+        assertTrue(library.isDrawnAtRung("hollow_hold", 0))   // the tuck variant
+        assertFalse(library.isDrawnAtRung("hollow_hold", 1))  // arms by sides: not yet
+        assertFalse(library.isDrawnAtRung("hollow_hold", 4))  // hollow rocks: not yet
+
+        assertTrue(library.isDrawnAtRung("push_up", 0))
+        assertTrue(library.isDrawnAtRung("push_up", 1))
+    }
+
+    @Test
+    fun `a variant's limbs are the same length as the base figure's`() {
+        // The check that actually validates hand-authored variant geometry.
+        // The limb-length test above compares poses within one animation and
+        // returns early for a static hold, so a one-pose variant would slip
+        // past it entirely with a stretched thigh nobody noticed.
+        library.exercises.forEach { (id, animation) ->
+            val symmetry = animation.symmetryMode
+            val base = animation.poses.values.firstOrNull() ?: return@forEach
+            val reference = limbLengths(base, symmetry)
+
+            animation.variants.filter { it.sameAs == null }.forEach { variant ->
+                variant.poses?.forEach { (poseName, pose) ->
+                    limbLengths(pose, symmetry).forEach { (limb, actual) ->
+                        val expected = reference.getValue(limb)
+                        assertTrue(
+                            "$id rung ${variant.rung}/$poseName: $limb is $actual, " +
+                                "but $expected in the base figure",
+                            abs(actual - expected) < 0.02f,
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    /** Every limb of one pose, measured. */
+    private fun limbLengths(pose: Pose, symmetry: Symmetry): Map<String, Float> {
+        val armA = pose.armA()
+        val armB = pose.armB(symmetry)
+        val legA = pose.legA()
+        val legB = pose.legB(symmetry)
+        return mapOf(
+            "torso" to distance(pose.neckAt, pose.hipAt),
+            "head" to distance(pose.neckAt, pose.headAt),
+            "upper arm" to distance(pose.neckAt, armA[0]),
+            "forearm" to distance(armA[0], armA[1]),
+            "other upper arm" to distance(pose.neckAt, armB[0]),
+            "other forearm" to distance(armB[0], armB[1]),
+            "thigh" to distance(pose.hipAt, legA[0]),
+            "shin" to distance(legA[0], legA[1]),
+            "foot" to distance(legA[1], legA[2]),
+            "other thigh" to distance(pose.hipAt, legB[0]),
+            "other shin" to distance(legB[0], legB[1]),
+            "other foot" to distance(legB[1], legB[2]),
+        )
     }
 }

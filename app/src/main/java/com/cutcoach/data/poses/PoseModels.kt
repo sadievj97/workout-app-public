@@ -11,6 +11,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class PoseLibrary(
     val figure: FigureStyle,
+    val muscles: MuscleMap = MuscleMap(),
     val exercises: Map<String, ExerciseAnimation>,
 ) {
     fun animationFor(exerciseId: String): ExerciseAnimation? = exercises[exerciseId]
@@ -18,6 +19,65 @@ data class PoseLibrary(
     /** Exercise ids with no animation yet. Used by the Form check screen. */
     fun missingFrom(allExerciseIds: Collection<String>): List<String> =
         allExerciseIds.filterNot { it in exercises }
+
+    /** Where the named muscles sit on the body. Unknown names are skipped. */
+    fun regionsFor(muscleNames: List<String>): List<MuscleRegion> =
+        muscleNames.flatMap { muscles.regions[normalise(it)].orEmpty() }
+
+    /** Muscle names the map has no entry for, so a gap shows up as a test failure. */
+    fun unmappedMuscles(muscleNames: Collection<String>): List<String> =
+        muscleNames.filterNot { normalise(it) in muscles.regions }.distinct()
+
+    private fun normalise(name: String) = name.trim().lowercase()
+}
+
+/**
+ * Where each muscle named in exercises.json sits on the body.
+ *
+ * The exercise library already says which muscles an exercise works, so this
+ * only has to say where they are. Keeping it as data means a mapping that looks
+ * wrong on the figure is corrected in the file.
+ */
+@Serializable
+data class MuscleMap(
+    val note: String = "",
+    val segments: String = "",
+    val notReallyMuscles: String = "",
+    val regions: Map<String, List<MuscleRegion>> = emptyMap(),
+)
+
+/**
+ * One stretch of one body segment.
+ *
+ * [from] and [to] run along the segment, 0 at the joint nearer the middle of
+ * the body and 1 at the far one. [side] is relative to the body rather than the
+ * screen, which is what the exercise's facing is for: "front" means the chest
+ * side whether you are standing, hanging or lying face down.
+ */
+@Serializable
+data class MuscleRegion(
+    /** "torso", "upper_arm", "forearm", "hand", "thigh", "shin" or "foot". */
+    val segment: String,
+    val from: Float,
+    val to: Float,
+    /** "front", "back", "lateral", "medial" or "all". */
+    val side: String = "all",
+) {
+    val sideMode: RegionSide get() = RegionSide.parse(side)
+}
+
+enum class RegionSide {
+    FRONT, BACK, LATERAL, MEDIAL, ALL;
+
+    companion object {
+        fun parse(value: String): RegionSide = when (value.trim().lowercase()) {
+            "front" -> FRONT
+            "back" -> BACK
+            "lateral" -> LATERAL
+            "medial" -> MEDIAL
+            else -> ALL
+        }
+    }
 }
 
 @Serializable
@@ -93,6 +153,14 @@ data class ExerciseAnimation(
     val camera: Camera = Camera(),
     /** "mirror_z", "mirror_x" or "none". */
     val symmetry: String = "mirror_z",
+    /**
+     * Which way the front of the body points, in world space.
+     *
+     * Without this, "the front of the arm" has no meaning: a push-up faces the
+     * floor, a hollow hold faces the ceiling, a pull-up faces the viewer.
+     */
+    val facing: List<Float> = listOf(0f, 0f, 1f),
+    val facingNote: String = "",
     /** Why this camera was chosen, for whoever edits the file later. Not read by code. */
     val cameraNote: String = "",
     /** Which limbs go amber during a work phase: "arms", "legs", "torso". */
@@ -106,6 +174,8 @@ data class ExerciseAnimation(
     val isStaticHold: Boolean get() = sequence.size <= 1
 
     val symmetryMode: Symmetry get() = Symmetry.parse(symmetry)
+
+    val facingAt: Vec3 get() = Vec3.of(facing)
 
     fun pose(name: String): Pose? = poses[name]
 }

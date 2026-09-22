@@ -45,10 +45,54 @@
     }
   },
 
+  "muscles": {
+    "note": "Where each muscle named in exercises.json sits on the body. A region is a segment, a stretch along it from 0 at the joint nearer the body to 1 at the far joint, and which side of it. Sides are relative to the body, not the screen: an exercise's facing says which way its front points, so front means the chest side whether you are standing, hanging or lying face down.",
+    "segments": "torso runs from the shoulder line to the hip line. upper_arm is shoulder to elbow, forearm elbow to wrist, hand past the wrist. thigh is hip to knee, shin knee to ankle, foot ankle to toe.",
+    "not_really_muscles": "Grip, Core, Balance and trunk and Shoulder stabilizers are functional descriptions rather than single muscles. They are mapped to the regions that do the work, and are listed here so the choice is visible and can be corrected.",
+
+    "regions": {
+    "chest":              [{"segment": "torso", "from": 0.05, "to": 0.45, "side": "front"}],
+    "upper chest":          [{"segment": "torso", "from": 0.00, "to": 0.30, "side": "front"}],
+    "abs":                  [{"segment": "torso", "from": 0.50, "to": 0.95, "side": "front"}],
+    "core": [
+      {"segment": "torso", "from": 0.45, "to": 1.00, "side": "front"},
+      {"segment": "torso", "from": 0.50, "to": 0.95, "side": "lateral"}
+    ],
+    "obliques":             [{"segment": "torso", "from": 0.50, "to": 0.95, "side": "lateral"}],
+    "balance and trunk":    [{"segment": "torso", "from": 0.35, "to": 0.95, "side": "front"}],
+    "lats":                 [{"segment": "torso", "from": 0.10, "to": 0.60, "side": "back"}],
+    "upper back":           [{"segment": "torso", "from": 0.00, "to": 0.40, "side": "back"}],
+
+    "shoulders":            [{"segment": "upper_arm", "from": 0.00, "to": 0.25, "side": "all"}],
+    "front shoulders":      [{"segment": "upper_arm", "from": 0.00, "to": 0.25, "side": "front"}],
+    "rear shoulders":       [{"segment": "upper_arm", "from": 0.00, "to": 0.25, "side": "back"}],
+    "shoulder stabilizers": [{"segment": "upper_arm", "from": 0.00, "to": 0.25, "side": "all"}],
+    "biceps":               [{"segment": "upper_arm", "from": 0.25, "to": 0.85, "side": "front"}],
+    "triceps":              [{"segment": "upper_arm", "from": 0.25, "to": 0.90, "side": "back"}],
+    "grip": [
+      {"segment": "forearm", "from": 0.35, "to": 1.00, "side": "all"},
+      {"segment": "hand", "from": 0.00, "to": 1.00, "side": "all"}
+    ],
+
+    "quads":                [{"segment": "thigh", "from": 0.15, "to": 0.90, "side": "front"}],
+    "hamstrings":           [{"segment": "thigh", "from": 0.15, "to": 0.90, "side": "back"}],
+    "adductors":            [{"segment": "thigh", "from": 0.10, "to": 0.80, "side": "medial"}],
+    "hip flexors":          [{"segment": "thigh", "from": 0.00, "to": 0.25, "side": "front"}],
+    "glutes": [
+      {"segment": "torso", "from": 0.85, "to": 1.00, "side": "back"},
+      {"segment": "thigh", "from": 0.00, "to": 0.20, "side": "back"}
+    ],
+    "glute medius":         [{"segment": "torso", "from": 0.80, "to": 1.00, "side": "lateral"}],
+    "calves":               [{"segment": "shin", "from": 0.10, "to": 0.75, "side": "back"}]
+    }
+  },
+
   "exercises": {
 
     "push_up": {
       "camera": {"azimuth": 20, "elevation": 12},
+      "facing": [0.0, 1.0, 0.0],
+      "facing_note": "Face down: y is positive downward, so a prone exercise faces straight at the floor.",
       "camera_note": "Turned twenty degrees off a straight side view so both arms and both legs are visible, and tilted slightly down so the floor reads as a floor.",
       "symmetry": "mirror_z",
       "working_limbs": ["arms"],
@@ -87,6 +131,8 @@
 
     "pull_up": {
       "camera": {"azimuth": 12, "elevation": 6},
+      "facing": [0.0, 0.0, 1.0],
+      "facing_note": "Hanging and facing the viewer, which is why this one is drawn almost straight on.",
       "camera_note": "Almost straight on, because the arms spread sideways and that is the whole shape. A few degrees of turn keeps it from looking flat.",
       "symmetry": "mirror_x",
       "working_limbs": ["arms", "torso"],
@@ -125,6 +171,8 @@
 
     "hollow_hold": {
       "camera": {"azimuth": 24, "elevation": 14},
+      "facing": [0.0, -1.0, 0.0],
+      "facing_note": "On your back, so the front of the body points at the ceiling.",
       "camera_note": "Turned and tilted more than the push-up, because lying on your back is the hardest position to read from dead level.",
       "symmetry": "mirror_z",
       "working_limbs": ["torso"],

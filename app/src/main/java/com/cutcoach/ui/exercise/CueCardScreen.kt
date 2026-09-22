@@ -93,13 +93,20 @@ fun CueCardScreen(
                     animation = animation,
                     style = poses.library.figure,
                     tempo = tempo,
+                    muscles = exercise.muscles,
+                    library = poses.library,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(260.dp),
+                        .height(280.dp),
                 )
+
+                MuscleLegend(exercise.muscles)
+
                 Text(
-                    "A reminder of the shape and the tempo, not a substitute for " +
-                        "learning the form from a video or a coach.",
+                    "A reminder of the shape, the tempo, and roughly where you should " +
+                        "feel it. Not a substitute for learning the form from a video " +
+                        "or a coach, and the shading is approximate rather than " +
+                        "anatomical.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MistDim,
                 )
@@ -176,6 +183,33 @@ fun CueCardScreen(
                 color = MistDim,
             )
         }
+    }
+}
+
+/**
+ * Names what the amber is marking, so the shading is read rather than guessed
+ * at. The names come straight from the exercise library.
+ */
+@Composable
+private fun MuscleLegend(muscles: List<String>) {
+    if (muscles.isEmpty()) return
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            Modifier
+                .size(9.dp)
+                .clip(CircleShape)
+                .background(SunriseAmber),
+        )
+        Text(
+            muscles.joinToString(", "),
+            style = MaterialTheme.typography.bodyMedium,
+            color = Mist,
+        )
     }
 }
 

@@ -13,8 +13,12 @@ import com.cutcoach.data.poses.BodyPart
 import com.cutcoach.data.poses.BodyStyle
 import com.cutcoach.data.poses.Camera
 import com.cutcoach.data.poses.Capsule
+import com.cutcoach.data.poses.MusclePatch
+import com.cutcoach.data.poses.PatchCapsule
+import com.cutcoach.data.poses.PatchQuad
 import com.cutcoach.data.poses.Projected
 import com.cutcoach.data.poses.Slab
+import com.cutcoach.data.poses.facesViewer
 import com.cutcoach.data.poses.project
 import com.cutcoach.ui.theme.Mist
 import com.cutcoach.ui.theme.PreDawnNavy
@@ -32,6 +36,7 @@ import kotlin.math.sqrt
  */
 internal fun DrawScope.drawMannequin(
     parts: List<BodyPart>,
+    patches: List<MusclePatch>,
     style: BodyStyle,
     camera: Camera,
     box: FigureBox,
@@ -71,7 +76,73 @@ internal fun DrawScope.drawMannequin(
             is Ball -> drawBall(part, camera, box, faded, light, outline)
         }
     }
+
+    if (highlight) drawMusclePatches(patches, camera, box, light, ::fadeAt)
 }
+
+/**
+ * The worked muscles, amber, over the finished body.
+ *
+ * A patch facing away from the viewer is not simply dropped. On a push-up the
+ * chest points at the floor, so the muscle that matters most would silently
+ * disappear at the angle that best shows the movement. Instead the whole
+ * segment is tinted faintly, which is approximate but never absent.
+ */
+private fun DrawScope.drawMusclePatches(
+    patches: List<MusclePatch>,
+    camera: Camera,
+    box: FigureBox,
+    light: Offset,
+    fadeAt: (Float) -> Float,
+) {
+    patches.forEach { patch ->
+        val depth = patch.points.map { it.project(camera).depth }.average().toFloat()
+        val towardViewer = patch.outward?.facesViewer(camera)
+        val visible = towardViewer == null || towardViewer > FACING_THRESHOLD
+
+        // A hidden patch is washed toward the body's own colour rather than
+        // down toward the background. Darkening amber just makes brown, which
+        // reads as a stain instead of as a hint.
+        val tone = if (visible) SunriseAmber else lerp(Mist, SunriseAmber, HIDDEN_WASH)
+        val colour = lerp(PreDawnNavy, tone, fadeAt(depth))
+
+        when (patch) {
+            is PatchCapsule -> {
+                val a = box.at(patch.from.project(camera))
+                val b = box.at(patch.to.project(camera))
+                val radiusA = box.scale(patch.radiusFrom)
+                val radiusB = box.scale(patch.radiusTo)
+                val centre = Offset((a.x + b.x) / 2f, (a.y + b.y) / 2f)
+                val brush = shading(centre, maxOf(radiusA, radiusB), colour, light)
+                fillBrush(a, b, radiusA, radiusB, brush)
+            }
+
+            is PatchQuad -> {
+                val corners = patch.corners.map { box.at(it.project(camera)) }
+                if (corners.size < 3) return@forEach
+                val radius = box.scale(patch.radius)
+                val centre = Offset(
+                    corners.sumOf { it.x.toDouble() }.toFloat() / corners.size,
+                    corners.sumOf { it.y.toDouble() }.toFloat() / corners.size,
+                )
+                val brush = shading(centre, radius * 1.6f, colour, light)
+                val path = Path().apply {
+                    moveTo(corners[0].x, corners[0].y)
+                    corners.drop(1).forEach { lineTo(it.x, it.y) }
+                    close()
+                }
+                drawPath(path, brush)
+                drawPath(path, brush, style = Stroke(width = radius * 2f, join = StrokeJoin.Round))
+            }
+        }
+    }
+}
+
+/** A patch has to be turned at least this far toward you to count as visible. */
+private const val FACING_THRESHOLD = 0.08f
+
+/** How far a patch facing away is washed from the body's colour toward amber. */
+private const val HIDDEN_WASH = 0.38f
 
 private fun baseColour(group: String, working: Set<String>, highlight: Boolean): Color =
     if (highlight && group in working) SunriseAmber else Mist

@@ -22,7 +22,10 @@ import androidx.compose.runtime.withFrameNanos
 import com.cutcoach.data.poses.Camera
 import com.cutcoach.data.poses.ExerciseAnimation
 import com.cutcoach.data.poses.FigureStyle
+import com.cutcoach.data.poses.MuscleRegion
+import com.cutcoach.data.poses.PoseLibrary
 import com.cutcoach.data.poses.Tempo
+import com.cutcoach.data.poses.Vec3
 import com.cutcoach.data.poses.timeline
 import com.cutcoach.ui.theme.MistDim
 
@@ -43,6 +46,10 @@ fun AnimatedStickFigure(
     mirrored: Boolean = false,
     highlightWorking: Boolean = true,
     render: FigureRender = FigureRender.SOLID,
+    /** The muscles this exercise works, as named in exercises.json. */
+    muscles: List<String> = emptyList(),
+    /** The library the muscle map lives in. Needed to turn those names into regions. */
+    library: PoseLibrary? = null,
     /** Extra turn on top of the exercise's own camera, from the viewer dragging. */
     extraAzimuth: Float = 0f,
     extraElevation: Float = 0f,
@@ -56,6 +63,9 @@ fun AnimatedStickFigure(
     val reduceMotion = remember { context.prefersReducedMotion() } || LocalInspectionMode.current
     val timeline = remember(animation, tempo) { animation.timeline(tempo) }
     val working = remember(animation) { animation.workingLimbs.toSet() }
+    val regions = remember(library, muscles) {
+        library?.regionsFor(muscles).orEmpty()
+    }
 
     if (timeline.segments.isEmpty()) return
 
@@ -68,6 +78,8 @@ fun AnimatedStickFigure(
             highlightWorking = highlightWorking,
             mirrored = mirrored,
             render = render,
+            regions = regions,
+            facing = animation.facingAt,
             modifier = modifier,
         )
         return
@@ -100,6 +112,8 @@ fun AnimatedStickFigure(
         highlightWorking = highlightWorking,
         mirrored = mirrored,
         render = render,
+        muscleRegions = regions,
+        facing = animation.facingAt,
         holdProgress = holdProgress,
     )
 }
@@ -117,6 +131,8 @@ private fun ReducedMotionPair(
     highlightWorking: Boolean,
     mirrored: Boolean,
     render: FigureRender,
+    regions: List<MuscleRegion>,
+    facing: Vec3,
     modifier: Modifier,
 ) {
     val startName = animation.sequence.first().pose
@@ -149,6 +165,8 @@ private fun ReducedMotionPair(
                         highlightWorking = highlightWorking && label == "End",
                         mirrored = mirrored,
                         render = render,
+                        muscleRegions = regions,
+                        facing = facing,
                     )
                 }
                 Text(label, style = MaterialTheme.typography.labelSmall, color = MistDim)

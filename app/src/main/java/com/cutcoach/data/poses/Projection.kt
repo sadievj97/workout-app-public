@@ -84,4 +84,18 @@ fun Vec3.project(camera: Camera): Projected {
     return Projected(x = 0.5f + screenX, y = 0.5f + screenY, depth = depth)
 }
 
+/**
+ * How much a direction points toward the viewer under this camera.
+ *
+ * Positive means it faces you. Used to decide whether a muscle highlight is
+ * actually visible from here, or whether the whole segment should be tinted
+ * faintly instead.
+ */
+fun Vec3.facesViewer(camera: Camera): Float {
+    val azimuth = camera.azimuth.toRadians()
+    val elevation = camera.elevation.toRadians()
+    val afterAzimuth = -x * sin(azimuth) + z * cos(azimuth)
+    return -y * sin(elevation) + afterAzimuth * cos(elevation)
+}
+
 private fun Float.toRadians(): Float = (this * Math.PI / 180.0).toFloat()

@@ -89,11 +89,18 @@ fun FigurePreviewScreen(
 
                     CutCard {
                         SectionLabel(repo.exercise(id)?.name ?: id)
+                        Text(
+                            repo.exercise(id)?.muscles?.joinToString(", ").orEmpty(),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = SunriseAmber,
+                        )
 
                         AnimatedStickFigure(
                             animation = animation,
                             style = library.figure,
                             tempo = tempo,
+                            muscles = repo.exercise(id)?.muscles.orEmpty(),
+                            library = library,
                             extraAzimuth = turn,
                             extraElevation = tilt,
                             modifier = Modifier

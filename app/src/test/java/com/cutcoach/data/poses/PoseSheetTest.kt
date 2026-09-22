@@ -25,6 +25,10 @@ class PoseSheetTest {
     fun `write a contact sheet of every pose`() {
         val text = File("src/main/assets/poses.json").readText()
         val library = (PoseRepository.parse(text) as PoseLoad.Success).library
+        val exercises = com.cutcoach.data.protocol.ProtocolRepository.parse(
+            File("src/main/assets/protocol.json").readText(),
+            File("src/main/assets/exercises.json").readText(),
+        ).let { it as com.cutcoach.data.protocol.ProtocolLoad.Success }.repository
 
         val rows = library.exercises.flatMap { (id, animation) ->
             animation.poses.keys.map { Triple(id, it, animation) }
@@ -46,6 +50,7 @@ class PoseSheetTest {
                         add(animation.camera.turnedBy(it) to "turned ${it.toInt()} more")
                     }
                 }
+                val regions = library.regionsFor(exercises.exercise(id)?.muscles.orEmpty())
                 cameras.forEachIndexed { column, (camera, label) ->
                     append(
                         panel(
@@ -53,6 +58,7 @@ class PoseSheetTest {
                             animation = animation,
                             style = library.figure,
                             camera = camera,
+                            regions = regions,
                             originX = column * side,
                             originY = row * side,
                             label = label,
@@ -74,6 +80,7 @@ class PoseSheetTest {
         animation: ExerciseAnimation,
         style: FigureStyle,
         camera: Camera,
+        regions: List<MuscleRegion>,
         originX: Int,
         originY: Int,
         label: String,
@@ -164,6 +171,37 @@ class PoseSheetTest {
             }
         }
 
+        // The worked muscles, amber, over the finished body.
+        pose.musclePatches(symmetry, style.body, animation.facingAt, regions).forEach { patch ->
+            val depth = patch.points.map { it.project(camera).depth }.average().toFloat()
+            val toward = patch.outward?.facesViewer(camera)
+            val visible = toward == null || toward > 0.08f
+            val tone = if (visible) 0xF2A541 else blend(0xD5DDE8, 0xF2A541, 0.38f)
+            val amber = mixToward(tone, 0x101B2D, 1f - fade(depth))
+
+            when (patch) {
+                is PatchCapsule -> {
+                    val a = patch.from.project(camera)
+                    val b = patch.to.project(camera)
+                    sb.append(
+                        capsuleSvg(
+                            sx(a), sy(a), sx(b), sy(b),
+                            patch.radiusFrom * side, patch.radiusTo * side, amber,
+                        ),
+                    )
+                }
+                is PatchQuad -> {
+                    val pts = patch.corners.map { it.project(camera) }
+                    val poly = pts.joinToString(" ") { "${sx(it)},${sy(it)}" }
+                    val r = patch.radius * side
+                    sb.append(
+                        "<polygon points='$poly' fill='$amber' stroke='$amber' " +
+                            "stroke-width='${r * 2}' stroke-linejoin='round'/>",
+                    )
+                }
+            }
+        }
+
         sb.append(
             "<text x='${originX + side / 2}' y='${originY + side - 6}' fill='#7FB2E5' " +
                 "font-size='12' text-anchor='middle' font-family='sans-serif'>$label</text>",
@@ -200,6 +238,16 @@ class PoseSheetTest {
         return body +
             "<circle cx='$ax' cy='$ay' r='$ra' fill='$fill'/>" +
             "<circle cx='$bx' cy='$by' r='$rb' fill='$fill'/>"
+    }
+
+    /** Blends two packed colours, returning a packed colour. */
+    private fun blend(from: Int, to: Int, amount: Float): Int {
+        fun channel(shift: Int): Int {
+            val a = (from shr shift) and 0xFF
+            val b = (to shr shift) and 0xFF
+            return (a + (b - a) * amount).toInt().coerceIn(0, 255)
+        }
+        return (channel(16) shl 16) or (channel(8) shl 8) or channel(0)
     }
 
     /** Fades a colour toward the background, matching the renderer's depth fade. */

@@ -55,6 +55,9 @@ fun TodayScreen(
     now: LocalTime,
     /** Typed in by the owner in Settings. Displayed, never generated or changed. */
     rehabExercises: List<String>,
+    /** What the watch recorded today, and last night. Null until read. */
+    health: com.cutcoach.health.DailyHealth? = null,
+    lastNight: com.cutcoach.health.DailyHealth? = null,
     onStartSession: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -108,6 +111,9 @@ fun TodayScreen(
                 }
             }
         }
+
+        // What the watch saw, before the plan for the rest of the day.
+        WatchCard(repo = repo, health = health, lastNight = lastNight)
 
         TimelineCard(repo = repo, now = now)
 

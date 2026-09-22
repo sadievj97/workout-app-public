@@ -16,6 +16,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
@@ -143,11 +144,23 @@ private fun NavGraph(
             val settings = remember { SettingsRepository.get(context) }
             val rehab by settings.rehabExercises.collectAsStateWithLifecycle(emptyList())
 
+            // Read on opening rather than held in a cache, because the watch
+            // syncs on its own schedule and a stale number here is worse than
+            // a moment's wait.
+            val health = produceState<com.cutcoach.health.DailyHealth?>(null, today) {
+                value = com.cutcoach.health.readTodayAndLastNight(context, repo, today).first
+            }
+            val lastNight = produceState<com.cutcoach.health.DailyHealth?>(null, today) {
+                value = com.cutcoach.health.readTodayAndLastNight(context, repo, today).second
+            }
+
             TodayScreen(
                 repo = repo,
                 today = today,
                 now = LocalTime.now(),
                 rehabExercises = rehab,
+                health = health.value,
+                lastNight = lastNight.value,
                 onStartSession = {
                     repo.scheduleFor(today.dayOfWeek)?.let {
                         navController.navigate(Routes.session(it.sessionId))

@@ -84,6 +84,7 @@ dependencies {
 
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.health.connect)
+    implementation(libs.androidx.work.runtime)
 
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)

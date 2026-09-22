@@ -13,7 +13,11 @@ import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.WeightRecord
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
+import java.time.Duration
 import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import kotlin.reflect.KClass
 
@@ -102,7 +106,125 @@ class HealthConnectManager(private val context: Context) {
         }
     }
 
+    /**
+     * Everything the watch has for one day, already turned into the numbers the
+     * protocol judges by.
+     *
+     * The night belongs to the evening of [date], so sleep that began after
+     * midnight is still counted here rather than against the following day.
+     */
+    suspend fun readDay(
+        date: LocalDate,
+        zone: ZoneId,
+        zone2: IntRange,
+        intervals: IntRange,
+        lightsOutTarget: LocalTime?,
+        isIntervalDay: Boolean,
+    ): DailyHealth {
+        val healthConnect = client ?: return DailyHealth(date)
+        val granted = grantedPermissions()
+
+        val dayStart = date.atStartOfDay(zone).toInstant()
+        val dayEnd = date.plusDays(1).atStartOfDay(zone).toInstant()
+        // The night runs from the evening into the next morning, so it needs a
+        // wider window than the day itself.
+        val nightStart = date.atTime(EVENING_STARTS).atZone(zone).toInstant()
+        val nightEnd = date.plusDays(1).atTime(MORNING_ENDS).atZone(zone).toInstant()
+
+        suspend fun <T : Record> read(type: KClass<T>, from: Instant, to: Instant): List<T> =
+            if (HealthPermission.getReadPermission(type) !in granted) {
+                emptyList()
+            } else {
+                try {
+                    healthConnect
+                        .readRecords(ReadRecordsRequest(type, TimeRangeFilter.between(from, to)))
+                        .records
+                } catch (_: Exception) {
+                    // One type failing must not take the rest of the day with it.
+                    emptyList()
+                }
+            }
+
+        val steps = read(StepsRecord::class, dayStart, dayEnd)
+            .takeIf { it.isNotEmpty() }
+            ?.sumOf { it.count }
+
+        val weight = read(WeightRecord::class, dayStart, dayEnd)
+            .maxByOrNull { it.time }
+            ?.weight
+            ?.inKilograms
+
+        val heartOvernight = read(HeartRateRecord::class, nightStart, nightEnd)
+            .flatMap { record -> record.samples.map { HeartSample(it.time, it.beatsPerMinute) } }
+
+        val sleepWindows = read(SleepSessionRecord::class, nightStart, nightEnd)
+            .map { SleepWindow(it.startTime, it.endTime) }
+            .filter { nightOf(it.start, zone) == date }
+
+        val night = mainSleep(sleepWindows)?.let { sleep ->
+            SleepNight(
+                start = sleep.start,
+                end = sleep.end,
+                duration = sleep.duration,
+                sleepingHeartRate = sleepingHeartRate(heartOvernight, sleep),
+                minutesAfterTarget = lightsOutTarget?.let {
+                    minutesAfterTarget(sleep.start, it, date, zone)
+                },
+            ).also { it.fragmentCount = sleepWindows.size }
+        }
+
+        val band = if (isIntervalDay) intervals else zone2
+        val bandName = if (isIntervalDay) "the interval zone" else "Zone 2"
+
+        val sessions = read(ExerciseSessionRecord::class, dayStart, dayEnd).map { session ->
+            val during = read(HeartRateRecord::class, session.startTime, session.endTime)
+                .flatMap { record -> record.samples.map { HeartSample(it.time, it.beatsPerMinute) } }
+            val mean = meanHeartRate(during)
+
+            WorkoutSession(
+                start = session.startTime,
+                end = session.endTime,
+                title = session.title,
+                total = Duration.between(session.startTime, session.endTime),
+                meanHeartRate = mean,
+                inZone = timeInZone(during, band.first, band.last),
+                zoneName = bandName,
+                verdict = mean?.let { zoneVerdict(it, band.first, band.last) },
+            )
+        }
+
+        return DailyHealth(
+            date = date,
+            steps = steps,
+            night = night,
+            weightKg = weight,
+            sessions = sessions,
+        )
+    }
+
+    /** Sleeping heart rates over recent nights, for the readiness baseline. */
+    suspend fun sleepingHeartRateBaseline(
+        endingOn: LocalDate,
+        nights: Int,
+        zone: ZoneId,
+    ): List<Int> = (1..nights).mapNotNull { back ->
+        readDay(
+            date = endingOn.minusDays(back.toLong()),
+            zone = zone,
+            zone2 = 0..0,
+            intervals = 0..0,
+            lightsOutTarget = null,
+            isIntervalDay = false,
+        ).night?.sleepingHeartRate
+    }
+
     companion object {
+        /** A night is looked for from this hour on the day itself... */
+        private val EVENING_STARTS: LocalTime = LocalTime.of(16, 0)
+
+        /** ...through to this hour the following morning. */
+        private val MORNING_ENDS: LocalTime = LocalTime.of(12, 0)
+
         /**
          * Without this, reads are limited to the 30 days before the first grant.
          * Checked against the documentation rather than recalled: a wrong

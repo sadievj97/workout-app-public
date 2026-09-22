@@ -202,6 +202,34 @@ class ProtocolLoadTest {
     }
 
     @Test
+    fun `the target is reachable inside the program at the expected rate`() {
+        // The dangerous direction. A target that cannot be reached in the weeks
+        // available is a program that fails by arithmetic before it starts, and
+        // nothing on any screen would say so.
+        val goal = repo.protocol.meta.goal
+        val toLose = goal.startWeightKg - goal.targetWeightKg.max
+
+        assertTrue("A cut's target must be below its start weight", toLose > 0)
+
+        val weeksAtSlowest = toLose / goal.expectedLossKgPerWeek.min
+        assertTrue(
+            "Needs %.1f weeks at %.1f kg/week, but the program is %d".format(
+                weeksAtSlowest,
+                goal.expectedLossKgPerWeek.min,
+                repo.protocol.meta.programLengthWeeks,
+            ),
+            weeksAtSlowest <= repo.protocol.meta.programLengthWeeks,
+        )
+    }
+
+    @Test
+    fun `the expected rate never exceeds the fast-loss ceiling`() {
+        // Otherwise the protocol would plan for a rate its own guardrail flags.
+        val goal = repo.protocol.meta.goal
+        assertTrue(goal.expectedLossKgPerWeek.max <= goal.maxLossKgPerWeek)
+    }
+
+    @Test
     fun `exactly one timeline entry is marked as lights out`() {
         // The reminders substitute tonight's ramp target for this one entry.
         // Two of them, or none, and the substitution goes somewhere wrong.

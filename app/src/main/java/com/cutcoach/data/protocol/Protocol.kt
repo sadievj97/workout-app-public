@@ -50,6 +50,8 @@ data class Meta(
 data class Goal(
     val startWeightKg: Double,
     val targetWeightKg: NumRange,
+    /** Why the target is what it is, when it has been changed. */
+    val targetWeightNote: String = "",
     val targetMonth: String,
     val expectedLossKgPerWeek: NumRange,
     val maxLossKgPerWeek: Double,

@@ -409,24 +409,24 @@
       ],
       "poses": {
         "top": {
-          "head":  [ 0.208, 0.138,  0.000],
-          "neck":  [ 0.146, 0.094,  0.000],
-          "hip":   [-0.010, -0.118, 0.000],
-          "elbow": [ 0.129, 0.198,  0.055],
+          "head":  [ 0.152, 0.155,  0.000],
+          "neck":  [ 0.084, 0.120,  0.000],
+          "hip":   [-0.150, 0.000,  0.000],
+          "elbow": [ 0.104, 0.224,  0.055],
           "wrist": [ 0.190, 0.283,  0.055],
-          "knee":  [-0.051, 0.011,  0.045],
-          "ankle": [-0.092, 0.140,  0.045],
-          "toe":   [-0.070, 0.185,  0.045]
+          "knee":  [-0.211, 0.121,  0.045],
+          "ankle": [-0.235, 0.254,  0.045],
+          "toe":   [-0.194, 0.283,  0.045]
         },
         "bottom": {
-          "head":  [ 0.226, 0.201,  0.000],
-          "neck":  [ 0.160, 0.166,  0.000],
-          "hip":   [ 0.004, -0.046, 0.000],
-          "elbow": [ 0.078, 0.243,  0.055],
+          "head":  [ 0.160, 0.194,  0.000],
+          "neck":  [ 0.095, 0.155,  0.000],
+          "hip":   [-0.130, 0.020,  0.000],
+          "elbow": [ 0.088, 0.260,  0.055],
           "wrist": [ 0.190, 0.283,  0.055],
-          "knee":  [-0.037, 0.083,  0.045],
-          "ankle": [-0.078, 0.212,  0.045],
-          "toe":   [-0.056, 0.257,  0.045]
+          "knee":  [-0.222, 0.119,  0.045],
+          "ankle": [-0.235, 0.254,  0.045],
+          "toe":   [-0.194, 0.283,  0.045]
         }
       },
       "sequence": [
@@ -434,7 +434,39 @@
         {"pose": "bottom", "seconds": 1.0, "role": "lower"},
         {"pose": "top",    "seconds": 1.0, "role": "raise"}
       ],
-      "hardest_pose": "bottom"
+      "hardest_pose": "bottom",
+      "variants": [
+        {
+          "rung": 1,
+          "note": "Feet elevated on a chair, 0.071 above the floor, the same lift push_up_feet_up uses. The whole leg and hip translate up by that amount; the hands then have to come back from x 0.190 to 0.120, because with the hips higher the torso and arm together can no longer span the old distance. That is what the movement really does: it tips toward a handstand.",
+          "props": [
+            {"type": "floor", "y": 0.283, "from_x": -0.5, "to_x": 0.5, "depth": 0.22},
+            {"type": "chair", "y": 0.212, "from_x": -0.330, "to_x": -0.150, "z": 0.045, "height": 0.071}
+          ],
+          "poses": {
+            "top": {
+              "head":  [ 0.104, 0.153,  0.000],
+              "neck":  [ 0.047, 0.103,  0.000],
+              "hip":   [-0.150, -0.071, 0.000],
+              "elbow": [ 0.047, 0.208,  0.055],
+              "wrist": [ 0.120, 0.283,  0.055],
+              "knee":  [-0.211, 0.050,  0.045],
+              "ankle": [-0.235, 0.183,  0.045],
+              "toe":   [-0.194, 0.212,  0.045]
+            },
+            "bottom": {
+              "head":  [ 0.119, 0.180,  0.000],
+              "neck":  [ 0.063, 0.128,  0.000],
+              "hip":   [-0.130, -0.051, 0.000],
+              "elbow": [ 0.031, 0.228,  0.055],
+              "wrist": [ 0.120, 0.283,  0.055],
+              "knee":  [-0.222, 0.048,  0.045],
+              "ankle": [-0.235, 0.183,  0.045],
+              "toe":   [-0.194, 0.212,  0.045]
+            }
+          }
+        }
+      ]
     },
 
     "chin_up": {

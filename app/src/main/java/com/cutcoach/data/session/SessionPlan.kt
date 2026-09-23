@@ -32,6 +32,8 @@ sealed interface SessionStep {
         val seconds: Int,
         /** The exercise to draw, when this block is a ramp-up of one. */
         val exerciseId: String? = null,
+        /** Warm-up movements to draw in turn, by id in poses.json. */
+        val movements: List<String> = emptyList(),
     ) : SessionStep
 
     /** A set you count out and then type in. */
@@ -97,6 +99,7 @@ fun buildSessionPlan(
             } else {
                 null
             },
+            movements = block.movements,
         )
     }
 

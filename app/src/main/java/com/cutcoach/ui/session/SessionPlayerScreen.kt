@@ -54,6 +54,7 @@ import com.cutcoach.ui.theme.InkLift
 import com.cutcoach.ui.theme.Mint
 import com.cutcoach.ui.theme.Sky
 import com.cutcoach.ui.theme.TextHigh
+import com.cutcoach.ui.theme.TextLow
 import com.cutcoach.ui.theme.TextMid
 import com.cutcoach.ui.theme.Ink
 import com.cutcoach.ui.theme.Surface
@@ -324,25 +325,37 @@ private fun WarmupStep(vm: SessionPlayerViewModel, step: SessionStep.Warmup) {
         )
         Box(Modifier.height(8.dp))
 
-        // The ramp-up block is a set of the day's first exercise, so it has a
-        // movement to draw. The marching and mobility blocks have no single
-        // movement — "hip circles, leg swings, arm circles, cat-cow" is four —
-        // and no figure is honest there. They keep the words, larger.
-        step.exerciseId?.let { id ->
-            ExerciseFigure(
-                exerciseId = id,
-                muscles = vm.musclesFor(id),
-                side = Side.NONE,
-                working = false,
-                holdProgress = null,
-            )
-            Box(Modifier.height(4.dp))
-            Text(
-                vm.exerciseName(id),
-                style = MaterialTheme.typography.titleMedium,
-                color = TextHigh,
-            )
-            Box(Modifier.height(8.dp))
+        // The ramp-up block is a set of the day's first exercise; the other two
+        // name their own movements. A block naming several shows them in turn
+        // rather than picking one, because "hip circles, leg swings, arm
+        // circles" is three different things and a figure doing one of them
+        // while the words say three teaches the wrong movement twice.
+        when {
+            step.exerciseId != null -> {
+                ExerciseFigure(
+                    exerciseId = step.exerciseId,
+                    muscles = vm.musclesFor(step.exerciseId),
+                    side = Side.NONE,
+                    working = false,
+                    holdProgress = null,
+                )
+                Box(Modifier.height(4.dp))
+                Text(
+                    vm.exerciseName(step.exerciseId),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = TextHigh,
+                )
+                Box(Modifier.height(8.dp))
+            }
+
+            step.movements.isNotEmpty() -> {
+                WarmupFigure(
+                    movements = step.movements,
+                    secondsLeft = vm.secondsLeft,
+                    blockSeconds = step.seconds,
+                )
+                Box(Modifier.height(8.dp))
+            }
         }
 
         BigTimer(vm.secondsLeft, "Warm-up", Ember)
@@ -760,4 +773,81 @@ private fun LeaveSessionDialog(
             }
         },
     )
+}
+
+/**
+ * The warm-up movements for one block, shown in turn.
+ *
+ * A block names several at once — "hip circles, leg swings, arm circles" — so
+ * showing one of them for three minutes while the words promise three would
+ * teach the wrong movement twice over. Each gets an equal share of the block
+ * and is named while it is on screen.
+ *
+ * Which one is showing is derived from the clock rather than held in state: the
+ * player already counts the block down, and a second timer would be a second
+ * thing to keep in step with it.
+ *
+ * Draws nothing if poses.json has no movement by that id, rather than leaving a
+ * gap where a figure should be. WarmupPosesTest fails on the gap instead.
+ */
+@Composable
+private fun WarmupFigure(movements: List<String>, secondsLeft: Int, blockSeconds: Int) {
+    val context = LocalContext.current
+    val poses = remember { PoseRepository.load(context) as? PoseLoad.Success } ?: return
+
+    val drawable = remember(movements, poses) {
+        movements.mapNotNull { id -> poses.library.warmup.movement(id) }
+    }
+    if (drawable.isEmpty()) return
+
+    val index = warmupMovementIndex(
+        secondsLeft = secondsLeft,
+        blockSeconds = blockSeconds,
+        count = drawable.size,
+    )
+    val current = drawable[index]
+
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        AnimatedStickFigure(
+            animation = current.asAnimation(),
+            style = poses.library.figure,
+            library = poses.library,
+            render = FigureRender.SOLID,
+            highlightWorking = false,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(190.dp),
+        )
+        Text(
+            current.name,
+            style = MaterialTheme.typography.titleMedium,
+            color = TextHigh,
+        )
+        if (drawable.size > 1) {
+            Text(
+                "${index + 1} of ${drawable.size} in this block",
+                style = MaterialTheme.typography.bodySmall.tabular(),
+                color = TextLow,
+            )
+        }
+    }
+}
+
+/**
+ * Which of a warm-up block's movements should be on screen.
+ *
+ * Splits the block evenly and derives the answer from the clock the player is
+ * already counting down, so there is no second timer to keep in step.
+ *
+ * Pulled out of the composable because the first version of it divided by the
+ * seconds remaining rather than by the block length, which compiles, runs, and
+ * silently shows the first movement for the whole three minutes. Arithmetic
+ * that looks like this needs a test more than it needs a comment.
+ */
+internal fun warmupMovementIndex(secondsLeft: Int, blockSeconds: Int, count: Int): Int {
+    if (count <= 1 || blockSeconds <= 0) return 0
+    val elapsed = (blockSeconds - secondsLeft).coerceIn(0, blockSeconds)
+    // The last instant of the block belongs to the last movement, not to a
+    // fourth that does not exist.
+    return (elapsed * count / blockSeconds).coerceIn(0, count - 1)
 }

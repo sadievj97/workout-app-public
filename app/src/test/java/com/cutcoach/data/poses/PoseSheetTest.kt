@@ -160,6 +160,61 @@ class PoseSheetTest {
         println("Reference body sheet written to ${out.absolutePath}")
     }
 
+    /**
+     * The warm-up movements, every pose of each.
+     *
+     * Same reason as the exercises: these are hand-authored coordinates drawn
+     * by the same renderer, and the checks that pass on them only say the limbs
+     * are the right length and the feet reach the floor. Neither says the
+     * figure looks like someone marching.
+     */
+    @Test
+    fun `write a sheet of the warm-up movements`() {
+        val text = File("src/main/assets/poses.json").readText()
+        val library = (PoseRepository.parse(text) as PoseLoad.Success).library
+
+        val rows = library.warmup.movements.flatMap { (id, movement) ->
+            movement.poses.keys.map { Triple(id, it, movement.asAnimation()) }
+        }
+        if (rows.isEmpty()) {
+            println("No warm-up movements in poses.json; nothing to draw.")
+            return
+        }
+
+        val width = columns * side
+        val height = ((rows.size + columns - 1) / columns) * side
+
+        val svg = buildString {
+            append("<svg xmlns='http://www.w3.org/2000/svg' width='$width' height='$height' ")
+            append("viewBox='0 0 $width $height'>")
+            append("<rect width='$width' height='$height' fill='#0B0A12'/>")
+
+            rows.forEachIndexed { index, (id, poseName, animation) ->
+                append(
+                    panel(
+                        pose = animation.pose(poseName)!!,
+                        animation = animation,
+                        style = library.figure,
+                        camera = animation.camera,
+                        // Warm-up movements work no named muscle, and nothing
+                        // should be lit amber as though they did.
+                        worked = emptyList(),
+                        anatomy = library.anatomy,
+                        originX = (index % columns) * side,
+                        originY = (index / columns) * side,
+                        label = "$id / $poseName",
+                    ),
+                )
+            }
+            append("</svg>")
+        }
+
+        val out = File("build/warmup-sheet.svg")
+        out.parentFile?.mkdirs()
+        out.writeText(svg)
+        println("Warm-up sheet written to ${out.absolutePath}")
+    }
+
     private fun panel(
         pose: Pose,
         animation: ExerciseAnimation,

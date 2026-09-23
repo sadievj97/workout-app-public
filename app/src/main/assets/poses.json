@@ -160,6 +160,267 @@
     ]
   },
 
+  "warmup": {
+    "note": "Movements named by the warm-up blocks in exercises.json. They are not exercises and carry no ladder, no sets and no muscles of their own, which is why they live here rather than under exercises -- a test asserts every entry there is a real exercise. Generated from segment angles so no limb changes length.",
+    "cat_cow_note": "Cat-cow is named in the mobility block and is deliberately not drawn. Keeping the hands and knees planted while the back changes shape needs a spine joint, and the torso here is one rigid segment: solving for planted knees slides the hand about 10 cm across the floor between the two positions. A figure doing that would teach the wrong movement, so the block names cat-cow in words and shows the three it can do honestly.",
+    "movements": {
+      "march": {
+        "name": "Marching in place",
+        "camera": {"azimuth": 18, "elevation": 8},
+        "facing": [1.0, 0.0, 0.0],
+        "symmetry": "none",
+        "props": [{"type": "floor", "y": 0.209, "from_x": -0.35, "to_x": 0.40, "depth": 0.22}],
+        "poses": {
+        "left": {
+          "head":  [0.006, -0.409, 0.010],
+          "neck":  [0.009, -0.334, 0.000],
+          "hip":   [0.000, -0.075, 0.000],
+          "elbow": [-0.049, -0.247, 0.062],
+          "wrist": [-0.132, -0.183, 0.062],
+          "knee":  [0.134, -0.056, 0.042],
+          "ankle": [0.167, 0.075, 0.042],
+          "toe":   [0.210, 0.098, 0.042],
+          "elbow_other": [0.073, -0.252, -0.062],
+          "wrist_other": [0.168, -0.205, -0.062],
+          "knee_other":  [0.005, 0.060, -0.042],
+          "ankle_other": [0.005, 0.195, -0.042],
+          "toe_other":   [0.052, 0.209, -0.042]
+        },
+        "right": {
+          "head":  [-0.006, -0.409, 0.010],
+          "neck":  [-0.009, -0.334, 0.000],
+          "hip":   [0.000, -0.075, 0.000],
+          "elbow": [0.055, -0.252, 0.062],
+          "wrist": [0.150, -0.205, 0.062],
+          "knee":  [0.005, 0.060, 0.042],
+          "ankle": [0.005, 0.195, 0.042],
+          "toe":   [0.052, 0.209, 0.042],
+          "elbow_other": [-0.067, -0.247, -0.062],
+          "wrist_other": [-0.150, -0.183, -0.062],
+          "knee_other":  [0.134, -0.056, -0.042],
+          "ankle_other": [0.167, 0.075, -0.042],
+          "toe_other":   [0.210, 0.098, -0.042]
+        }
+        },
+        "sequence": [
+          {"pose": "left",  "seconds": 0.0},
+          {"pose": "right", "seconds": 0.5},
+          {"pose": "left",  "seconds": 0.5}
+        ]
+      },
+      "hip_circles": {
+        "name": "Hip circles",
+        "camera": {"azimuth": 52, "elevation": 8},
+        "facing": [1.0, 0.0, 0.0],
+        "symmetry": "none",
+        "props": [{"type": "floor", "y": 0.209, "from_x": -0.35, "to_x": 0.35, "depth": 0.22}],
+        "note": "The trunk circles, arms hanging. Hands on hips is not drawable: the arm reaches 0.2095 from the neck and the torso is 0.259 long, so the hand cannot get to the hip. Folding the elbow to fake it put the hands up by the face. The torso is also one rigid segment, so this is the trunk describing the circle rather than the pelvis alone.",
+        "poses": {
+        "front": {
+          "head":  [0.069, -0.384, 0.010],
+          "neck":  [0.097, -0.315, 0.000],
+          "hip":   [0.000, -0.075, 0.000],
+          "elbow": [0.112, -0.212, 0.062],
+          "wrist": [0.123, -0.107, 0.062],
+          "knee":  [0.005, 0.060, 0.042],
+          "ankle": [0.005, 0.195, 0.042],
+          "toe":   [0.052, 0.209, 0.042],
+          "elbow_other": [0.112, -0.212, -0.062],
+          "wrist_other": [0.123, -0.107, -0.062],
+          "knee_other":  [0.005, 0.060, -0.042],
+          "ankle_other": [0.005, 0.195, -0.042],
+          "toe_other":   [0.052, 0.209, -0.042]
+        },
+        "right": {
+          "head":  [0.000, -0.383, 0.124],
+          "neck":  [0.000, -0.308, 0.114],
+          "hip":   [0.000, -0.075, 0.000],
+          "elbow": [0.015, -0.204, 0.176],
+          "wrist": [0.026, -0.100, 0.176],
+          "knee":  [0.005, 0.060, 0.042],
+          "ankle": [0.005, 0.195, 0.042],
+          "toe":   [0.052, 0.209, 0.042],
+          "elbow_other": [0.015, -0.204, 0.052],
+          "wrist_other": [0.026, -0.100, 0.052],
+          "knee_other":  [0.005, 0.060, -0.042],
+          "ankle_other": [0.005, 0.195, -0.042],
+          "toe_other":   [0.052, 0.209, -0.042]
+        },
+        "back": {
+          "head":  [-0.057, -0.392, 0.010],
+          "neck":  [-0.080, -0.321, 0.000],
+          "hip":   [0.000, -0.075, 0.000],
+          "elbow": [-0.065, -0.218, 0.062],
+          "wrist": [-0.055, -0.113, 0.062],
+          "knee":  [0.005, 0.060, 0.042],
+          "ankle": [0.005, 0.195, 0.042],
+          "toe":   [0.052, 0.209, 0.042],
+          "elbow_other": [-0.065, -0.218, -0.062],
+          "wrist_other": [-0.055, -0.113, -0.062],
+          "knee_other":  [0.005, 0.060, -0.042],
+          "ankle_other": [0.005, 0.195, -0.042],
+          "toe_other":   [0.052, 0.209, -0.042]
+        },
+        "left": {
+          "head":  [0.000, -0.383, -0.104],
+          "neck":  [0.000, -0.308, -0.114],
+          "hip":   [0.000, -0.075, 0.000],
+          "elbow": [0.015, -0.204, -0.052],
+          "wrist": [0.026, -0.100, -0.052],
+          "knee":  [0.005, 0.060, 0.042],
+          "ankle": [0.005, 0.195, 0.042],
+          "toe":   [0.052, 0.209, 0.042],
+          "elbow_other": [0.015, -0.204, -0.176],
+          "wrist_other": [0.026, -0.100, -0.176],
+          "knee_other":  [0.005, 0.060, -0.042],
+          "ankle_other": [0.005, 0.195, -0.042],
+          "toe_other":   [0.052, 0.209, -0.042]
+        }
+        },
+        "sequence": [
+          {"pose": "front", "seconds": 0.0},
+          {"pose": "right", "seconds": 0.7},
+          {"pose": "back",  "seconds": 0.7},
+          {"pose": "left",  "seconds": 0.7},
+          {"pose": "front", "seconds": 0.7}
+        ]
+      },
+      "leg_swings": {
+        "name": "Leg swings",
+        "camera": {"azimuth": 14, "elevation": 6},
+        "facing": [1.0, 0.0, 0.0],
+        "symmetry": "none",
+        "props": [{"type": "floor", "y": 0.209, "from_x": -0.35, "to_x": 0.40, "depth": 0.22}],
+        "poses": {
+        "forward": {
+          "head":  [-0.019, -0.407, 0.010],
+          "neck":  [-0.027, -0.333, 0.000],
+          "hip":   [0.000, -0.075, 0.000],
+          "elbow": [-0.076, -0.240, 0.062],
+          "wrist": [-0.129, -0.149, 0.062],
+          "knee":  [0.097, 0.019, 0.042],
+          "ankle": [0.191, 0.116, 0.042],
+          "toe":   [0.237, 0.133, 0.042],
+          "elbow_other": [0.015, -0.237, -0.062],
+          "wrist_other": [0.068, -0.146, -0.062],
+          "knee_other":  [0.005, 0.060, -0.042],
+          "ankle_other": [0.005, 0.195, -0.042],
+          "toe_other":   [0.052, 0.209, -0.042]
+        },
+        "back": {
+          "head":  [0.026, -0.405, 0.010],
+          "neck":  [0.036, -0.331, 0.000],
+          "hip":   [0.000, -0.075, 0.000],
+          "elbow": [0.082, -0.238, 0.062],
+          "wrist": [0.131, -0.145, 0.062],
+          "knee":  [-0.072, 0.040, 0.042],
+          "ankle": [-0.131, 0.161, 0.042],
+          "toe":   [-0.099, 0.199, 0.042],
+          "elbow_other": [-0.003, -0.235, -0.062],
+          "wrist_other": [-0.049, -0.140, -0.062],
+          "knee_other":  [0.005, 0.060, -0.042],
+          "ankle_other": [0.005, 0.195, -0.042],
+          "toe_other":   [0.052, 0.209, -0.042]
+        },
+        "forward2": {
+          "head":  [-0.019, -0.407, 0.010],
+          "neck":  [-0.027, -0.333, 0.000],
+          "hip":   [0.000, -0.075, 0.000],
+          "elbow": [-0.076, -0.240, 0.062],
+          "wrist": [-0.129, -0.149, 0.062],
+          "knee":  [0.097, 0.019, 0.042],
+          "ankle": [0.191, 0.116, 0.042],
+          "toe":   [0.237, 0.133, 0.042],
+          "elbow_other": [0.015, -0.237, -0.062],
+          "wrist_other": [0.068, -0.146, -0.062],
+          "knee_other":  [0.005, 0.060, -0.042],
+          "ankle_other": [0.005, 0.195, -0.042],
+          "toe_other":   [0.052, 0.209, -0.042]
+        }
+        },
+        "sequence": [
+          {"pose": "forward",  "seconds": 0.0},
+          {"pose": "back",     "seconds": 0.7},
+          {"pose": "forward2", "seconds": 0.7}
+        ]
+      },
+      "arm_circles": {
+        "name": "Arm circles",
+        "camera": {"azimuth": 26, "elevation": 6},
+        "facing": [1.0, 0.0, 0.0],
+        "symmetry": "none",
+        "props": [{"type": "floor", "y": 0.209, "from_x": -0.35, "to_x": 0.35, "depth": 0.22}],
+        "poses": {
+        "down": {
+          "head":  [0.000, -0.409, 0.010],
+          "neck":  [0.000, -0.334, 0.000],
+          "hip":   [0.000, -0.075, 0.000],
+          "elbow": [0.011, -0.230, 0.062],
+          "wrist": [0.026, -0.126, 0.062],
+          "knee":  [0.005, 0.060, 0.042],
+          "ankle": [0.005, 0.195, 0.042],
+          "toe":   [0.052, 0.209, 0.042],
+          "elbow_other": [0.011, -0.230, -0.062],
+          "wrist_other": [0.026, -0.126, -0.062],
+          "knee_other":  [0.005, 0.060, -0.042],
+          "ankle_other": [0.005, 0.195, -0.042],
+          "toe_other":   [0.052, 0.209, -0.042]
+        },
+        "out": {
+          "head":  [0.000, -0.409, 0.010],
+          "neck":  [0.000, -0.334, 0.000],
+          "hip":   [0.000, -0.075, 0.000],
+          "elbow": [0.104, -0.330, 0.062],
+          "wrist": [0.209, -0.334, 0.062],
+          "knee":  [0.005, 0.060, 0.042],
+          "ankle": [0.005, 0.195, 0.042],
+          "toe":   [0.052, 0.209, 0.042],
+          "elbow_other": [0.104, -0.330, -0.062],
+          "wrist_other": [0.209, -0.334, -0.062],
+          "knee_other":  [0.005, 0.060, -0.042],
+          "ankle_other": [0.005, 0.195, -0.042],
+          "toe_other":   [0.052, 0.209, -0.042]
+        },
+        "up": {
+          "head":  [0.000, -0.409, 0.010],
+          "neck":  [0.000, -0.334, 0.000],
+          "hip":   [0.000, -0.075, 0.000],
+          "elbow": [0.022, -0.436, 0.062],
+          "wrist": [0.033, -0.541, 0.062],
+          "knee":  [0.005, 0.060, 0.042],
+          "ankle": [0.005, 0.195, 0.042],
+          "toe":   [0.052, 0.209, 0.042],
+          "elbow_other": [0.022, -0.436, -0.062],
+          "wrist_other": [0.033, -0.541, -0.062],
+          "knee_other":  [0.005, 0.060, -0.042],
+          "ankle_other": [0.005, 0.195, -0.042],
+          "toe_other":   [0.052, 0.209, -0.042]
+        },
+        "down2": {
+          "head":  [0.000, -0.409, 0.010],
+          "neck":  [0.000, -0.334, 0.000],
+          "hip":   [0.000, -0.075, 0.000],
+          "elbow": [0.011, -0.230, 0.062],
+          "wrist": [0.026, -0.126, 0.062],
+          "knee":  [0.005, 0.060, 0.042],
+          "ankle": [0.005, 0.195, 0.042],
+          "toe":   [0.052, 0.209, 0.042],
+          "elbow_other": [0.011, -0.230, -0.062],
+          "wrist_other": [0.026, -0.126, -0.062],
+          "knee_other":  [0.005, 0.060, -0.042],
+          "ankle_other": [0.005, 0.195, -0.042],
+          "toe_other":   [0.052, 0.209, -0.042]
+        }
+        },
+        "sequence": [
+          {"pose": "down",  "seconds": 0.0},
+          {"pose": "out",   "seconds": 0.5},
+          {"pose": "up",    "seconds": 0.5},
+          {"pose": "down2", "seconds": 0.6}
+        ]
+      }
+    }
+  },
   "exercises": {
 
     "push_up": {

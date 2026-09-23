@@ -13,6 +13,15 @@ data class PoseLibrary(
     val figure: FigureStyle,
     val anatomy: Anatomy = Anatomy(),
     val exercises: Map<String, ExerciseAnimation>,
+    /**
+     * Warm-up movements, kept apart from the exercises.
+     *
+     * They are drawn by the same renderer and are not exercises: no ladder, no
+     * sets, no muscles of their own, and nothing in the rules engine may ever
+     * progress one. A test asserts every entry under `exercises` is a real
+     * exercise, so a marching figure filed there would fail it — correctly.
+     */
+    val warmup: WarmupPoses = WarmupPoses(),
 ) {
     fun animationFor(exerciseId: String): ExerciseAnimation? = exercises[exerciseId]
 
@@ -416,4 +425,50 @@ data class Prop(
         0 -> copy(fromX = -toX, toX = -fromX)
         else -> copy(z = -z)
     }
+}
+
+/**
+ * The warm-up movements, drawn by the same machinery as the exercises.
+ *
+ * [movements] is keyed by the ids the warm-up blocks in exercises.json name.
+ * A block naming a movement that is absent draws nothing rather than failing,
+ * and a test names the gap.
+ */
+@Serializable
+data class WarmupPoses(
+    val note: String = "",
+    /** Why cat-cow is named in the block text but has no figure. */
+    val catCowNote: String = "",
+    val movements: Map<String, WarmupMovement> = emptyMap(),
+) {
+    fun movement(id: String): WarmupMovement? = movements[id]
+}
+
+/**
+ * One warm-up movement.
+ *
+ * Carries its own name because the block text names several at once — "hip
+ * circles, leg swings, arm circles, cat-cow" — and the figure has to say which
+ * one it is currently showing.
+ */
+@Serializable
+data class WarmupMovement(
+    val name: String,
+    val note: String = "",
+    val camera: Camera = Camera(),
+    val facing: List<Float> = listOf(1f, 0f, 0f),
+    val symmetry: String = "none",
+    val props: List<Prop> = emptyList(),
+    val poses: Map<String, Pose>,
+    val sequence: List<Keyframe>,
+) {
+    /** The same shape the figure renderer already knows how to draw. */
+    fun asAnimation(): ExerciseAnimation = ExerciseAnimation(
+        camera = camera,
+        symmetry = symmetry,
+        facing = facing,
+        props = props,
+        poses = poses,
+        sequence = sequence,
+    )
 }

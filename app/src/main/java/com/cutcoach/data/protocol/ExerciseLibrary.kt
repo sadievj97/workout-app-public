@@ -42,6 +42,19 @@ data class WarmupBlock(
      * an assumption about a file the owner is told to edit freely.
      */
     val shows: String? = null,
+    /**
+     * Warm-up movements to draw during this block, by their id in poses.json.
+     *
+     * A list, because a block names several at once: "hip circles, leg swings,
+     * arm circles, cat-cow" is four things in one line, and one animation of
+     * all four would be a lie. The player shows them in turn and names the one
+     * on screen.
+     *
+     * Shorter than the block's text on purpose. Cat-cow is named in the words
+     * and absent here, because a rigid torso cannot do it without sliding the
+     * hands across the floor; poses.json records why.
+     */
+    val movements: List<String> = emptyList(),
 ) {
     /** Whether this block is a ramp-up of the day's own first exercise. */
     val showsFirstExercise: Boolean get() = shows == "first_exercise"

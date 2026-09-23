@@ -79,7 +79,14 @@ android {
     sourceSets {
         getByName("main") {
             if (samsungSdkPresent) {
-                java.srcDir("src/samsung/java")
+                // kotlin.srcDir, not java.srcDir. The folder holds .kt files,
+                // and adding it to the java source set compiled exactly nothing
+                // -- silently, because there is nothing wrong with a java source
+                // root that contains no java. The build still succeeded, the
+                // Samsung classes simply were not there, and the reflective
+                // lookup in MainActivity did what it does when the SDK is
+                // absent: nothing at all. On a phone that had the SDK.
+                kotlin.srcDir("src/samsung/java")
             } else {
                 logger.lifecycle(
                     "Samsung Health SDK not in app/libs -- building without Energy " +

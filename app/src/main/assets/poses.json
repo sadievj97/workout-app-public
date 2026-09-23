@@ -628,7 +628,73 @@
         {"pose": "raised", "seconds": 1.0, "role": "raise"},
         {"pose": "hang",   "seconds": 1.0, "role": "lower"}
       ],
-      "hardest_pose": "raised"
+      "hardest_pose": "raised",
+      "variants": [
+        {
+          "rung": 0,
+          "note": "Lying reverse crunch. The easiest rung is not a hanging exercise at all: you are on your back on the floor. That needs its own facing and symmetry, or every muscle highlight lands on the wrong side of a body that is no longer upright. Torso, arms and legs all keep their base lengths.",
+          "camera": {"azimuth": 24, "elevation": 14},
+          "facing": [0.0, -1.0, 0.0],
+          "symmetry": "mirror_z",
+          "props": [
+            {"type": "floor", "y": 0.300, "from_x": -0.5, "to_x": 0.5, "depth": 0.22}
+          ],
+          "poses": {
+            "down": {
+              "head":  [ 0.226, 0.286, 0.000],
+              "neck":  [ 0.150, 0.288, 0.000],
+              "hip":   [-0.110, 0.295, 0.000],
+              "elbow": [ 0.048, 0.298, 0.055],
+              "wrist": [-0.058, 0.300, 0.055],
+              "knee":  [-0.110, 0.164, 0.042],
+              "ankle": [-0.244, 0.174, 0.042],
+              "toe":   [-0.289, 0.196, 0.042]
+            },
+            "up": {
+              "head":  [ 0.226, 0.286, 0.000],
+              "neck":  [ 0.150, 0.288, 0.000],
+              "hip":   [-0.110, 0.295, 0.000],
+              "elbow": [ 0.048, 0.298, 0.055],
+              "wrist": [-0.058, 0.300, 0.055],
+              "knee":  [-0.055, 0.177, 0.042],
+              "ankle": [-0.183, 0.215, 0.042],
+              "toe":   [-0.228, 0.237, 0.042]
+            }
+          },
+          "sequence": [
+            {"pose": "down", "seconds": 0.0, "role": "start"},
+            {"pose": "up",   "seconds": 1.0, "role": "raise"},
+            {"pose": "down", "seconds": 1.0, "role": "lower"}
+          ],
+          "hardest_pose": "up"
+        },
+        {
+          "rung": 4,
+          "note": "Straight-leg raise. The hang is unchanged; only the raised pose differs, with the legs straight out in front instead of the knees folded. The longer lever is the whole of what makes it harder.",
+          "poses": {
+            "hang": {
+              "head":  [ 0.000, -0.265,  0.010],
+              "neck":  [ 0.000, -0.190,  0.000],
+              "hip":   [ 0.000,  0.070, -0.020],
+              "elbow": [-0.048, -0.295,  0.015],
+              "wrist": [-0.062, -0.400,  0.020],
+              "knee":  [-0.030,  0.204, -0.030],
+              "ankle": [-0.038,  0.338, -0.040],
+              "toe":   [-0.052,  0.382, -0.020]
+            },
+            "raised": {
+              "head":  [ 0.000, -0.265,  0.010],
+              "neck":  [ 0.000, -0.190,  0.000],
+              "hip":   [ 0.000,  0.070, -0.020],
+              "elbow": [-0.048, -0.295,  0.015],
+              "wrist": [-0.062, -0.400,  0.020],
+              "knee":  [-0.030,  0.062,  0.114],
+              "ankle": [-0.038,  0.064,  0.248],
+              "toe":   [-0.052,  0.102,  0.278]
+            }
+          }
+        }
+      ]
     },
 
     "bulgarian_split_squat": {

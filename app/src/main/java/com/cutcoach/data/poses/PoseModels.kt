@@ -227,6 +227,8 @@ data class ExerciseAnimation(
         val variant = variantFor(rung) ?: return this
         return copy(
             camera = variant.camera ?: camera,
+            facing = variant.facing ?: facing,
+            symmetry = variant.symmetry ?: symmetry,
             props = variant.props ?: props,
             poses = variant.poses ?: poses,
             sequence = variant.sequence ?: sequence,
@@ -253,6 +255,16 @@ data class ExerciseVariant(
     val note: String = "",
     val sameAs: String? = null,
     val camera: Camera? = null,
+    /**
+     * Which way the body faces, when the rung changes that.
+     *
+     * A hanging knee raise's easiest rung is a lying reverse crunch: same
+     * muscles, same ladder, but you are on your back instead of under a bar.
+     * Without these the variant would inherit "facing the viewer" and put every
+     * muscle highlight on the wrong side of the body.
+     */
+    val facing: List<Float>? = null,
+    val symmetry: String? = null,
     val props: List<Prop>? = null,
     val poses: Map<String, Pose>? = null,
     val sequence: List<Keyframe>? = null,

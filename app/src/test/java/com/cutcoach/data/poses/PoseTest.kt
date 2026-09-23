@@ -597,8 +597,13 @@ class PoseTest {
             val reference = limbLengths(base, symmetry)
 
             animation.variants.filter { it.sameAs == null }.forEach { variant ->
+                // The variant's own symmetry, not the base's. A rung that puts
+                // the body on its back reflects across a different axis, and
+                // measuring its far arm against the wrong one compares two
+                // different limbs.
+                val variantSymmetry = animation.atRung(variant.rung).symmetryMode
                 variant.poses?.forEach { (poseName, pose) ->
-                    limbLengths(pose, symmetry).forEach { (limb, actual) ->
+                    limbLengths(pose, variantSymmetry).forEach { (limb, actual) ->
                         val expected = reference.getValue(limb)
                         assertTrue(
                             "$id rung ${variant.rung}/$poseName: $limb is $actual, " +

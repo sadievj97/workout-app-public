@@ -89,7 +89,7 @@ private fun playerHtml(videoId: String, start: Float, end: Float): String = """
 <!DOCTYPE html>
 <html>
   <head><meta name="viewport" content="width=device-width, initial-scale=1"></head>
-  <body style="margin:0;padding:0;background:#101B2D;overflow:hidden">
+  <body style="margin:0;padding:0;background:#0B0A12;overflow:hidden">
     <div id="player"></div>
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>

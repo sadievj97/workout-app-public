@@ -100,6 +100,21 @@ class SessionPlayerViewModel(
     val isOverrunning: Boolean
         get() = plannedMinutes > 0 && elapsedSeconds > (plannedMinutes + graceMinutes) * 60
 
+    /**
+     * Which rung each exercise is on, so every set records how hard it was.
+     *
+     * Declared here, above [init], and it has to stay above it. Kotlin runs
+     * property initialisers and init blocks in source order, and viewModelScope
+     * dispatches on Main.immediate — so a coroutine launched from init while
+     * already on the main thread starts running *synchronously*, before any
+     * property declared further down exists. This map used to be declared 150
+     * lines below, and the init block read it on the way past: every session
+     * containing a rep or a hold died with a NullPointerException the moment
+     * Start was pressed. Cardio days survived, because they have neither, which
+     * is why it stayed hidden.
+     */
+    private val ladderSteps = mutableMapOf<String, Int>()
+
     init {
         prepareStep()
 
@@ -248,9 +263,6 @@ class SessionPlayerViewModel(
             ladderStep = ladderSteps[set.exerciseId] ?: 0,
         )
     }
-
-    /** Which rung each exercise is currently on, read once when the player opens. */
-    private val ladderSteps = mutableMapOf<String, Int>()
 
     /** Skip the current step without logging anything. */
     fun skip() {

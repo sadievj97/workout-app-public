@@ -1,14 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  The palette from the design direction. These XML copies exist only for the
-  window background and the launcher icon, which are drawn by the system before
-  any Compose code runs. The Compose theme in step 2 is the real home of these
-  colours.
+  XML copies of the palette, for the things the system draws before any Compose
+  code runs: the window background, the system bars, and the launcher icon.
+
+  These are duplicates of ui/theme/Color.kt, which is the source of truth, and
+  a duplicate is a thing that drifts. It did: the palette moved from navy to
+  ink and these stayed behind, so every launch flashed the old navy background
+  before Compose drew the new one, and the system bars never changed at all.
+  ColorResourceTest now fails if these stop matching the Kotlin values.
 -->
 <resources>
-    <color name="pre_dawn_navy">#101B2D</color>
-    <color name="slate">#1D2B42</color>
-    <color name="mist">#D5DDE8</color>
-    <color name="sunrise_amber">#F2A541</color>
-    <color name="cool_sky">#7FB2E5</color>
+    <!-- Ink. The background, and the system bars around it. -->
+    <color name="ink">#0B0A12</color>
+
+    <!-- InkLift. Raised surfaces the system draws. -->
+    <color name="ink_lift">#13111F</color>
+
+    <!-- TextHigh. -->
+    <color name="text_high">#F4F1FB</color>
+
+    <!-- Ember: work. -->
+    <color name="ember">#FF6B35</color>
+
+    <!-- Sky: rest. -->
+    <color name="sky">#38BDF8</color>
 </resources>

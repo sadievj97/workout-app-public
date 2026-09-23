@@ -43,7 +43,7 @@ enum class FigureRender { SOLID, LINES }
 /**
  * One stick figure, projected from its three-dimensional pose.
  *
- * The figure is mist; the limbs doing the work go amber during a work phase, so
+ * The figure is TextHigh; the limbs doing the work go Ember during a work phase, so
  * a glance says both what the movement is and which part of you should be
  * feeling it. Parts further from the viewer are drawn first and faded, which is
  * what stops a turned figure reading as a flat tangle of lines.

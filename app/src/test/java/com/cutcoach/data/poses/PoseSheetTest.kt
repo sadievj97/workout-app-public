@@ -60,7 +60,7 @@ class PoseSheetTest {
         val svg = buildString {
             append("<svg xmlns='http://www.w3.org/2000/svg' width='$width' height='$height' ")
             append("viewBox='0 0 $width $height'>")
-            append("<rect width='$width' height='$height' fill='#101B2D'/>")
+            append("<rect width='$width' height='$height' fill='#0B0A12'/>")
 
             rows.forEachIndexed { row, (id, poseName, animation) ->
                 val pose = animation.pose(poseName)!!
@@ -128,7 +128,7 @@ class PoseSheetTest {
                 val b = to.project(camera)
                 sb.append(
                     "<line x1='${sx(a)}' y1='${sy(a)}' x2='${sx(b)}' y2='${sy(b)}' " +
-                        "stroke='#2C3E5C' stroke-width='${stroke * 0.7}' " +
+                        "stroke='#221F33' stroke-width='${stroke * 0.7}' " +
                         "stroke-linecap='round'/>",
                 )
             }
@@ -169,8 +169,8 @@ class PoseSheetTest {
 
         withDepth.sortedBy { it.second }.forEach { (part, depth) ->
             val isWorked = part is Capsule && part.worked
-            val shade = mixToward(if (isWorked) 0xF2A541 else 0xD5DDE8, 0x101B2D, 1f - fade(depth))
-            val rim = "#101B2D"
+            val shade = mixToward(if (isWorked) 0xFF6B35 else 0xF4F1FB, 0x0B0A12, 1f - fade(depth))
+            val rim = "#0B0A12"
             val edge = if (part.group == "muscle") muscleOutline else outline
             when (part) {
                 is Capsule -> {
@@ -207,7 +207,7 @@ class PoseSheetTest {
 
 
         sb.append(
-            "<text x='${originX + side / 2}' y='${originY + side - 6}' fill='#7FB2E5' " +
+            "<text x='${originX + side / 2}' y='${originY + side - 6}' fill='#38BDF8' " +
                 "font-size='12' text-anchor='middle' font-family='sans-serif'>$label</text>",
         )
         return sb.toString()

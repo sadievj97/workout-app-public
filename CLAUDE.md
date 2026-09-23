@@ -99,7 +99,7 @@ Build right after the Phase 1 timers work on the phone.
   - Timed holds show the held position with a countdown ring.
 - Each-side exercises: animate one side, and mirror the figure for the other side and during "Switch sides".
 - Placement: small and glanceable next to the set counter in the session player; large at the top of the cue card.
-- Styling: the figure in mist (#D5DDE8), with the worked muscles highlighted in sunrise amber (#F2A541) during work phases.
+- Styling: the figure in `TextHigh`, with the worked muscles highlighted in `Ember` during work phases. Named, not hard-coded: these were the old navy-scheme hexes and went stale the moment the palette changed. `ui/theme/Color.kt` is the source of truth, exactly as `protocol.json` is for training numbers.
 - **Worked muscles:** `exercises.json` already names the muscles per exercise, so each form in the `anatomy` block lists which of those names it answers to. Sides are relative to the body, so each exercise declares a `facing` direction; without it "the front of the arm" has no meaning when you are lying face down.
 - A muscle on the far side is hidden by the body in front of it, which is what an anatomy figure does. The legend names it either way.
 - Name the highlighted muscles in a legend beside the figure, and keep a test that fails if any muscle in `exercises.json` has no form. The shading is schematic, not anatomical, and the cue card says so.

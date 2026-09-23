@@ -552,14 +552,18 @@ private fun ExerciseFigure(
     val poses = remember { PoseRepository.load(context) as? PoseLoad.Success } ?: return
     val animation = poses.library.animationFor(exerciseId) ?: return
 
-    // The movement large, the anatomy beside it.
+    // The movement in line art, the anatomy beside it.
     //
-    // This used to be one small skeleton. The brief called for the bare
-    // skeleton here on the grounds that a shaded body is a smudge at that
-    // size — true, and the answer was to stop drawing it at that size rather
-    // than to draw less of it. A figure you cannot copy is not worth the space
-    // it takes, and "I do not know how to do this" is the reason someone opens
-    // the player in the first place.
+    // The movement was briefly drawn as the solid shaded body. It was legible
+    // and the owner found it ugly, which is the only test that matters for
+    // something looked at every morning: the shaded body is a stack of rounded
+    // masses, and at a joint they overlap into a pile of blobs. Line art is a
+    // diagram, and a diagram is what someone copying a movement wants.
+    //
+    // The map stays solid. It is the one thing here that has to show muscles
+    // rather than limbs, and the line renderer only knows limb groups — arms,
+    // legs, torso — so a line-art map could not say "chest" at all. It is also
+    // still, which is where the shaded body reads best.
     //
     // The map earns its third of the width because the movement's own camera
     // is chosen to show the movement, which is regularly the wrong angle for
@@ -577,7 +581,7 @@ private fun ExerciseFigure(
                 .height(200.dp),
             mirrored = side == Side.RIGHT,
             highlightWorking = working,
-            render = FigureRender.SOLID,
+            render = FigureRender.LINES,
             muscles = muscles,
             library = poses.library,
             holdProgress = holdProgress,
@@ -812,7 +816,7 @@ private fun WarmupFigure(movements: List<String>, secondsLeft: Int, blockSeconds
             animation = current.asAnimation(),
             style = poses.library.figure,
             library = poses.library,
-            render = FigureRender.SOLID,
+            render = FigureRender.LINES,
             highlightWorking = false,
             modifier = Modifier
                 .fillMaxWidth()

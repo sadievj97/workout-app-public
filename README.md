@@ -48,7 +48,7 @@ ProtocolRepository ────────────────────�
         ├── rules/          pure Kotlin, no Android   ← the engine
         ├── health/         Health Connect, read only
         ├── claude/         summaries → Worker → Claude → guardrails
-        ├── samsung/        optional SDK, isolated behind an interface
+        ├── samsung/        optional SDK, its own source root
         └── ui/             Compose; figures drawn in code
 ```
 

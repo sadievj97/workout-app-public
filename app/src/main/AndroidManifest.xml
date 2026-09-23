@@ -28,6 +28,16 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <!--
+      The buzz at the end of a timer. A normal permission, granted at install
+      with no prompt, but it still has to be declared: without it the system
+      throws rather than simply staying silent.
+
+      At 05:35 with the phone face down on the floor, the buzz is often the
+      only signal that rest is over.
+    -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <!--
       Health Connect, read only. Every string below was checked against the
       official documentation rather than recalled, because a wrong permission
       name does not fail to build: it fails silently at runtime with no data.

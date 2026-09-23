@@ -41,7 +41,7 @@ import com.cutcoach.data.protocol.ProtocolLoad
 import com.cutcoach.data.protocol.ProtocolRepository
 import com.cutcoach.data.settings.SettingsRepository
 import com.cutcoach.ui.body.BodyScreen
-import com.cutcoach.samsung.EnergyScoreProbeScreen
+import com.cutcoach.ui.energy.EnergyScoreProbeScreen
 import com.cutcoach.ui.claude.WeeklyReviewScreen
 import com.cutcoach.ui.components.CutIcon
 import com.cutcoach.ui.components.CutIconView

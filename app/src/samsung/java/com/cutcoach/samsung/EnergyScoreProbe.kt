@@ -3,6 +3,8 @@ package com.cutcoach.samsung
 import android.app.Activity
 import android.content.Context
 import android.os.Build
+import com.cutcoach.health.EnergyScoreReading
+import com.cutcoach.health.EnergyScoreReport
 import com.samsung.android.sdk.health.data.HealthDataService
 import com.samsung.android.sdk.health.data.permission.AccessType
 import com.samsung.android.sdk.health.data.permission.Permission
@@ -31,16 +33,6 @@ object EnergyScoreProbe {
 
     /** The SDK's own manifest says 29; the rest of the app supports 28. */
     private const val MIN_API = 29
-
-    /** What one day of Energy Score looks like, or why there is none. */
-    data class Reading(val date: LocalDate, val score: Float?)
-
-    data class Report(
-        val available: Boolean,
-        val headline: String,
-        val detail: String,
-        val readings: List<Reading> = emptyList(),
-    )
 
     /**
      * Whether the SDK is even on the classpath.
@@ -80,9 +72,9 @@ object EnergyScoreProbe {
      * being off, an ungranted permission, and a watch that has simply never
      * produced the value.
      */
-    suspend fun run(context: Context, days: Int = 14): Report {
+    suspend fun run(context: Context, days: Int = 14): EnergyScoreReport {
         if (Build.VERSION.SDK_INT < MIN_API) {
-            return Report(
+            return EnergyScoreReport(
                 available = false,
                 headline = "Not available on this Android version.",
                 detail = "The Samsung SDK needs API $MIN_API; this phone is " +
@@ -90,7 +82,7 @@ object EnergyScoreProbe {
             )
         }
         if (!isPresent) {
-            return Report(
+            return EnergyScoreReport(
                 available = false,
                 headline = "The Samsung SDK is not in this build.",
                 detail = "Drop samsung-health-data-api-1.1.0.aar into app/libs " +
@@ -104,7 +96,7 @@ object EnergyScoreProbe {
             val granted = store.getGrantedPermissions(wanted)
 
             if (!granted.containsAll(wanted)) {
-                return Report(
+                return EnergyScoreReport(
                     available = false,
                     headline = "Permission not granted yet.",
                     detail = "Tap \"Ask Samsung Health\" below. If nothing appears, " +
@@ -121,7 +113,7 @@ object EnergyScoreProbe {
 
             val response = store.readData(request)
             val readings = response.dataList.map { point ->
-                Reading(
+                EnergyScoreReading(
                     // The value is a Float on Samsung's side, which is why this
                     // is not rounded here: the probe's job is to report what
                     // arrived, not to tidy it.
@@ -133,7 +125,7 @@ object EnergyScoreProbe {
             }.sortedByDescending { it.date }
 
             if (readings.isEmpty()) {
-                Report(
+                EnergyScoreReport(
                     available = true,
                     headline = "Connected, but no Energy Score in the last $days days.",
                     detail = "The SDK answered and the permission is granted, so the " +
@@ -142,7 +134,7 @@ object EnergyScoreProbe {
                         "it produces one.",
                 )
             } else {
-                Report(
+                EnergyScoreReport(
                     available = true,
                     headline = "${readings.size} Energy Scores in the last $days days.",
                     detail = "Latest: ${readings.first().score ?: "no value"} on " +
@@ -154,7 +146,7 @@ object EnergyScoreProbe {
             // Throwable rather than Exception on purpose: a missing class from
             // an absent .aar arrives as an Error, and that must read as "not
             // available" rather than take the screen down.
-            Report(
+            EnergyScoreReport(
                 available = false,
                 headline = "The SDK refused.",
                 detail = "${e.javaClass.simpleName}: ${e.message ?: "no message"}. " +

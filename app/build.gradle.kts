@@ -14,6 +14,15 @@ plugins {
     id("kotlin-parcelize")
 }
 
+// Whether the Samsung Health Data SDK has been downloaded into app/libs.
+//
+// Its source set imports SDK classes directly, so without the .aar it cannot
+// compile. Excluding it keeps `git clone && ./gradlew test` working on a fresh
+// checkout, which matters more for a public repository than an optional
+// feature does. With the .aar present nothing is excluded and Energy Score
+// works as normal.
+val samsungSdkPresent = file("libs").listFiles().orEmpty().any { it.extension == "aar" }
+
 android {
     namespace = "com.cutcoach"
     compileSdk = 37
@@ -61,6 +70,23 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+
+    // The Samsung code lives in its own source root and is only compiled when
+    // the SDK is there. A separate folder rather than an exclude filter: the
+    // layout then says which code is optional, instead of a build file saying
+    // it somewhere else.
+    sourceSets {
+        getByName("main") {
+            if (samsungSdkPresent) {
+                java.srcDir("src/samsung/java")
+            } else {
+                logger.lifecycle(
+                    "Samsung Health SDK not in app/libs -- building without Energy " +
+                        "Score. See app/libs/README.md.",
+                )
+            }
+        }
     }
 
     compileOptions {

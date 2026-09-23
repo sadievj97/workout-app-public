@@ -44,9 +44,7 @@ class MainActivity : ComponentActivity() {
         DailySyncWorker.schedule(this)
 
         ReminderNotifier.ensureChannel(this)
-        // The one line that knows Samsung exists. Deleting com/cutcoach/samsung
-        // means deleting this too, which app/libs/README.md says.
-        com.cutcoach.samsung.SamsungEnergyScores.register(this)
+        registerEnergyScores()
         bookReminders()
 
         setContent { CutCoachApp() }
@@ -55,6 +53,30 @@ class MainActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         requestNotificationsIfNeeded()
+    }
+
+    /**
+     * Hand Samsung's Energy Score to the rules, if this build has it.
+     *
+     * Reflection for exactly one call, which is not a thing to do lightly. The
+     * alternative is a direct reference, and that makes a fresh clone without
+     * the optional Samsung .aar fail to compile — a bad first minute for anyone
+     * reading the repository, in exchange for a feature they may not want.
+     *
+     * The Gradle build excludes the whole `samsung` source set when the .aar is
+     * absent, so the class genuinely is not there and this genuinely does
+     * nothing. Everything else about Energy Score goes through
+     * [com.cutcoach.health.EnergyScoreSource], an ordinary typed interface.
+     */
+    private fun registerEnergyScores() {
+        runCatching {
+            Class.forName("com.cutcoach.samsung.SamsungEnergyScores\$Companion")
+            val holder = Class.forName("com.cutcoach.samsung.SamsungEnergyScores")
+            val companion = holder.getField("Companion").get(null)
+            companion.javaClass
+                .getMethod("register", android.content.Context::class.java)
+                .invoke(companion, this)
+        }
     }
 
     /**

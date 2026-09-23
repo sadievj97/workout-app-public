@@ -47,10 +47,32 @@ class Chime(context: Context) {
         tones?.startTone(ToneGenerator.TONE_PROP_BEEP2, 400)
     }
 
+    /**
+     * Buzz, or do not buzz. Never crash.
+     *
+     * hasVibrator() answers "is there hardware", not "am I allowed", so on a
+     * build that had not declared VIBRATE this passed and the call that
+     * followed threw SecurityException — on the main thread, inside the session
+     * player, every time a timer reached zero. The app died mid-workout and
+     * relaunched onto the same finished timer, so it died again: "CutCoach keeps
+     * stopping".
+     *
+     * The manifest now declares the permission, which is the actual fix. This
+     * catch is the second one, on the same reasoning already written above the
+     * tone generator: a missing buzz is not worth losing a session over. That
+     * reasoning was applied to the beep and not to the buzz, and it was the buzz
+     * that brought the app down.
+     */
     private fun buzz(pattern: LongArray) {
         val v = vibrator ?: return
         if (!v.hasVibrator()) return
-        v.vibrate(VibrationEffect.createWaveform(pattern, -1))
+        try {
+            v.vibrate(VibrationEffect.createWaveform(pattern, -1))
+        } catch (_: RuntimeException) {
+            // SecurityException if the permission is missing, IllegalState on
+            // some devices while a call is in progress. Neither is the owner's
+            // problem at 05:35.
+        }
     }
 
     fun release() {

@@ -1,4 +1,4 @@
-package com.cutcoach.samsung
+package com.cutcoach.ui.energy
 
 import android.app.Activity
 import androidx.compose.foundation.layout.Arrangement
@@ -28,6 +28,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.cutcoach.health.EnergyScoreReport
+import com.cutcoach.health.EnergyScores
 import com.cutcoach.ui.components.CutCard
 import com.cutcoach.ui.components.CutIcon
 import com.cutcoach.ui.components.CutIconView
@@ -49,6 +51,10 @@ import java.time.format.DateTimeFormatter
  * phone hand over an Energy Score, and what does it look like — so that the
  * decision about whether Phase 5 is worth building rests on what the phone
  * actually does rather than on what Samsung's overview page lists.
+ *
+ * It names no SDK. Everything comes through [EnergyScores], so this screen
+ * compiles on a clone that has no Samsung .aar, and on such a clone it says so
+ * rather than failing to build.
  */
 @Composable
 fun EnergyScoreProbeScreen(
@@ -59,12 +65,12 @@ fun EnergyScoreProbeScreen(
     val scope = rememberCoroutineScope()
 
     var busy by remember { mutableStateOf(false) }
-    var report by remember { mutableStateOf<EnergyScoreProbe.Report?>(null) }
+    var report by remember { mutableStateOf<EnergyScoreReport?>(null) }
 
     fun probe() {
         busy = true
         scope.launch {
-            report = EnergyScoreProbe.run(context)
+            report = EnergyScores.probe()
             busy = false
         }
     }
@@ -123,7 +129,7 @@ fun EnergyScoreProbeScreen(
         }
 
         report?.let { result ->
-            CutCard(background = if (result.available) null.let { SlateEdge } else SlateEdge) {
+            CutCard {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -141,15 +147,15 @@ fun EnergyScoreProbeScreen(
                 }
                 Text(result.detail, style = MaterialTheme.typography.bodyMedium, color = MistDim)
 
-                if (!result.available) {
+                if (!result.available && EnergyScores.source != null) {
                     Box(Modifier.height(4.dp))
                     TextButton(
                         onClick = {
                             val activity = context as? Activity ?: return@TextButton
                             busy = true
                             scope.launch {
-                                EnergyScoreProbe.requestPermission(activity)
-                                report = EnergyScoreProbe.run(context)
+                                EnergyScores.source?.requestPermission(activity)
+                                report = EnergyScores.probe()
                                 busy = false
                             }
                         },

@@ -4,7 +4,7 @@ An Android app that runs one person's 24-week cut: it shows the day's session,
 guides it with timers and animated figures, reads a Galaxy Watch through Health
 Connect, and suggests progressions that follow the protocol's own rules.
 
-Kotlin, Jetpack Compose, Room. **193 unit tests, no instrumentation.** All health
+Kotlin, Jetpack Compose, Room. **208 unit tests, no instrumentation.** All health
 data stays on the phone.
 
 > The protocol in this repository is **sample data**. The real one is a
@@ -107,7 +107,7 @@ assertions did.
 ## Test results
 
 ```
-193 tests, 0 failures
+208 tests, 0 failures
 ```
 
 | Area | What it covers |
@@ -162,6 +162,25 @@ consecutive days.
 the commit message said the change was made. Caught by a report that counted what
 was actually missing rather than trusting the edit.
 
+**A feature switched off by one word in a build file.** Making the Samsung SDK
+optional meant moving its code to `src/samsung/java` and adding that root only
+when the `.aar` is present. The build added it with `java.srcDir`. The folder
+holds `.kt` files, and a Java source root containing no Java compiles nothing
+without complaining — so the classes were never built, the reflective lookup
+found nothing and swallowed it exactly as designed, and the app reported "not
+built with the Samsung SDK" on a phone that had it. Green build, green tests,
+feature gone. Found only by checking the *other* configuration: the no-SDK build
+compiled no Samsung classes, which is correct, and so did the one with the SDK,
+which is not. Comparing the two is what made it visible; neither on its own
+would have.
+
+**Two tests that passed for no reason.** After fixing the session-colour bug I
+reverted the keyword table to check the new test caught it. It still passed.
+Reverted the match ordering instead — still passed. Either fix alone covered the
+case, so reverting one proved nothing; only with both reverted did it go red. A
+test called "verified" after the first check would have been verified against
+nothing.
+
 The pattern: every one of these was found by something that *rendered* or
 *counted* rather than asserted. A test that says "this should equal that" only
 finds what you thought to check.
@@ -171,7 +190,7 @@ finds what you thought to check.
 ## Building it
 
 ```bash
-./gradlew testDebugUnitTest      # 193 tests, no device needed
+./gradlew testDebugUnitTest      # 208 tests, no device needed
 ./gradlew installDebug           # needs a phone; minSdk 28
 ```
 
@@ -179,7 +198,10 @@ Optional, and the app runs without both:
 
 - **Claude layer** — deploy `worker/` to Cloudflare, then add
   `cutcoach.proxyUrl` and `cutcoach.proxySecret` to `local.properties`.
-- **Samsung Energy Score** — see `app/libs/README.md`.
+- **Samsung Energy Score** — see `app/libs/README.md`. The SDK is a licensed
+  .aar that is not in this repository; `src/samsung/` is compiled only when it is
+  present, and nothing outside that folder names Samsung, so a clone without it
+  builds and tests normally. A unit test enforces both halves of that.
 
 Your own protocol goes in `app/src/main/assets/protocol.local.json`, which is
 gitignored and used in preference to the sample.

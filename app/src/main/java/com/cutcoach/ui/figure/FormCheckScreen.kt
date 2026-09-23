@@ -162,8 +162,8 @@ private fun FigureReviewCard(
                 animation = animation,
                 style = library.figure,
                 tempo = Tempo.Default,
-                muscles = muscles,
                 library = library,
+                render = FigureRender.LINES,
                 extraAzimuth = turn,
                 extraElevation = tilt,
                 modifier = Modifier

@@ -49,7 +49,6 @@ import com.cutcoach.ui.components.CutIcon
 import com.cutcoach.ui.components.CutIconView
 import com.cutcoach.ui.figure.AnimatedStickFigure
 import com.cutcoach.ui.figure.FigureRender
-import com.cutcoach.ui.figure.MuscleMap
 import com.cutcoach.ui.theme.InkLift
 import com.cutcoach.ui.theme.Mint
 import com.cutcoach.ui.theme.Sky
@@ -325,38 +324,12 @@ private fun WarmupStep(vm: SessionPlayerViewModel, step: SessionStep.Warmup) {
         )
         Box(Modifier.height(8.dp))
 
-        // The ramp-up block is a set of the day's first exercise; the other two
-        // name their own movements. A block naming several shows them in turn
-        // rather than picking one, because "hip circles, leg swings, arm
-        // circles" is three different things and a figure doing one of them
-        // while the words say three teaches the wrong movement twice.
-        when {
-            step.exerciseId != null -> {
-                ExerciseFigure(
-                    exerciseId = step.exerciseId,
-                    muscles = vm.musclesFor(step.exerciseId),
-                    side = Side.NONE,
-                    working = false,
-                    holdProgress = null,
-                )
-                Box(Modifier.height(4.dp))
-                Text(
-                    vm.exerciseName(step.exerciseId),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = TextHigh,
-                )
-                Box(Modifier.height(8.dp))
-            }
-
-            step.movements.isNotEmpty() -> {
-                WarmupFigure(
-                    movements = step.movements,
-                    secondsLeft = vm.secondsLeft,
-                    blockSeconds = step.seconds,
-                )
-                Box(Modifier.height(8.dp))
-            }
-        }
+        // No figure during the warm-up. Marching, hip circles, leg swings and
+        // arm circles were drawn here for a while, along with the day's first
+        // exercise on the ramp-up block. The words carry a warm-up well enough
+        // and the drawings were not worth the screen. The exercises keep
+        // theirs, which is where not knowing the movement actually costs
+        // something.
 
         BigTimer(vm.secondsLeft, "Warm-up", Ember)
         Box(Modifier.height(20.dp))
@@ -394,7 +367,6 @@ private fun HoldStep(
         ExerciseHeading(
             name = vm.exerciseName(step.exerciseId),
             exerciseId = step.exerciseId,
-            muscles = vm.musclesFor(step.exerciseId),
             setNumber = step.setNumber,
             totalSets = step.totalSets,
             side = step.side,
@@ -449,7 +421,6 @@ private fun RepSetStep(
         ExerciseHeading(
             name = vm.exerciseName(step.exerciseId),
             exerciseId = step.exerciseId,
-            muscles = vm.musclesFor(step.exerciseId),
             setNumber = step.setNumber,
             totalSets = step.totalSets,
             side = step.side,
@@ -496,7 +467,6 @@ private fun RepSetStep(
 private fun ExerciseHeading(
     name: String,
     exerciseId: String,
-    muscles: List<String>,
     setNumber: Int,
     totalSets: Int,
     side: Side,
@@ -509,7 +479,6 @@ private fun ExerciseHeading(
         // not so big it competes with the timer.
         ExerciseFigure(
             exerciseId = exerciseId,
-            muscles = muscles,
             side = side,
             working = working,
             holdProgress = holdProgress,
@@ -543,7 +512,6 @@ private fun ExerciseHeading(
 @Composable
 private fun ExerciseFigure(
     exerciseId: String,
-    muscles: List<String>,
     side: Side,
     working: Boolean,
     holdProgress: Float?,
@@ -552,49 +520,31 @@ private fun ExerciseFigure(
     val poses = remember { PoseRepository.load(context) as? PoseLoad.Success } ?: return
     val animation = poses.library.animationFor(exerciseId) ?: return
 
-    // The movement in line art, the anatomy beside it.
+    // The movement in line art, and nothing beside it.
     //
-    // The movement was briefly drawn as the solid shaded body. It was legible
-    // and the owner found it ugly, which is the only test that matters for
-    // something looked at every morning: the shaded body is a stack of rounded
-    // masses, and at a joint they overlap into a pile of blobs. Line art is a
-    // diagram, and a diagram is what someone copying a movement wants.
+    // Two things were tried here and both came out. Drawn as the solid shaded
+    // body it was legible and ugly — the shaded figure is a stack of rounded
+    // masses that pile into blobs at a joint — and for something looked at
+    // every morning that is the only test that matters. A muscle map stood
+    // beside it for a while, a small still body with the worked muscles lit;
+    // it answered a question nobody was asking mid-set and took a third of the
+    // width to do it.
     //
-    // The map stays solid. It is the one thing here that has to show muscles
-    // rather than limbs, and the line renderer only knows limb groups — arms,
-    // legs, torso — so a line-art map could not say "chest" at all. It is also
-    // still, which is where the shaded body reads best.
-    //
-    // The map earns its third of the width because the movement's own camera
-    // is chosen to show the movement, which is regularly the wrong angle for
-    // the muscles: a push-up is drawn from the side and its chest faces away.
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        AnimatedStickFigure(
-            animation = animation,
-            style = poses.library.figure,
-            modifier = Modifier
-                .weight(2f)
-                .height(200.dp),
-            mirrored = side == Side.RIGHT,
-            highlightWorking = working,
-            render = FigureRender.LINES,
-            muscles = muscles,
-            library = poses.library,
-            holdProgress = holdProgress,
-        )
-
-        MuscleMap(
-            library = poses.library,
-            muscles = muscles,
-            modifier = Modifier
-                .weight(1f)
-                .height(150.dp),
-        )
-    }
+    // What is left is a diagram of the movement, which is what someone copying
+    // one wants. The size stays: going from 150dp to 200dp is what made it
+    // usable.
+    AnimatedStickFigure(
+        animation = animation,
+        style = poses.library.figure,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp),
+        mirrored = side == Side.RIGHT,
+        highlightWorking = working,
+        render = FigureRender.LINES,
+        library = poses.library,
+        holdProgress = holdProgress,
+    )
 }
 
 @Composable
@@ -779,79 +729,4 @@ private fun LeaveSessionDialog(
     )
 }
 
-/**
- * The warm-up movements for one block, shown in turn.
- *
- * A block names several at once — "hip circles, leg swings, arm circles" — so
- * showing one of them for three minutes while the words promise three would
- * teach the wrong movement twice over. Each gets an equal share of the block
- * and is named while it is on screen.
- *
- * Which one is showing is derived from the clock rather than held in state: the
- * player already counts the block down, and a second timer would be a second
- * thing to keep in step with it.
- *
- * Draws nothing if poses.json has no movement by that id, rather than leaving a
- * gap where a figure should be. WarmupPosesTest fails on the gap instead.
- */
-@Composable
-private fun WarmupFigure(movements: List<String>, secondsLeft: Int, blockSeconds: Int) {
-    val context = LocalContext.current
-    val poses = remember { PoseRepository.load(context) as? PoseLoad.Success } ?: return
 
-    val drawable = remember(movements, poses) {
-        movements.mapNotNull { id -> poses.library.warmup.movement(id) }
-    }
-    if (drawable.isEmpty()) return
-
-    val index = warmupMovementIndex(
-        secondsLeft = secondsLeft,
-        blockSeconds = blockSeconds,
-        count = drawable.size,
-    )
-    val current = drawable[index]
-
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        AnimatedStickFigure(
-            animation = current.asAnimation(),
-            style = poses.library.figure,
-            library = poses.library,
-            render = FigureRender.LINES,
-            highlightWorking = false,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(190.dp),
-        )
-        Text(
-            current.name,
-            style = MaterialTheme.typography.titleMedium,
-            color = TextHigh,
-        )
-        if (drawable.size > 1) {
-            Text(
-                "${index + 1} of ${drawable.size} in this block",
-                style = MaterialTheme.typography.bodySmall.tabular(),
-                color = TextLow,
-            )
-        }
-    }
-}
-
-/**
- * Which of a warm-up block's movements should be on screen.
- *
- * Splits the block evenly and derives the answer from the clock the player is
- * already counting down, so there is no second timer to keep in step.
- *
- * Pulled out of the composable because the first version of it divided by the
- * seconds remaining rather than by the block length, which compiles, runs, and
- * silently shows the first movement for the whole three minutes. Arithmetic
- * that looks like this needs a test more than it needs a comment.
- */
-internal fun warmupMovementIndex(secondsLeft: Int, blockSeconds: Int, count: Int): Int {
-    if (count <= 1 || blockSeconds <= 0) return 0
-    val elapsed = (blockSeconds - secondsLeft).coerceIn(0, blockSeconds)
-    // The last instant of the block belongs to the last movement, not to a
-    // fourth that does not exist.
-    return (elapsed * count / blockSeconds).coerceIn(0, count - 1)
-}

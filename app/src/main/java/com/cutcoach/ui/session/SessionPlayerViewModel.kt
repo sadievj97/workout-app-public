@@ -321,14 +321,6 @@ class SessionPlayerViewModel(
 
     fun exerciseName(id: String): String = repo.exercise(id)?.name ?: id
 
-    /**
-     * Which muscles an exercise works, as exercises.json names them.
-     *
-     * Read straight from the library rather than stored: the anatomy matches
-     * on these strings, so a name invented here would light nothing and say
-     * nothing about why.
-     */
-    fun musclesFor(id: String): List<String> = repo.exercise(id)?.muscles.orEmpty()
 
     fun exercise(id: String) = repo.exercise(id)
 

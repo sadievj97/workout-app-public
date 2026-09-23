@@ -46,6 +46,7 @@ import com.cutcoach.ui.components.CutCard
 import com.cutcoach.ui.components.HeroCard
 import com.cutcoach.ui.components.Pill
 import com.cutcoach.ui.figure.AnimatedStickFigure
+import com.cutcoach.ui.figure.FigureRender
 import com.cutcoach.ui.components.SectionLabel
 import com.cutcoach.ui.theme.identityFor
 import com.cutcoach.ui.theme.Sky
@@ -135,18 +136,6 @@ fun CueCardScreen(
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.White.copy(alpha = 0.85f),
             )
-            if (exercise.muscles.isNotEmpty()) {
-                Box(Modifier.height(4.dp))
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    exercise.muscles.forEach {
-                        Pill(
-                            it,
-                            colour = Color.White,
-                            fill = Color.Black.copy(alpha = 0.22f),
-                        )
-                    }
-                }
-            }
         }
 
         // A real clip if there is one and it will play; the figure otherwise.
@@ -183,20 +172,16 @@ fun CueCardScreen(
                     animation = animation,
                     style = poses.library.figure,
                     tempo = tempo,
-                    muscles = exercise.muscles,
                     library = poses.library,
+                    render = FigureRender.LINES,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(280.dp),
                 )
 
-                MuscleLegend(exercise.muscles)
-
                 Text(
-                    "A reminder of the shape, the tempo, and roughly where you should " +
-                        "feel it. Not a substitute for learning the form from a video " +
-                        "or a coach, and the shading is approximate rather than " +
-                        "anatomical.",
+                    "A reminder of the shape and the tempo. Not a substitute for " +
+                        "learning the form from a video or a coach.",
                     style = MaterialTheme.typography.bodySmall,
                     color = TextMid,
                 )
@@ -314,28 +299,6 @@ fun CueCardScreen(
  * Names what the amber is marking, so the shading is read rather than guessed
  * at. The names come straight from the exercise library.
  */
-@Composable
-private fun MuscleLegend(muscles: List<String>) {
-    if (muscles.isEmpty()) return
-
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Box(
-            Modifier
-                .size(9.dp)
-                .clip(CircleShape)
-                .background(Ember),
-        )
-        Text(
-            muscles.joinToString(", "),
-            style = MaterialTheme.typography.bodyMedium,
-            color = TextHigh,
-        )
-    }
-}
 
 @Composable
 private fun Bullet(text: String, dotColor: androidx.compose.ui.graphics.Color) {

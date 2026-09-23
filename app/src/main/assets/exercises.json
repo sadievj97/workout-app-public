@@ -9,9 +9,9 @@
     "duration_min": 8,
     "status": "Approved 2026-09-21. Edit freely.",
     "blocks": [
-      {"min": 2, "what": "Easy marching in place or light jumping jacks", "movements": ["march"]},
-      {"min": 3, "what": "Mobility: hip circles, leg swings, arm circles, cat-cow", "movements": ["hip_circles", "leg_swings", "arm_circles"]},
-      {"min": 3, "what": "One easy ramp-up set of the day's first exercise at about half effort", "shows": "first_exercise"}
+      {"min": 2, "what": "Easy marching in place or light jumping jacks"},
+      {"min": 3, "what": "Mobility: hip circles, leg swings, arm circles, cat-cow"},
+      {"min": 3, "what": "One easy ramp-up set of the day's first exercise at about half effort"}
     ]
   },
 

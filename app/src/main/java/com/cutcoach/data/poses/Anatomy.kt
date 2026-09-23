@@ -18,19 +18,6 @@ data class Anatomy(
     val notReallyMuscles: String = "",
     val fidelity: String = "",
     val forms: List<AnatomyForm> = emptyList(),
-    /**
-     * A neutral body to show the muscles on, separate from any exercise.
-     *
-     * The player draws the movement and this beside it, so "which part of me
-     * should be feeling this" has an answer that does not depend on the angle
-     * the exercise happens to be drawn from — a push-up is seen from the side,
-     * and the chest it works is on the far face of the figure.
-     *
-     * It lives here rather than as another entry under `exercises`, because a
-     * test asserts every pose entry is a real exercise and a reference body is
-     * not one.
-     */
-    val referenceBody: ReferenceBody? = null,
 ) {
     /** Every muscle name any form answers to. */
     val namedMuscles: Set<String> by lazy {
@@ -225,28 +212,4 @@ private fun outward(side: RegionSide, front: Vec3, lateral: Vec3, axis: Vec3): V
     return if (squared.length() < 0.2f) Vec3(0f, 0f, 0f) else squared
 }
 
-/**
- * A neutral standing body, facing the viewer, for showing which muscles an
- * exercise works.
- *
- * One pose and one camera, nothing animated: this is an anatomy plate, not a
- * movement. The muscles highlighted on it come from the exercise being done,
- * so the same body serves every exercise in the protocol.
- */
-@Serializable
-data class ReferenceBody(
-    val note: String = "",
-    val camera: CameraSpec = CameraSpec(),
-    /** Which way the front of the body points, so "front of the arm" means something. */
-    val facing: List<Float> = listOf(0f, 0f, 1f),
-    /** Written for one arm and one leg; the other side is reflected. */
-    val symmetry: String = "mirror_x",
-    val pose: Pose,
-)
 
-/** An azimuth and an elevation in degrees, as stored. */
-@Serializable
-data class CameraSpec(
-    val azimuth: Float = 0f,
-    val elevation: Float = 0f,
-)

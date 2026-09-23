@@ -26,16 +26,31 @@ data class Tempo(
          *
          * Lowering is checked before pause, because "3-second lowering" also
          * contains a number and would otherwise be read as a pause.
+         *
+         * "Slide-out" is here because the hamstring curl's ladder says
+         * "3-second slide-out" rather than "lowering". Without it that rung
+         * asked for three seconds and the figure moved at normal speed, which
+         * is worse than having no rung at all: the picture contradicts the
+         * words beside it.
          */
         fun fromLadderStep(text: String?): Tempo {
             val lower = text?.lowercase() ?: return Default
             val number = FIRST_NUMBER.find(lower)?.groupValues?.get(1)?.toFloatOrNull()
             return when {
                 lower.contains("lowering") -> Tempo(lowerSeconds = number ?: DEFAULT_SLOW_LOWER)
+                // A stated number is required here. "3-second slide-out" is a
+                // tempo rung, but "Slow slide-outs only" is the bottom rung of
+                // the hamstring curl's ladder and a different movement
+                // altogether, so the word alone must not slow the figure down.
+                number != null && SLIDE_PHRASES.any { it in lower } ->
+                    Tempo(lowerSeconds = number)
                 lower.contains("pause") -> Tempo(pauseSeconds = number ?: DEFAULT_PAUSE)
                 else -> Default
             }
         }
+
+        /** The other word a ladder uses for the same slow eccentric. */
+        private val SLIDE_PHRASES = listOf("slide-out", "slide out")
 
         private const val DEFAULT_SLOW_LOWER = 3f
         /** The brief's fallback when a pause rung states no time. */

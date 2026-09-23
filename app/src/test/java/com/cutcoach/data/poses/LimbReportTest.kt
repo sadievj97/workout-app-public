@@ -80,22 +80,19 @@ class LimbReportTest {
 
                 appendLine("  ladder:")
                 ladder.forEachIndexed { rung, text ->
-                    val state = when {
-                        rung == animation.baseRung -> "BASE  "
-                        animation.variantFor(rung)?.sameAs != null -> "BORROW"
-                        animation.variantFor(rung) != null -> "DRAWN "
-                        else -> "  --  "
-                    }
-                    appendLine("    [$state] $rung. $text")
+                    appendLine("    [${stateOf(animation, ladder, rung)}] $rung. $text")
                 }
                 appendLine()
             }
 
-            val undrawn = library.exercises.entries.sumOf { (id, animation) ->
+            val todo = library.exercises.entries.flatMap { (id, animation) ->
                 val ladder = repo.exercise(id)?.ladder.orEmpty()
-                ladder.indices.count { it != animation.baseRung && animation.variantFor(it) == null }
+                ladder.indices
+                    .filter { stateOf(animation, ladder, it) == "TODO  " }
+                    .map { "$id r$it: ${ladder[it]}" }
             }
-            appendLine("Rungs with no drawing of their own: $undrawn")
+            appendLine("STILL TO DRAW (${todo.size}):")
+            todo.forEach { appendLine("  $it") }
         }
 
         File("build").mkdirs()
@@ -108,5 +105,28 @@ class LimbReportTest {
         val dy = a.y - b.y
         val dz = a.z - b.z
         return sqrt(dx * dx + dy * dy + dz * dz)
+    }
+
+    /**
+     * What a rung needs, if anything.
+     *
+     * A rung that only changes tempo or adds load is drawn correctly by the
+     * base figure already, so counting it as missing would overstate the work
+     * by about four to one and hide the rungs that genuinely need geometry.
+     */
+    private fun stateOf(
+        animation: ExerciseAnimation,
+        ladder: List<String>,
+        rung: Int,
+    ): String {
+        val text = ladder.getOrNull(rung).orEmpty()
+        return when {
+            rung == animation.baseRung -> "BASE  "
+            animation.variantFor(rung)?.sameAs != null -> "BORROW"
+            animation.variantFor(rung) != null -> "DRAWN "
+            Tempo.fromLadderStep(text) != Tempo.Default -> "TEMPO "
+            text.contains("backpack", ignoreCase = true) -> "LOAD  "
+            else -> "TODO  "
+        }
     }
 }

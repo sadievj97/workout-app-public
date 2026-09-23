@@ -180,6 +180,19 @@ class ProtocolRepository private constructor(
         private const val PROTOCOL_ASSET = "protocol.json"
         private const val EXERCISES_ASSET = "exercises.json"
 
+        /**
+         * The owner's own protocol, which is not in the repository.
+         *
+         * `protocol.json` ships sample numbers so this can be a public repo:
+         * a start weight, a target, heart-rate zones and a bedtime are health
+         * data about one person, and the brief asks for sample data only.
+         *
+         * Put your real numbers in `protocol.local.json` beside it and they
+         * are used instead. That file is gitignored, the same arrangement
+         * `local.properties` already uses for the proxy secret.
+         */
+        private const val PROTOCOL_OVERRIDE = "protocol.local.json"
+
         @Volatile
         private var cached: ProtocolRepository? = null
 
@@ -203,8 +216,9 @@ class ProtocolRepository private constructor(
         fun load(context: Context): ProtocolLoad {
             cached?.let { return ProtocolLoad.Success(it) }
             val result = parse(
-                protocolText = readAsset(context, PROTOCOL_ASSET),
-                exercisesText = readAsset(context, EXERCISES_ASSET),
+                protocolText = readAsset(context, PROTOCOL_OVERRIDE)
+                    ?: readAsset(context, PROTOCOL_ASSET).orEmpty(),
+                exercisesText = readAsset(context, EXERCISES_ASSET).orEmpty(),
             )
             if (result is ProtocolLoad.Success) cached = result.repository
             return result
@@ -231,8 +245,11 @@ class ProtocolRepository private constructor(
             return ProtocolLoad.Success(ProtocolRepository(protocol, library))
         }
 
-        private fun readAsset(context: Context, name: String): String =
-            context.assets.open(name).bufferedReader().use { it.readText() }
+        /** Null when the asset is not there, which is normal for the override. */
+        private fun readAsset(context: Context, name: String): String? =
+            runCatching {
+                context.assets.open(name).bufferedReader().use { it.readText() }
+            }.getOrNull()
     }
 }
 

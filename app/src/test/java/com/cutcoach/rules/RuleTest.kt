@@ -235,13 +235,14 @@ class RuleTest {
 
     @Test
     fun `sleep starting at 23-30 on ramp night 2 reads as 45 minutes late`() {
-        // Ramp night 1 is 2026-09-21 and nights 1 to 3 target 22:45.
-        val night2 = LocalDate.parse("2026-09-22")
+        // Nights 1 to 3 target 22:45. Night 2 is derived from the file rather
+        // than written down, so sample data does not break the test.
+        val night2 = repo.rampStart!!.plusDays(1)
         assertEquals(2, repo.rampNight(night2))
         assertEquals(LocalTime.of(22, 45), repo.lightsOutOn(night2))
 
         val late = minutesAfterTarget(
-            sleepStart = at("2026-09-22", "23:30"),
+            sleepStart = at(night2.toString(), "23:30"),
             target = LocalTime.of(22, 45),
             night = night2,
             zone = zone,
@@ -250,8 +251,8 @@ class RuleTest {
         assertEquals("45 minutes late", describeRampGap(late))
 
         val sleep = SleepNight(
-            start = at("2026-09-22", "23:30"),
-            end = at("2026-09-23", "05:00"),
+            start = at(night2.toString(), "23:30"),
+            end = at(night2.plusDays(1).toString(), "05:00"),
             duration = Duration.ofMinutes(330),
             minutesAfterTarget = 45L,
         )

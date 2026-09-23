@@ -40,3 +40,9 @@ Thumbs.db
 # app/libs/README.md for where to get it. Phase 5 is optional; without this
 # file the Samsung source set does not compile, which the README says.
 app/libs/*.aar
+
+# The owner's own protocol: start weight, target, heart-rate zones, bedtime,
+# program dates. Health data about one person, so protocol.json in the repo
+# carries sample numbers and this file overrides it locally. Same arrangement
+# local.properties uses for the proxy secret.
+app/src/main/assets/protocol.local.json

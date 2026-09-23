@@ -280,8 +280,9 @@ class ProtocolLoadTest {
     @Test
     fun `the lights-out reminder uses tonight's ramp target, not the timeline`() {
         // Ramp night 2 targets 22:45, while the timeline says 21:30 because
-        // that is where the ramp eventually lands.
-        val night2 = LocalDate.parse("2026-09-22")
+        // that is where the ramp eventually lands. Derived from the file rather
+        // than written down, so sample data does not break the test.
+        val night2 = repo.rampStart!!.plusDays(1)
         val lightsOut = repo.reminderMoments(night2).single { it.isLightsOut }
 
         assertEquals(LocalTime.of(22, 45), lightsOut.time)

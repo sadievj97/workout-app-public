@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -30,8 +31,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import com.cutcoach.data.poses.PoseLoad
 import com.cutcoach.data.poses.PoseRepository
@@ -40,8 +43,11 @@ import com.cutcoach.data.protocol.Exercise
 import com.cutcoach.ui.claude.HarderCard
 import com.cutcoach.ui.claude.SubstituteCard
 import com.cutcoach.ui.components.CutCard
+import com.cutcoach.ui.components.HeroCard
+import com.cutcoach.ui.components.Pill
 import com.cutcoach.ui.figure.AnimatedStickFigure
 import com.cutcoach.ui.components.SectionLabel
+import com.cutcoach.ui.theme.identityFor
 import com.cutcoach.ui.theme.Sky
 import com.cutcoach.ui.theme.TextHigh
 import com.cutcoach.ui.theme.TextMid
@@ -88,6 +94,18 @@ fun CueCardScreen(
         Tempo.fromLadderStep(exercise.ladder.getOrNull(currentLadderStep))
     }
 
+    // The same derivation the session cards use, fed the exercise's movement
+    // pattern instead of a session's focus — so a pull-up here is the same
+    // violet as the pull session it belongs to, without either knowing about
+    // the other.
+    val identity = remember(exercise.id) {
+        identityFor(
+            id = exercise.id,
+            name = exercise.name,
+            focus = exercise.pattern,
+        )
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -100,13 +118,35 @@ fun CueCardScreen(
             Text("Back", style = MaterialTheme.typography.labelMedium, color = Sky)
         }
 
-        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(exercise.name, style = MaterialTheme.typography.displaySmall, color = TextHigh)
+        // The name over the movement's own colours rather than over the
+        // background. Seven identical grey panels was the whole problem with
+        // this screen: nothing led, so everything had to be read in order.
+        HeroCard(brush = identity.sweep()) {
             Text(
-                "${exercise.pattern}  -  ${exercise.muscles.joinToString(", ")}",
-                style = MaterialTheme.typography.bodySmall,
-                color = TextMid,
+                exercise.name,
+                style = MaterialTheme.typography.displaySmall.copy(
+                    fontSize = 34.sp,
+                    lineHeight = 38.sp,
+                ),
+                color = Color.White,
             )
+            Text(
+                exercise.pattern,
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.White.copy(alpha = 0.85f),
+            )
+            if (exercise.muscles.isNotEmpty()) {
+                Box(Modifier.height(4.dp))
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    exercise.muscles.forEach {
+                        Pill(
+                            it,
+                            colour = Color.White,
+                            fill = Color.Black.copy(alpha = 0.22f),
+                        )
+                    }
+                }
+            }
         }
 
         // A real clip if there is one and it will play; the figure otherwise.

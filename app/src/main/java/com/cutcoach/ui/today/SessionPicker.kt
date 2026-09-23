@@ -31,9 +31,11 @@ import com.cutcoach.data.poses.PoseLoad
 import com.cutcoach.data.poses.PoseRepository
 import com.cutcoach.data.protocol.ProtocolRepository
 import com.cutcoach.data.protocol.SessionChoice
+import com.cutcoach.ui.components.CutIconView
 import com.cutcoach.ui.components.Pill
 import com.cutcoach.ui.figure.AnimatedStickFigure
 import com.cutcoach.ui.figure.FigureRender
+import com.cutcoach.ui.week.sessionIcon
 import com.cutcoach.ui.theme.InkLift
 import com.cutcoach.ui.theme.Surface
 import com.cutcoach.ui.theme.SurfaceEdge
@@ -113,7 +115,12 @@ private fun SessionRow(
     isToday: Boolean,
     onPick: () -> Unit,
 ) {
-    val identity = identityFor(choice.id, choice.session.name, choice.session.focus)
+    val identity = identityFor(
+        id = choice.id,
+        name = choice.session.name,
+        focus = choice.session.focus,
+        hrZone = choice.session.hrZone,
+    )
     val context = LocalContext.current
     val poses = remember { PoseRepository.load(context) as? PoseLoad.Success }
 
@@ -142,18 +149,34 @@ private fun SessionRow(
                 .background(identity.sweep()),
         )
 
-        if (animation != null && poses != null) {
-            AnimatedStickFigure(
-                animation = animation,
-                style = poses.library.figure,
-                library = poses.library,
-                render = FigureRender.LINES,
-                highlightWorking = false,
-                paused = true,
-                modifier = Modifier
-                    .size(44.dp)
-                    .alpha(0.85f),
-            )
+        // A strength session shows its first exercise. A cardio or walk session
+        // has no exercises at all — it carries `options` instead — so it used to
+        // show nothing here, and sat in the list looking half-drawn next to the
+        // rows that did. An icon is not a figure, but it fills the same space
+        // and says the same kind of thing.
+        Box(
+            modifier = Modifier.size(44.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            if (animation != null && poses != null) {
+                AnimatedStickFigure(
+                    animation = animation,
+                    style = poses.library.figure,
+                    library = poses.library,
+                    render = FigureRender.LINES,
+                    highlightWorking = false,
+                    paused = true,
+                    modifier = Modifier
+                        .size(44.dp)
+                        .alpha(0.85f),
+                )
+            } else {
+                CutIconView(
+                    icon = sessionIcon(choice.id),
+                    tint = identity.accent,
+                    size = 26.dp,
+                )
+            }
         }
 
         Column(

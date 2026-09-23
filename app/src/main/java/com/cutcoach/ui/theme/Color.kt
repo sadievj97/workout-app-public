@@ -85,27 +85,43 @@ val Accent = Color(0xFFA855F7)
  * barely coloured at all.
  */
 object Identity {
+    /** Push: violet into magenta into orange. */
     val PushA = Color(0xFF7C3AED)
     val PushB = Color(0xFFDB2777)
     val PushC = Color(0xFFF97316)
 
+    /** Pull: electric blue into violet into fuchsia. */
     val PullA = Color(0xFF1D4ED8)
     val PullB = Color(0xFF7C3AED)
     val PullC = Color(0xFFC026D3)
 
-    val LegsA = Color(0xFFB91C1C)
-    val LegsB = Color(0xFFEA580C)
-    val LegsC = Color(0xFFF59E0B)
+    /**
+     * Full body: gold rather than red.
+     *
+     * It was red-into-orange, which is a step from the interval day's
+     * crimson-into-orange, and at thumbnail size on a list the two were the
+     * same colour. Gold keeps it warm and keeps it apart.
+     */
+    val LegsA = Color(0xFF92400E)
+    val LegsB = Color(0xFFF59E0B)
+    val LegsC = Color(0xFFFDE047)
 
-    val CardioA = Color(0xFF0E7490)
+    /** Steady cardio: deep cyan into teal into green. */
+    val CardioA = Color(0xFF155E75)
     val CardioB = Color(0xFF0D9488)
-    val CardioC = Color(0xFF22C55E)
+    val CardioC = Color(0xFF4ADE80)
 
-    val IntervalA = Color(0xFF9F1239)
-    val IntervalB = Color(0xFFDC2626)
-    val IntervalC = Color(0xFFF97316)
+    /** Intervals: the hardest day, and the only crimson. */
+    val IntervalA = Color(0xFF881337)
+    val IntervalB = Color(0xFFE11D48)
+    val IntervalC = Color(0xFFFB923C)
 
+    /**
+     * The recovery day: barely coloured, and deliberately the quietest thing
+     * in the list. A walk should not look like a session you have to psych up
+     * for.
+     */
     val RecoverA = Color(0xFF1E293B)
-    val RecoverB = Color(0xFF115E59)
-    val RecoverC = Color(0xFF0E7490)
+    val RecoverB = Color(0xFF334155)
+    val RecoverC = Color(0xFF475569)
 }

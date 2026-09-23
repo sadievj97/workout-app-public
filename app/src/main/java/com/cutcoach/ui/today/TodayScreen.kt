@@ -240,7 +240,12 @@ private fun SessionHero(
     onSwap: () -> Unit,
     onMarkDone: () -> Unit,
 ) {
-    val identity = identityFor(sessionId, session.name, session.focus)
+    val identity = identityFor(
+        id = sessionId,
+        name = session.name,
+        focus = session.focus,
+        hrZone = session.hrZone,
+    )
     val context = LocalContext.current
     val poses = remember { PoseRepository.load(context) as? PoseLoad.Success }
     val firstExercise = session.exercises.firstOrNull()?.exerciseId
@@ -475,7 +480,12 @@ private fun SessionContents(
     onOpenExercise: (String) -> Unit,
 ) {
     var expanded by remember(sessionId) { mutableStateOf(false) }
-    val identity = identityFor(sessionId, session.name, session.focus)
+    val identity = identityFor(
+        id = sessionId,
+        name = session.name,
+        focus = session.focus,
+        hrZone = session.hrZone,
+    )
 
     CutCard {
         Row(

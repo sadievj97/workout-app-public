@@ -8,16 +8,14 @@ import androidx.compose.ui.graphics.Color
  * A session's own artwork, derived rather than declared.
  *
  * Every session gets a three-stop gradient that is always the same for that
- * session, so the Today card is recognisable before a word of it is read —
- * pushing is hot, pulling is electric, steady cardio is cool, the recovery day
- * is barely coloured.
+ * session, so a card is recognisable before a word of it is read.
  *
- * The mapping reads the session's focus and name, which come from
- * protocol.json, rather than listing session ids here. A session id belongs to
- * the protocol file; if the owner renames `strength_a` or adds a fourth
- * strength day, no Kotlin should need editing for it to look right. Anything
- * the keywords do not recognise falls through to a stable hash, so a brand new
- * session still gets a consistent identity instead of a default grey.
+ * What it reads matters. The first version matched on the session's name and
+ * focus, which put "Wall tennis or hill walk" — a Zone 2 cardio day — into the
+ * recovery bucket, because the word "walk" is in it. Prose is the least
+ * reliable thing about a session. The id and `hr_zone` are structural: a Zone 2
+ * day says `zone2` in both, whatever its name happens to describe that week.
+ * So the id and zone are matched first and the prose is a fallback.
  *
  * Nothing here is an image file. The artwork is three colours and a direction,
  * which is what keeps the repository free of licensed assets.
@@ -56,31 +54,46 @@ private val WHEEL = listOf(PUSH, PULL, CARDIO, LEGS, INTERVAL, RECOVER)
 /**
  * Keywords in the order they are tested, most specific first.
  *
- * "Interval" is checked before "cardio" because an interval session's focus
- * usually says both, and the harder of the two should win the colour.
+ * Order is the whole design here, because these overlap on purpose. "Easy
+ * walk, rehab only" and "hill walk" both say walk; rehab is tested first, so
+ * the rehab day takes it and the cardio day falls through to its own zone.
+ * "Hill repeats" is tested before anything cardio, so the hard day does not
+ * end up the same colour as the steady one.
  */
 private val BY_KEYWORD: List<Pair<List<String>, SessionIdentity>> = listOf(
-    listOf("interval", "sprint", "hiit") to INTERVAL,
-    listOf("walk", "rehab", "recovery", "mobility", "easy") to RECOVER,
-    listOf("zone 2", "zone2", "cardio", "run", "cycle", "row") to CARDIO,
-    listOf("pull", "back", "row", "chin", "lat") to PULL,
+    listOf("rehab", "recovery", "mobility") to RECOVER,
+    listOf("interval", "sprint", "hiit", "repeat") to INTERVAL,
+    listOf("zone2", "zone 2", "cardio", "walk", "tennis", "hill", "run", "cycle", "rowing")
+        to CARDIO,
+    listOf("pull", "back", "chin", "lat") to PULL,
+    listOf("push", "press", "chest", "shoulder") to PUSH,
+    listOf("full body", "full-body", "total body") to LEGS,
     listOf("leg", "squat", "hinge", "glute", "lower") to LEGS,
-    listOf("push", "press", "chest", "upper", "shoulder") to PUSH,
 )
 
 /**
  * The identity for one session.
  *
- * [id] is only used when nothing in [focus] or [name] is recognised, and then
- * only to pick consistently — the same id always lands on the same colours,
- * across launches and across devices, because it hashes the string itself
+ * [id] and [hrZone] are structural and are matched first. [name] and [focus]
+ * are prose and are matched only if those say nothing. If none of it is
+ * recognised, the id picks consistently — the same id always lands on the same
+ * colours, across launches and devices, because it hashes the string itself
  * rather than relying on Object.hashCode.
  */
-fun identityFor(id: String, name: String? = null, focus: String? = null): SessionIdentity {
-    val haystack = listOfNotNull(focus, name).joinToString(" ").lowercase()
-
+fun identityFor(
+    id: String,
+    name: String? = null,
+    focus: String? = null,
+    hrZone: String? = null,
+): SessionIdentity {
+    val structural = listOfNotNull(id, hrZone).joinToString(" ").lowercase()
     BY_KEYWORD.forEach { (words, identity) ->
-        if (words.any { haystack.contains(it) }) return identity
+        if (words.any { structural.contains(it) }) return identity
+    }
+
+    val prose = listOfNotNull(focus, name).joinToString(" ").lowercase()
+    BY_KEYWORD.forEach { (words, identity) ->
+        if (words.any { prose.contains(it) }) return identity
     }
 
     // A stable, content-derived index. String.hashCode is specified by the

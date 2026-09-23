@@ -16,6 +16,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -33,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -45,10 +48,13 @@ import com.cutcoach.data.session.Side
 import com.cutcoach.ui.figure.AnimatedStickFigure
 import com.cutcoach.ui.figure.FigureRender
 import com.cutcoach.ui.theme.InkLift
+import com.cutcoach.ui.theme.Mint
 import com.cutcoach.ui.theme.Sky
 import com.cutcoach.ui.theme.TextHigh
 import com.cutcoach.ui.theme.TextMid
+import com.cutcoach.ui.theme.Ink
 import com.cutcoach.ui.theme.Surface
+import com.cutcoach.ui.theme.SurfaceStrong
 import com.cutcoach.ui.theme.SurfaceEdge
 import com.cutcoach.ui.theme.Ember
 import com.cutcoach.ui.theme.tabular
@@ -86,25 +92,71 @@ fun SessionPlayerScreen(
         }
     }
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = 20.dp)
-            .padding(top = 8.dp, bottom = 20.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        SessionHeader(vm = vm, onExit = onExit)
+    // The phase, as light rather than as a word.
+    //
+    // The design direction says the phase must be readable from across the
+    // floor without reading anything, and a coloured numeral alone was not
+    // doing it — at 05:35 the difference between an amber 45 and a blue 45 is
+    // easy to miss when you are not looking directly at the phone. A glow
+    // filling the top of the screen is visible in peripheral vision.
+    val glow by animateColorAsState(
+        targetValue = when (vm.current) {
+            is SessionStep.Rest, is SessionStep.SwitchSides -> Sky
+            SessionStep.Finished -> Mint
+            else -> Ember
+        },
+        animationSpec = tween(durationMillis = 450),
+        label = "phaseGlow",
+    )
 
-        when (val step = vm.current) {
-            is SessionStep.Warmup -> WarmupStep(vm, step)
-            is SessionStep.RepSet -> RepSetStep(vm, step, onOpenCueCard)
-            is SessionStep.HoldSet -> HoldStep(vm, step, onOpenCueCard)
-            is SessionStep.Rest -> TimedPhase(vm, "Rest", Sky, nextLabel(vm))
-            is SessionStep.SwitchSides -> TimedPhase(vm, "Switch sides", Sky, nextLabel(vm))
-            SessionStep.Finished -> FinishedStep(vm, onExit)
+    Box(modifier = modifier.fillMaxSize()) {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .background(
+                    // Vertical rather than radial: radialGradient takes its
+                    // centre and radius in pixels, so centring it needs the
+                    // measured width, and a guessed pixel offset puts the glow
+                    // in the corner on one screen size and off-screen on
+                    // another. A vertical ramp needs no dimensions to be right.
+                    Brush.verticalGradient(
+                        colorStops = arrayOf(
+                            0f to glow.copy(alpha = 0.22f),
+                            GLOW_FADES_BY to Color.Transparent,
+                        ),
+                    ),
+                ),
+        )
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 20.dp)
+                .padding(top = 8.dp, bottom = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            SessionHeader(vm = vm, onExit = onExit)
+
+            when (val step = vm.current) {
+                is SessionStep.Warmup -> WarmupStep(vm, step)
+                is SessionStep.RepSet -> RepSetStep(vm, step, onOpenCueCard)
+                is SessionStep.HoldSet -> HoldStep(vm, step, onOpenCueCard)
+                is SessionStep.Rest -> TimedPhase(vm, "Rest", Sky, nextLabel(vm))
+                is SessionStep.SwitchSides -> TimedPhase(vm, "Switch sides", Sky, nextLabel(vm))
+                SessionStep.Finished -> FinishedStep(vm, onExit)
+            }
         }
     }
 }
+
+/**
+ * How far down the screen the phase glow has faded to nothing.
+ *
+ * A fraction of the height, so it is the same shape on any phone. It stops
+ * around the timer rather than running the whole way down: a full-screen wash
+ * would lift the black floor the whole design rests on.
+ */
+private const val GLOW_FADES_BY = 0.55f
 
 /** What comes after the current rest, so you can get into position early. */
 private fun nextLabel(vm: SessionPlayerViewModel): String {
@@ -524,10 +576,10 @@ private fun PrimaryButton(label: String, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .height(72.dp),
-        shape = RoundedCornerShape(14.dp),
+        shape = RoundedCornerShape(99.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = Ember,
-            contentColor = MaterialTheme.colorScheme.onPrimary,
+            contentColor = Ink,
         ),
     ) {
         Text(label, style = MaterialTheme.typography.titleLarge)
@@ -539,9 +591,9 @@ private fun SecondaryButton(label: String, onClick: () -> Unit) {
     Button(
         onClick = onClick,
         modifier = Modifier.height(56.dp),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(99.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Surface,
+            containerColor = SurfaceStrong,
             contentColor = TextHigh,
         ),
     ) {

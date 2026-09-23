@@ -216,14 +216,19 @@ Samsung Health syncs to Health Connect, and the app reads from Health Connect.
 
 The app is used half-awake at 05:35 in a dim room, with the phone on the floor and one hand free.
 
-- **Spend boldness in one place: the timer.** Huge tabular numerals; the phase (work, rest, switch sides) shown by color plus a one-word label.
-- **Palette:**
-  - Pre-dawn navy #101B2D background
-  - Slate #1D2B42 surfaces
-  - Mist #D5DDE8 text
-  - Sunrise amber #F2A541 for work phases
-  - Cool sky #7FB2E5 for rest
-  - Dark by default.
+The first palette was navy and amber, and it read as a utility: every screen was a stack of identical grey panels of label-and-value rows, so nothing could be found at a glance. Replaced September 2026 at the owner's request. The constraints below survived the change; the colours did not.
+
+- **Dark, and only dark.** No light variant. The room is dim and a second scheme is a second thing to keep correct.
+- **Spend boldness in one place per screen.** In the player that is the timer: huge tabular numerals, plus a phase glow filling the top of the screen, because a coloured numeral alone is not readable from across the floor. On Today it is the session card.
+- **Warm means work, cool means rest.** The values changed; the mapping is load-bearing and did not.
+- **Palette** (`ui/theme/Color.kt` is the source of truth; these are the names):
+  - `Ink` #0B0A12 background — near-black with a violet cast, because violet sits under the whole accent range and a blue-navy base fights orange
+  - `InkLift` #13111F for the tab bar and sheets
+  - `Surface` white at 6% — translucent, so a card over artwork picks it up instead of punching a hole in it
+  - `TextHigh` / `TextMid` / `TextLow` for the three levels of text
+  - `Ember` #FF6B35 work · `Sky` #38BDF8 rest · `Mint` #34D399 met · `Amber` #FBBF24 attention · `Accent` #A855F7 primary action
+- **Every session has its own gradient**, derived in `ui/theme/SessionArt.kt` from its id and `hr_zone` — structural fields, not its name, which is prose and lies. A test fails if two sessions collide.
+- **Imagery is generated, never bundled.** Gradients and the 3D anatomy figures are the artwork. This is what keeps the licensing promise below intact.
 - **Type:** Atkinson Hyperlegible throughout, chosen for legibility when tired; tabular figures for every number.
 - **Words and controls:** sentence case, plain verbs, no decoration. Touch targets of at least 56 dp for logging reps.
 

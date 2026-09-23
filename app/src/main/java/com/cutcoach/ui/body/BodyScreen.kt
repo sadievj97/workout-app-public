@@ -38,9 +38,12 @@ import com.cutcoach.data.protocol.ProtocolRepository
 import com.cutcoach.ui.components.CutCard
 import com.cutcoach.ui.components.Sparkline
 import com.cutcoach.ui.components.LabelledValue
+import com.cutcoach.ui.components.MeterLine
 import com.cutcoach.ui.components.SectionLabel
 import com.cutcoach.ui.theme.Sky
 import com.cutcoach.ui.theme.TextHigh
+import com.cutcoach.ui.theme.Mint
+import com.cutcoach.ui.theme.TextLow
 import com.cutcoach.ui.theme.TextMid
 import com.cutcoach.ui.theme.SurfaceEdge
 import com.cutcoach.ui.theme.Ember
@@ -131,9 +134,16 @@ fun BodyScreen(
                     )
                 }
 
-                Box(Modifier.height(4.dp))
-                LabelledValue("Started at", "%.1f kg".format(goal.startWeightKg))
-                LabelledValue("Target", goal.targetWeightKg.describe("kg"))
+                Box(Modifier.height(8.dp))
+
+                // Start and target used to be two text rows, which is the least
+                // legible way to say "you are two thirds of the way there".
+                // The bar says it without being read.
+                GoalMeter(
+                    startKg = goal.startWeightKg,
+                    targetKg = goal.targetWeightKg.min,
+                    currentKg = average,
+                )
 
                 // Say where the number came from. A watch reading and a weight
                 // you stood on the scale for are not the same evidence.
@@ -327,3 +337,54 @@ private fun NumberEntry(
 
 /** How far back the trend line looks. Two weeks shows a direction without noise. */
 private const val FORTNIGHT = 14
+
+/**
+ * How far along the cut is, as a bar.
+ *
+ * Fills from the start weight towards the target. Past the target it stays
+ * full rather than overflowing, and the caption switches to saying so: the
+ * protocol's finish line is a weight, and arriving early is not an error state
+ * to be drawn in red.
+ *
+ * Going the wrong way is drawn as an empty bar rather than a negative one. A
+ * bar that grows backwards would need explaining, and the number above it has
+ * already said what happened.
+ */
+@Composable
+private fun GoalMeter(startKg: Double, targetKg: Double, currentKg: Double) {
+    val span = startKg - targetKg
+    val done = startKg - currentKg
+    val progress = if (span <= 0.0) 0f else (done / span).toFloat().coerceIn(0f, 1f)
+    val remaining = currentKg - targetKg
+    val arrived = remaining <= 0.0
+
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text(
+                "%.1f kg".format(startKg),
+                style = MaterialTheme.typography.bodySmall.tabular(),
+                color = TextLow,
+            )
+            Text(
+                "%.1f kg".format(targetKg),
+                style = MaterialTheme.typography.bodySmall.tabular(),
+                color = TextLow,
+            )
+        }
+
+        MeterLine(progress = progress, colour = if (arrived) Mint else Ember)
+
+        Text(
+            if (arrived) {
+                "Target reached."
+            } else {
+                "%.1f kg to go, %.0f%% of the way.".format(remaining, progress * 100)
+            },
+            style = MaterialTheme.typography.bodySmall.tabular(),
+            color = if (arrived) Mint else TextMid,
+        )
+    }
+}

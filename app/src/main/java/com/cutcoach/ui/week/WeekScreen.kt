@@ -210,7 +210,13 @@ private const val DELOADS_SHOWN = 6
 internal fun sessionIcon(sessionId: String?): CutIcon = when {
     sessionId == null -> CutIcon.REST
     sessionId.startsWith("strength") -> CutIcon.BARBELL
-    sessionId.contains("interval") || sessionId.contains("cardio") -> CutIcon.SHOE
-    sessionId.contains("walk") || sessionId.contains("rehab") -> CutIcon.SHOE
+    // Rehab before walk: the Sunday session id says both, and the rehab day is
+    // the more specific of the two.
+    sessionId.contains("rehab") -> CutIcon.PERSON
+    // Intervals had the same shoe as the steady cardio day, which made the
+    // hardest session in the week indistinguishable from the easiest one.
+    sessionId.contains("interval") || sessionId.contains("sprint") -> CutIcon.HEART
+    sessionId.contains("cardio") || sessionId.contains("zone") -> CutIcon.SHOE
+    sessionId.contains("walk") -> CutIcon.FOOTSTEPS
     else -> CutIcon.DOT
 }

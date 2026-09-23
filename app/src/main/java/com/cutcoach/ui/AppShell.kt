@@ -14,6 +14,10 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -23,7 +27,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -59,7 +66,10 @@ import com.cutcoach.ui.theme.TextHigh
 import com.cutcoach.ui.theme.TextMid
 import com.cutcoach.ui.theme.SurfaceEdge
 import com.cutcoach.ui.settings.SettingsScreen
+import com.cutcoach.ui.theme.Accent
 import com.cutcoach.ui.theme.Ember
+import com.cutcoach.ui.theme.InkLift
+import com.cutcoach.ui.theme.TextLow
 import com.cutcoach.ui.today.TodayScreen
 import com.cutcoach.ui.week.WeekScreen
 import java.time.LocalDate
@@ -368,39 +378,57 @@ private fun NavHostController.switchTab(route: String) {
  */
 @Composable
 private fun BottomTabs(current: String?, onSelect: (String) -> Unit) {
-    Column {
-        HorizontalDivider(color = SurfaceEdge)
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.background)
-                .height(64.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            TABS.forEach { (route, label) ->
-                val selected = route == current
-                val tint = if (selected) Ember else TextMid
+    // A floating bar rather than a full-width strip with a rule above it. The
+    // strip made the tabs read as part of the screen's content; lifting them
+    // off the background separates "where I am" from "what I am looking at".
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 14.dp)
+            .padding(top = 4.dp, bottom = 10.dp)
+            .clip(RoundedCornerShape(26.dp))
+            .background(InkLift)
+            .border(BorderStroke(1.dp, SurfaceEdge), RoundedCornerShape(26.dp))
+            .padding(horizontal = 4.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        TABS.forEach { (route, label) ->
+            val selected = route == current
 
-                // Icon above the word rather than instead of it. Five icons
-                // alone would be a guessing game the first few weeks, and this
-                // bar is used half-awake.
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .clickable { if (!selected) onSelect(route) }
-                        .padding(vertical = 8.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(3.dp),
-                ) {
-                    CutIconView(tabIcon(route), tint, size = 22.dp)
-                    Text(
-                        text = label,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = tint,
-                        textAlign = TextAlign.Center,
-                    )
-                }
+            // The selected tab is marked by a filled pill behind it rather than
+            // by colour alone. At 05:35 a colour difference between two dim
+            // icons is easy to miss; a shape is not.
+            val tint by animateColorAsState(
+                targetValue = if (selected) TextHigh else TextLow,
+                label = "tabTint",
+            )
+            val fill by animateColorAsState(
+                targetValue = if (selected) Accent.copy(alpha = 0.22f) else Color.Transparent,
+                label = "tabFill",
+            )
+
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(20.dp))
+                    .clickable { if (!selected) onSelect(route) }
+                    .background(fill)
+                    // Icon above the word rather than instead of it. Five icons
+                    // alone would be a guessing game the first few weeks, and
+                    // this bar is used half-awake.
+                    .padding(vertical = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(3.dp),
+            ) {
+                CutIconView(tabIcon(route), tint, size = 21.dp)
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                    ),
+                    color = tint,
+                    textAlign = TextAlign.Center,
+                )
             }
         }
     }

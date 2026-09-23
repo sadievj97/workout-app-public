@@ -73,6 +73,7 @@ fun SettingsScreen(
     onOpenDataCheck: () -> Unit,
     onOpenLadders: () -> Unit,
     onOpenReview: () -> Unit,
+    onOpenEnergyProbe: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -101,6 +102,21 @@ fun SettingsScreen(
                 icon = CutIcon.CLOCK,
                 label = "Weekly review: the week in plain language",
                 onClick = onOpenReview,
+            )
+        }
+
+        CutCard {
+            SectionLabel("Samsung Health")
+            NavRow(
+                icon = CutIcon.SUNRISE,
+                label = "Energy Score probe: does this phone provide one?",
+                onClick = onOpenEnergyProbe,
+            )
+            Text(
+                "Energy Score is not in Health Connect, so it needs Samsung's own " +
+                    "SDK and developer mode. Nothing depends on it yet.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MistDim,
             )
         }
 

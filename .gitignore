@@ -34,3 +34,9 @@ Thumbs.db
 # Logs and scratch
 *.log
 /scratch/
+
+# The Samsung Health Data SDK. A licensed binary from Samsung, downloaded by
+# hand and not ours to redistribute, so it stays out of the repository. See
+# app/libs/README.md for where to get it. Phase 5 is optional; without this
+# file the Samsung source set does not compile, which the README says.
+app/libs/*.aar

@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!--
+      The Samsung Health Data SDK declares minSdkVersion 29 and the rest of this
+      app supports 28, which the brief asks for. Overriding keeps that promise
+      rather than dragging the whole app up one API level for one optional
+      phase: the Samsung feature is guarded at runtime and simply reports itself
+      unavailable below 29.
+    -->
+    <uses-sdk tools:overrideLibrary="com.samsung.android.sdk.health.data" />
 
     <!--
       The only thing the app ever reaches the network for in Phase 1b is

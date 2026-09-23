@@ -41,6 +41,7 @@ import com.cutcoach.data.protocol.ProtocolLoad
 import com.cutcoach.data.protocol.ProtocolRepository
 import com.cutcoach.data.settings.SettingsRepository
 import com.cutcoach.ui.body.BodyScreen
+import com.cutcoach.samsung.EnergyScoreProbeScreen
 import com.cutcoach.ui.claude.WeeklyReviewScreen
 import com.cutcoach.ui.components.CutIcon
 import com.cutcoach.ui.components.CutIconView
@@ -77,6 +78,7 @@ object Routes {
     const val DATA_CHECK = "dataCheck"
     const val LADDERS = "ladders"
     const val WEEKLY_REVIEW = "weeklyReview"
+    const val ENERGY_PROBE = "energyProbe"
 
     fun session(id: String) = "session/$id"
     fun cueCard(id: String) = "cue/$id"
@@ -208,6 +210,7 @@ private fun NavGraph(
                 onOpenDataCheck = { navController.navigate(Routes.DATA_CHECK) },
                 onOpenLadders = { navController.navigate(Routes.LADDERS) },
                 onOpenReview = { navController.navigate(Routes.WEEKLY_REVIEW) },
+                onOpenEnergyProbe = { navController.navigate(Routes.ENERGY_PROBE) },
             )
         }
 
@@ -225,6 +228,10 @@ private fun NavGraph(
 
         composable(Routes.WEEKLY_REVIEW) {
             WeeklyReviewScreen(repo = repo, onBack = { navController.popBackStack() })
+        }
+
+        composable(Routes.ENERGY_PROBE) {
+            EnergyScoreProbeScreen(onBack = { navController.popBackStack() })
         }
 
         composable(Routes.HISTORY) {

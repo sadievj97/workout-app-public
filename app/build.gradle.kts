@@ -9,6 +9,9 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
+    // Required by the Samsung Health Data SDK: its request and permission
+    // classes are Parcelable.
+    id("kotlin-parcelize")
 }
 
 android {
@@ -116,6 +119,17 @@ dependencies {
 
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
+
+    // Samsung Health Data SDK, Phase 5. A manual .aar download rather than a
+    // Maven dependency: Samsung does not publish it to a repository, and it is
+    // gitignored because it is not ours to redistribute.
+    //
+    // Without the file, com/cutcoach/samsung does NOT compile -- it imports SDK
+    // classes directly. app/libs/README.md says so rather than leaving someone
+    // to discover it. The runtime guards in EnergyScoreProbe are for developer
+    // mode being off, which is a different problem.
+    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.aar"))))
+    implementation(libs.gson)
     ksp(libs.androidx.room.compiler)
 
     debugImplementation(libs.androidx.compose.ui.tooling)

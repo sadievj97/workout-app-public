@@ -76,6 +76,40 @@ class LimbReportTest {
                     ))
                     appendLine("  poses: ${animation.poses.keys.joinToString(", ")}")
                     animation.props.forEach { appendLine("  prop: ${it.type} y=${it.y} h=${it.height}") }
+
+                    // Where the figure meets the floor. A supported figure has
+                    // its contact joints sitting exactly on the floor's y; a
+                    // gap means it is drawn hovering, which reads as wrong
+                    // without being obviously wrong in any single number.
+                    animation.props.firstOrNull { it.type == "floor" }?.let { floor ->
+                        // Each candidate contact separately, not just the
+                        // lowest: reporting only the lowest hid a pike push-up
+                        // whose hands were on the floor and whose feet were a
+                        // tenth of a unit above it.
+                        val pose = animation.poses.values.first()
+                        val gaps = listOf(
+                            "wrist" to pose.armA()[1].y,
+                            "toe" to pose.legA()[2].y,
+                            "hip" to pose.hipAt.y,
+                        ).joinToString("  ") { (name, y) ->
+                            "$name %+.3f".format(floor.y - y)
+                        }
+                        appendLine("  floor y=%.3f, gaps above it: %s".format(floor.y, gaps))
+
+                        // Whether the legs could reach the floor at all from
+                        // where the hip is. A figure whose hips are higher than
+                        // its legs are long has no choice but to hover.
+                        val reach = distance(pose.hipAt, pose.legA()[0]) +
+                            distance(pose.legA()[0], pose.legA()[1]) +
+                            distance(pose.legA()[1], pose.legA()[2])
+                        val drop = floor.y - pose.hipAt.y
+                        if (drop > reach) {
+                            appendLine(
+                                "  !! hip is %.3f above the floor but the leg reaches %.3f"
+                                    .format(drop, reach),
+                            )
+                        }
+                    }
                 }
 
                 appendLine("  ladder:")

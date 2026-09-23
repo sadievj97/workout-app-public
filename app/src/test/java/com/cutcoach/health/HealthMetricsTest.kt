@@ -243,7 +243,8 @@ class HealthMetricsTest {
 
     @Test
     fun `a five in the morning bedtime is still the night`() {
-        // A phone really produced a night like this: a long sleep beginning at 04:50,
+        // A phone really produced a night like this: a long sleep beginning in
+        // the small hours,
         // because that is genuinely when the owner went to bed. An earlier
         // version judged this by start time and called it a nap, which hid the
         // largest ramp miss in the log behind a reassuring sentence.

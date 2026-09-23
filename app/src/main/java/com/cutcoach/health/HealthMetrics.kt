@@ -60,7 +60,7 @@ private const val EVENING_STARTS_AT = 16
  *
  * Judged by length, from `sleep.nap_threshold_hours`. An earlier version asked
  * whether the *start time* looked like a bedtime and decided 04:50 could not be
- * one. It can. That was such a night, and calling it a nap hid the
+ * one. It can, and a phone really produced such a night. Calling it a nap hid the
  * largest ramp miss in the log behind a reassuring sentence.
  *
  * Length is the honest test: four hours is the night, however grim the hour it

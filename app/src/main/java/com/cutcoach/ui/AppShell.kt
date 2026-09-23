@@ -55,11 +55,11 @@ import com.cutcoach.ui.history.HistoryScreen
 import com.cutcoach.ui.session.SessionPlayerScreen
 import com.cutcoach.ui.session.SessionPlayerViewModel
 import com.cutcoach.ui.theme.CutCoachTheme
-import com.cutcoach.ui.theme.Mist
-import com.cutcoach.ui.theme.MistDim
-import com.cutcoach.ui.theme.SlateEdge
+import com.cutcoach.ui.theme.TextHigh
+import com.cutcoach.ui.theme.TextMid
+import com.cutcoach.ui.theme.SurfaceEdge
 import com.cutcoach.ui.settings.SettingsScreen
-import com.cutcoach.ui.theme.SunriseAmber
+import com.cutcoach.ui.theme.Ember
 import com.cutcoach.ui.today.TodayScreen
 import com.cutcoach.ui.week.WeekScreen
 import java.time.LocalDate
@@ -154,6 +154,18 @@ private fun NavGraph(
             val today = LocalDate.now()
             val settings = remember { SettingsRepository.get(context) }
             val rehab by settings.rehabExercises.collectAsStateWithLifecycle(emptyList())
+            val training = remember { TrainingRepository.get(context) }
+            val scope = rememberCoroutineScope()
+
+            // Which sessions today already has a record for, so the card can
+            // say "done" instead of offering to record it a second time.
+            val sessions by training.recentSessions()
+                .collectAsStateWithLifecycle(emptyList())
+            val doneToday = remember(sessions, today) {
+                sessions.filter { it.session.date == today.toString() }
+                    .map { it.session.sessionId }
+                    .toSet()
+            }
 
             // Read on opening rather than held in a cache, because the watch
             // syncs on its own schedule and a stale number here is worse than
@@ -191,9 +203,28 @@ private fun NavGraph(
                 lastNight = lastNight.value,
                 advice = advice.value,
                 onOpenExercise = { navController.navigate(Routes.cueCard(it)) },
-                onStartSession = {
-                    repo.scheduleFor(today.dayOfWeek)?.let {
-                        navController.navigate(Routes.session(it.sessionId))
+                // The screen decides which session: today's by default, or
+                // whichever the picker chose. The route has always taken an id.
+                onStartSession = { navController.navigate(Routes.session(it)) },
+                doneToday = doneToday,
+                onMarkDone = { sessionId ->
+                    scope.launch {
+                        val week = repo.programWeek(today)
+                        val definition = repo.session(sessionId) ?: return@launch
+                        // Guarded rather than trusted: the button hides itself
+                        // once a session is recorded, but a double tap lands
+                        // before the flow has re-emitted.
+                        if (training.sessionAlreadyOn(today, sessionId)) return@launch
+                        training.markSessionDone(
+                            date = today,
+                            sessionId = sessionId,
+                            sessionName = definition.name,
+                            programWeek = week,
+                            isDeload = week != null && repo.isDeloadWeek(week),
+                            plannedMinutes = repo.scheduleFor(today.dayOfWeek)
+                                ?.durationMin?.min?.toInt() ?: 0,
+                            atTime = LocalTime.now(),
+                        )
                     }
                 },
             )
@@ -338,7 +369,7 @@ private fun NavHostController.switchTab(route: String) {
 @Composable
 private fun BottomTabs(current: String?, onSelect: (String) -> Unit) {
     Column {
-        HorizontalDivider(color = SlateEdge)
+        HorizontalDivider(color = SurfaceEdge)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -348,7 +379,7 @@ private fun BottomTabs(current: String?, onSelect: (String) -> Unit) {
         ) {
             TABS.forEach { (route, label) ->
                 val selected = route == current
-                val tint = if (selected) SunriseAmber else MistDim
+                val tint = if (selected) Ember else TextMid
 
                 // Icon above the word rather than instead of it. Five icons
                 // alone would be a guessing game the first few weeks, and this
@@ -378,11 +409,11 @@ private fun BottomTabs(current: String?, onSelect: (String) -> Unit) {
 @Composable
 private fun MissingExercise(id: String) {
     Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text("Unknown exercise", style = MaterialTheme.typography.headlineSmall, color = SunriseAmber)
+        Text("Unknown exercise", style = MaterialTheme.typography.headlineSmall, color = Ember)
         Text(
             "\"$id\" is scheduled in protocol.json but has no entry in exercises.json.",
             style = MaterialTheme.typography.bodyMedium,
-            color = Mist,
+            color = TextHigh,
         )
     }
 }
@@ -402,13 +433,13 @@ private fun ProtocolError(failure: ProtocolLoad.Failure) {
         Text(
             "The protocol did not load",
             style = MaterialTheme.typography.headlineMedium,
-            color = SunriseAmber,
+            color = Ember,
         )
-        Text(failure.message, style = MaterialTheme.typography.bodyMedium, color = Mist)
+        Text(failure.message, style = MaterialTheme.typography.bodyMedium, color = TextHigh)
         Text(
             "Fix the file in app/src/main/assets and run the app again.",
             style = MaterialTheme.typography.bodySmall,
-            color = MistDim,
+            color = TextMid,
         )
     }
 }

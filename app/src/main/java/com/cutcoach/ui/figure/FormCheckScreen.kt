@@ -40,11 +40,11 @@ import com.cutcoach.data.settings.FormVerdict
 import com.cutcoach.data.settings.SettingsRepository
 import com.cutcoach.ui.components.CutCard
 import com.cutcoach.ui.components.SectionLabel
-import com.cutcoach.ui.theme.CoolSky
-import com.cutcoach.ui.theme.Mist
-import com.cutcoach.ui.theme.MistDim
-import com.cutcoach.ui.theme.SlateEdge
-import com.cutcoach.ui.theme.SunriseAmber
+import com.cutcoach.ui.theme.Sky
+import com.cutcoach.ui.theme.TextHigh
+import com.cutcoach.ui.theme.TextMid
+import com.cutcoach.ui.theme.SurfaceEdge
+import com.cutcoach.ui.theme.Ember
 import kotlinx.coroutines.launch
 
 /**
@@ -78,9 +78,9 @@ fun FormCheckScreen(
         item {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 TextButton(onClick = onBack) {
-                    Text("Back", style = MaterialTheme.typography.labelMedium, color = CoolSky)
+                    Text("Back", style = MaterialTheme.typography.labelMedium, color = Sky)
                 }
-                Text("Form check", style = MaterialTheme.typography.displaySmall, color = Mist)
+                Text("Form check", style = MaterialTheme.typography.displaySmall, color = TextHigh)
 
                 val reviewed = repo.library.exercises.count {
                     reviews[it.id]?.verdict != null &&
@@ -91,7 +91,7 @@ fun FormCheckScreen(
                         "turn it. These are schematic reminders of shape and tempo, not a " +
                         "substitute for learning form from a video or a coach.",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MistDim,
+                    color = TextMid,
                 )
             }
         }
@@ -101,7 +101,7 @@ fun FormCheckScreen(
                 Text(
                     (load as? PoseLoad.Failure)?.message ?: "No figures loaded.",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = SunriseAmber,
+                    color = Ember,
                 )
             }
             return@LazyColumn
@@ -148,14 +148,14 @@ private fun FigureReviewCard(
         Text(
             muscles.joinToString(", "),
             style = MaterialTheme.typography.bodySmall,
-            color = SunriseAmber,
+            color = Ember,
         )
 
         if (animation == null) {
             Text(
                 "No figure for this exercise yet.",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MistDim,
+                color = TextMid,
             )
         } else {
             AnimatedStickFigure(
@@ -181,7 +181,7 @@ private fun FigureReviewCard(
                     Text(
                         "Back to the chosen angle",
                         style = MaterialTheme.typography.labelMedium,
-                        color = CoolSky,
+                        color = Sky,
                     )
                 }
             }
@@ -191,7 +191,7 @@ private fun FigureReviewCard(
             VerdictButton(
                 label = "Looks right",
                 selected = review.verdict == FormVerdict.LOOKS_RIGHT,
-                colour = CoolSky,
+                colour = Sky,
                 modifier = Modifier.weight(1f),
             ) {
                 onVerdict(
@@ -205,7 +205,7 @@ private fun FigureReviewCard(
             VerdictButton(
                 label = "Needs fixing",
                 selected = review.verdict == FormVerdict.NEEDS_FIXING,
-                colour = SunriseAmber,
+                colour = Ember,
                 modifier = Modifier.weight(1f),
             ) {
                 onVerdict(
@@ -227,13 +227,13 @@ private fun FigureReviewCard(
                 textStyle = MaterialTheme.typography.bodyMedium,
                 minLines = 2,
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedTextColor = Mist,
-                    unfocusedTextColor = Mist,
-                    focusedBorderColor = SunriseAmber,
-                    unfocusedBorderColor = SlateEdge,
-                    focusedLabelColor = SunriseAmber,
-                    unfocusedLabelColor = MistDim,
-                    cursorColor = SunriseAmber,
+                    focusedTextColor = TextHigh,
+                    unfocusedTextColor = TextHigh,
+                    focusedBorderColor = Ember,
+                    unfocusedBorderColor = SurfaceEdge,
+                    focusedLabelColor = Ember,
+                    unfocusedLabelColor = TextMid,
+                    cursorColor = Ember,
                 ),
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -242,7 +242,7 @@ private fun FigureReviewCard(
                     Text(
                         "Save note",
                         style = MaterialTheme.typography.labelMedium,
-                        color = SunriseAmber,
+                        color = Ember,
                     )
                 }
             }
@@ -253,9 +253,9 @@ private fun FigureReviewCard(
 @Composable
 private fun VerdictLabel(verdict: FormVerdict) {
     val (text, colour) = when (verdict) {
-        FormVerdict.UNREVIEWED -> "Unreviewed" to MistDim
-        FormVerdict.LOOKS_RIGHT -> "Looks right" to CoolSky
-        FormVerdict.NEEDS_FIXING -> "Needs fixing" to SunriseAmber
+        FormVerdict.UNREVIEWED -> "Unreviewed" to TextMid
+        FormVerdict.LOOKS_RIGHT -> "Looks right" to Sky
+        FormVerdict.NEEDS_FIXING -> "Needs fixing" to Ember
     }
     Text(text, style = MaterialTheme.typography.labelSmall, color = colour)
 }
@@ -273,8 +273,8 @@ private fun VerdictButton(
         modifier = modifier.height(52.dp),
         shape = RoundedCornerShape(12.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = if (selected) colour else SlateEdge,
-            contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else Mist,
+            containerColor = if (selected) colour else SurfaceEdge,
+            contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else TextHigh,
         ),
     ) {
         Text(label, style = MaterialTheme.typography.labelLarge)

@@ -45,6 +45,15 @@ data class RuleInput(
     val rehabExercises: List<String> = emptyList(),
     /** The last session's sets per exercise, for progression. */
     val lastSets: Map<String, List<SetResult>> = emptyMap(),
+    /**
+     * Exercises whose most recent session finished with nothing written down.
+     *
+     * [lastSets] may still hold numbers for these, from an older session. They
+     * are real numbers and they are out of date, and acting on them would mean
+     * advancing a ladder on the strength of a session that has since been
+     * superseded by one nobody logged. So these are reported rather than used.
+     */
+    val unloggedSince: Set<String> = emptySet(),
     /** Which rung each exercise is currently on. */
     val rungs: Map<String, Int> = emptyMap(),
     /**
@@ -280,6 +289,16 @@ fun recommendationsFor(repo: ProtocolRepository, input: RuleInput): List<Recomme
 
     // ---- progression ------------------------------------------------------
     input.lastSets.forEach { (exerciseId, sets) ->
+        // An exercise whose most recent session was never written down gets an
+        // explanation rather than a suggestion. The numbers in `sets` are real
+        // but stale, and advancing a ladder on them would be the app telling
+        // you to go up on the strength of a session you have since repeated
+        // without recording. Saying so is the point: a rule that quietly
+        // declines to speak is indistinguishable from a rule that is broken.
+        if (exerciseId in input.unloggedSince) {
+            unloggedRecommendation(repo, exerciseId)?.let { out += it }
+            return@forEach
+        }
         progressionRecommendation(
             repo = repo,
             exerciseId = exerciseId,
@@ -288,7 +307,35 @@ fun recommendationsFor(repo: ProtocolRepository, input: RuleInput): List<Recomme
         )?.let { out += it }
     }
 
+    // Exercises with no numbers at all, whose only session was marked done.
+    // They are absent from lastSets entirely, so the loop above never sees them.
+    (input.unloggedSince - input.lastSets.keys).forEach { exerciseId ->
+        unloggedRecommendation(repo, exerciseId)?.let { out += it }
+    }
+
     return out
+}
+
+/**
+ * "Your last Strength A has no numbers, so nothing moved."
+ *
+ * Deliberately phrased as a state of the log rather than as a reproach. Doing
+ * the session away from the phone is a normal thing to do, and the app's job
+ * here is to explain why no suggestion appeared, not to ask for compliance.
+ */
+private fun unloggedRecommendation(
+    repo: ProtocolRepository,
+    exerciseId: String,
+): Recommendation? {
+    val exercise = repo.exercise(exerciseId) ?: return null
+    return Recommendation(
+        kind = Recommendation.Kind.PROGRESSION,
+        headline = "${exercise.name}: nothing to compare.",
+        reason = "Your last session with it was recorded without set numbers, so " +
+            "the ladder stays where it is. Add them from History and this becomes " +
+            "a suggestion.",
+        exerciseId = exerciseId,
+    )
 }
 
 /**

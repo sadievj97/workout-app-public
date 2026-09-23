@@ -4,6 +4,8 @@ import android.content.Context
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneId
 
 /**
  * Everything the app writes down, behind one door.
@@ -37,6 +39,49 @@ class TrainingRepository(private val db: CutCoachDatabase) {
 
     suspend fun endSession(sessionLogId: Long) =
         db.sessionLogDao().markEnded(sessionLogId, System.currentTimeMillis())
+
+    /**
+     * Record a session that happened without the app.
+     *
+     * Written as started and ended in one go, with no sets. That is the honest
+     * shape of it: the session happened, and nothing is known about what was
+     * done inside it. Nothing here fills the sets in from the targets — a
+     * target is what was planned, and writing it down as if performed would put
+     * numbers in the log that were never typed by anyone, which is the exact
+     * thing the `no_guessing` guardrail forbids.
+     *
+     * [atTime] lets a past day be filled in. The timestamps land at [atTime] on that
+     * date rather than at the moment of typing, so History sorts it where it
+     * belongs instead of at the top.
+     */
+    suspend fun markSessionDone(
+        date: LocalDate,
+        sessionId: String,
+        sessionName: String,
+        programWeek: Int?,
+        isDeload: Boolean,
+        plannedMinutes: Int,
+        atTime: LocalTime = LocalTime.NOON,
+        zone: ZoneId = ZoneId.systemDefault(),
+    ): Long {
+        val stamp = date.atTime(atTime).atZone(zone).toInstant().toEpochMilli()
+        return db.sessionLogDao().insert(
+            SessionLogEntity(
+                date = date.toString(),
+                sessionId = sessionId,
+                sessionName = sessionName,
+                programWeek = programWeek,
+                isDeload = isDeload,
+                startedAt = stamp,
+                endedAt = stamp,
+                plannedMinutes = plannedMinutes,
+            ),
+        )
+    }
+
+    /** Whether a session is already recorded for a date, to avoid a silent double entry. */
+    suspend fun sessionAlreadyOn(date: LocalDate, sessionId: String): Boolean =
+        db.sessionLogDao().countOn(date.toString(), sessionId) > 0
 
     suspend fun setSessionNote(sessionLogId: Long, note: String) =
         db.sessionLogDao().setNote(sessionLogId, note)
@@ -77,6 +122,27 @@ class TrainingRepository(private val db: CutCoachDatabase) {
     /** What you managed last time, which is what progression compares against. */
     suspend fun lastSessionSets(exerciseId: String): List<SetLogEntity> =
         db.setLogDao().lastSessionSets(exerciseId)
+
+    /**
+     * Whether this exercise's most recent session went unrecorded.
+     *
+     * True when a session containing it finished more recently than the last
+     * time anything was written down for it. [lastSessionSets] cannot see such
+     * a session at all — it reaches the session through set_log, and a session
+     * with no sets has no rows there — so without this check the app would read
+     * an older session as the latest news and advance a ladder on the strength
+     * of numbers that have since been superseded by a session nobody logged.
+     *
+     * [sessionIds] are the sessions the protocol says contain this exercise.
+     * The protocol file is the only thing that knows that; the database stores
+     * a session id, not its contents.
+     */
+    suspend fun lastSessionWentUnlogged(exerciseId: String, sessionIds: List<String>): Boolean {
+        if (sessionIds.isEmpty()) return false
+        val newestSession = db.sessionLogDao().newestFinishedAmong(sessionIds) ?: return false
+        val newestNumbers = db.setLogDao().lastSetsRecordedAt(exerciseId) ?: return true
+        return newestSession > newestNumbers
+    }
 
     // ---- Difficulty -------------------------------------------------------
 

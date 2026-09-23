@@ -16,9 +16,9 @@ import com.cutcoach.data.poses.Capsule
 import com.cutcoach.data.poses.Projected
 import com.cutcoach.data.poses.Slab
 import com.cutcoach.data.poses.project
-import com.cutcoach.ui.theme.Mist
-import com.cutcoach.ui.theme.PreDawnNavy
-import com.cutcoach.ui.theme.SunriseAmber
+import com.cutcoach.ui.theme.TextHigh
+import com.cutcoach.ui.theme.Ink
+import com.cutcoach.ui.theme.Ember
 import kotlin.math.sqrt
 
 /**
@@ -64,7 +64,7 @@ internal fun DrawScope.drawMannequin(
         val base = baseColour(part, workingLimbs, highlight)
         // Fading toward the background rather than toward transparent keeps the
         // rim between overlapping limbs from showing through.
-        val faded = lerp(PreDawnNavy, base, fade)
+        val faded = lerp(Ink, base, fade)
 
         // Muscles get a far slimmer rim than the frame, so neighbouring masses
         // flow into each other instead of reading as separate pills.
@@ -85,11 +85,11 @@ internal fun DrawScope.drawMannequin(
  * so a figure is never left with nothing marked.
  */
 private fun baseColour(part: BodyPart, working: Set<String>, highlight: Boolean): Color = when {
-    !highlight -> Mist
-    part is Capsule && part.worked -> SunriseAmber
-    part is Capsule && part.group == "muscle" -> Mist
-    part.group in working -> SunriseAmber
-    else -> Mist
+    !highlight -> TextHigh
+    part is Capsule && part.worked -> Ember
+    part is Capsule && part.group == "muscle" -> TextHigh
+    part.group in working -> Ember
+    else -> TextHigh
 }
 
 private fun lightDirection(style: BodyStyle): Offset {
@@ -107,7 +107,7 @@ private fun shading(
     light: Offset,
 ): Brush {
     val lit = lerp(colour, Color.White, 0.22f)
-    val shadow = lerp(colour, PreDawnNavy, 0.55f)
+    val shadow = lerp(colour, Ink, 0.55f)
     return Brush.linearGradient(
         colors = listOf(lit, colour, shadow),
         start = Offset(centre.x + light.x * radius, centre.y + light.y * radius),
@@ -133,7 +133,7 @@ private fun DrawScope.drawCapsule(
     val brush = shading(centre, reach, colour, light)
 
     // The rim first, slightly fatter, in the background colour.
-    fill(a, b, radiusA + outline, radiusB + outline, PreDawnNavy)
+    fill(a, b, radiusA + outline, radiusB + outline, Ink)
     fillBrush(a, b, radiusA, radiusB, brush)
 }
 
@@ -211,10 +211,10 @@ private fun DrawScope.drawSlab(
 
     // Filling the quad and stroking its outline with a round join gives a
     // rounded slab without building the rounded outline by hand.
-    drawPath(path, PreDawnNavy)
+    drawPath(path, Ink)
     drawPath(
         path,
-        PreDawnNavy,
+        Ink,
         style = Stroke(width = (radius + outline) * 2f, join = StrokeJoin.Round),
     )
     drawPath(path, brush)
@@ -232,7 +232,7 @@ private fun DrawScope.drawBall(
     val centre = box.at(ball.centre.project(camera))
     val radius = box.scale(ball.radius)
 
-    drawCircle(PreDawnNavy, radius + outline, centre)
+    drawCircle(Ink, radius + outline, centre)
     // A radial highlight where the light lands reads as a sphere rather than a
     // disc, which matters most on the head.
     drawCircle(
@@ -240,7 +240,7 @@ private fun DrawScope.drawBall(
             colors = listOf(
                 lerp(colour, Color.White, 0.28f),
                 colour,
-                lerp(colour, PreDawnNavy, 0.5f),
+                lerp(colour, Ink, 0.5f),
             ),
             center = Offset(centre.x + light.x * radius * 0.45f, centre.y + light.y * radius * 0.45f),
             radius = radius * 1.5f,

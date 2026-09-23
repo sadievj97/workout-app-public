@@ -11,7 +11,39 @@ import kotlinx.coroutines.flow.Flow
 data class SessionWithCount(
     @Embedded val session: SessionLogEntity,
     val setCount: Int,
-)
+) {
+    val outcome: SessionOutcome
+        get() = when {
+            session.endedAt == null -> SessionOutcome.UNFINISHED
+            setCount == 0 -> SessionOutcome.DONE_NO_NUMBERS
+            else -> SessionOutcome.LOGGED
+        }
+}
+
+/**
+ * How much a recorded session actually says.
+ *
+ * Derived from the two columns that already exist rather than stored, so
+ * marking a session done needed no schema change and no migration. The pair
+ * carries the distinction on its own: an end time says the session finished, a
+ * set count says whether anything was written down during it.
+ *
+ * The difference matters downstream. A session with no sets is not evidence
+ * that the exercises went badly, so the progression rules must not treat it as
+ * a bad session — but it is also not evidence that they went well, so it
+ * cannot advance a ladder either. Both of those need the app to know which
+ * kind of record it is looking at.
+ */
+enum class SessionOutcome {
+    /** Started and never finished: abandoned, or still running. */
+    UNFINISHED,
+
+    /** Finished, but nothing was logged. Done away from the phone, or marked done. */
+    DONE_NO_NUMBERS,
+
+    /** Finished with sets recorded. The only kind progression can read. */
+    LOGGED,
+}
 
 @Dao
 interface SessionLogDao {
@@ -36,6 +68,26 @@ interface SessionLogDao {
 
     @Query("SELECT * FROM session_log WHERE date = :date ORDER BY startedAt DESC")
     fun sessionsOn(date: String): Flow<List<SessionLogEntity>>
+
+    @Query("SELECT COUNT(*) FROM session_log WHERE date = :date AND sessionId = :sessionId")
+    suspend fun countOn(date: String, sessionId: String): Int
+
+    /**
+     * When the newest finished session among these ids was, whether or not
+     * anything was logged during it.
+     *
+     * The counterpart to [SetLogDao.lastSetsRecordedAt]. Compared against it,
+     * this is what reveals a session that happened and recorded nothing — which
+     * is otherwise invisible, because every other query about an exercise
+     * reaches it through set_log and a session with no sets has no rows there.
+     */
+    @Query(
+        """
+        SELECT MAX(startedAt) FROM session_log
+        WHERE endedAt IS NOT NULL AND sessionId IN (:sessionIds)
+        """,
+    )
+    suspend fun newestFinishedAmong(sessionIds: List<String>): Long?
 
     /** Used to reattach to a session that was left running. */
     @Query("SELECT * FROM session_log WHERE endedAt IS NULL ORDER BY startedAt DESC LIMIT 1")
@@ -83,6 +135,16 @@ interface SetLogDao {
 
     @Query("SELECT DISTINCT exerciseId FROM set_log")
     fun loggedExerciseIds(): Flow<List<String>>
+
+    /** When this exercise last had numbers written down against it. */
+    @Query(
+        """
+        SELECT MAX(s.startedAt) FROM session_log s
+        JOIN set_log sl ON sl.sessionLogId = s.id
+        WHERE sl.exerciseId = :exerciseId AND s.endedAt IS NOT NULL
+        """,
+    )
+    suspend fun lastSetsRecordedAt(exerciseId: String): Long?
 }
 
 @Dao

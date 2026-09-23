@@ -13,7 +13,7 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.cutcoach.ui.theme.SlateEdge
+import com.cutcoach.ui.theme.SurfaceEdge
 
 /**
  * A run of numbers as a line, for the shape rather than the values.
@@ -61,7 +61,7 @@ fun Sparkline(
         // A faint baseline, so a nearly flat line still reads as nearly flat
         // rather than as a line wandering in empty space.
         drawLine(
-            color = SlateEdge,
+            color = SurfaceEdge,
             start = Offset(0f, size.height - inset),
             end = Offset(size.width, size.height - inset),
             strokeWidth = 1.5f,

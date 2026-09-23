@@ -10,6 +10,7 @@ import com.cutcoach.health.describeRampGap
 import com.cutcoach.health.minutesAfterTarget
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -57,6 +58,9 @@ class RuleTest {
         pain: PainReport? = null,
         lastChange: LocalDate? = null,
         rehab: List<String> = emptyList(),
+        lastSets: Map<String, List<SetResult>> = emptyMap(),
+        unloggedSince: Set<String> = emptySet(),
+        rungs: Map<String, Int> = emptyMap(),
     ) = RuleInput(
         today = today,
         programWeek = programWeek,
@@ -68,6 +72,9 @@ class RuleTest {
         pain = pain,
         lastPlateauChange = lastChange,
         rehabExercises = rehab,
+        lastSets = lastSets,
+        unloggedSince = unloggedSince,
+        rungs = rungs,
     )
 
     // ---- 1 ---------------------------------------------------------------
@@ -526,5 +533,97 @@ class RuleTest {
         assertTrue(fallback!!.isApproved)
         assertEquals(5, fallback.belowBaseline)
         assertEquals(14, fallback.baselineWindowDays)
+    }
+
+    // ---- Sessions done away from the phone -------------------------------
+
+    /**
+     * The trap this guards.
+     *
+     * `lastSessionSets` reaches an exercise through set_log, so a session that
+     * recorded nothing has no rows and is invisible to it. Left alone, the app
+     * would read an older session as the latest news: four perfect sets from a
+     * fortnight ago would advance the ladder, ignoring the session done since
+     * and never written down. The suggestion would look well-evidenced and be
+     * out of date.
+     */
+    @Test
+    fun `a session marked done does not advance a ladder off older numbers`() {
+        val perfect = mapOf("push_up" to reps(15, 15, 15, 15))
+
+        // Same perfect sets, but the most recent session went unrecorded.
+        val advice = recommendationsFor(
+            repo,
+            input(lastSets = perfect, unloggedSince = setOf("push_up")),
+        )
+
+        val progression = advice.filter { it.kind == Recommendation.Kind.PROGRESSION }
+        assertTrue(
+            "An unlogged latest session must not produce an advance",
+            progression.none { it.headline.contains("feet elevated", ignoreCase = true) },
+        )
+    }
+
+    @Test
+    fun `the same numbers do advance when the last session was logged`() {
+        // The control. Without it the test above passes for the wrong reason:
+        // a rule that never advances anything would also satisfy it.
+        val advice = recommendationsFor(
+            repo,
+            input(lastSets = mapOf("push_up" to reps(15, 15, 15, 15))),
+        )
+
+        assertTrue(
+            "Four sets at the top of the range should still advance",
+            advice.any { it.kind == Recommendation.Kind.PROGRESSION && it.exerciseId == "push_up" },
+        )
+    }
+
+    @Test
+    fun `an unlogged session explains itself rather than going quiet`() {
+        val advice = recommendationsFor(
+            repo,
+            input(lastSets = mapOf("push_up" to reps(15, 15, 15, 15)), unloggedSince = setOf("push_up")),
+        )
+
+        val said = advice.firstOrNull { it.exerciseId == "push_up" }
+        assertNotNull("Silence is indistinguishable from a broken rule", said)
+        assertTrue(
+            "The reason must name the missing numbers: ${said?.reason}",
+            said!!.reason.contains("without set numbers", ignoreCase = true),
+        )
+    }
+
+    @Test
+    fun `an exercise with no numbers at all is still explained`() {
+        // Marked done and never logged, so it is absent from lastSets entirely
+        // and the loop over lastSets never reaches it.
+        val advice = recommendationsFor(
+            repo,
+            input(lastSets = emptyMap(), unloggedSince = setOf("push_up")),
+        )
+
+        assertTrue(
+            "An exercise that has never been logged must still be explained",
+            advice.any { it.exerciseId == "push_up" },
+        )
+    }
+
+    @Test
+    fun `marking sessions done never touches rehab`() {
+        // rehab_untouched, against the new path. Rehab has no ladder and no
+        // target, and nothing here may invent one for it.
+        val advice = recommendationsFor(
+            repo,
+            input(
+                rehab = listOf("Glute bridge", "Calf raise"),
+                unloggedSince = setOf("push_up", "Glute bridge"),
+            ),
+        )
+
+        assertTrue(
+            "No recommendation may name a rehab exercise",
+            advice.none { it.headline.contains("Glute bridge") },
+        )
     }
 }

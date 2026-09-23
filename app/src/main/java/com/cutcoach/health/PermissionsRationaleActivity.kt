@@ -20,9 +20,9 @@ import androidx.compose.ui.unit.dp
 import com.cutcoach.ui.components.CutCard
 import com.cutcoach.ui.components.SectionLabel
 import com.cutcoach.ui.theme.CutCoachTheme
-import com.cutcoach.ui.theme.Mist
-import com.cutcoach.ui.theme.MistDim
-import com.cutcoach.ui.theme.SunriseAmber
+import com.cutcoach.ui.theme.TextHigh
+import com.cutcoach.ui.theme.TextMid
+import com.cutcoach.ui.theme.Ember
 
 /**
  * What Health Connect shows before it will hand over any data.
@@ -67,7 +67,7 @@ private fun PrivacyPolicy(modifier: Modifier = Modifier) {
         Text(
             "How CutCoach uses health data",
             style = MaterialTheme.typography.headlineMedium,
-            color = Mist,
+            color = TextHigh,
         )
 
         CutCard {
@@ -76,13 +76,13 @@ private fun PrivacyPolicy(modifier: Modifier = Modifier) {
                 "Steps, sleep sessions, heart rate, resting heart rate, heart rate " +
                     "variability, workout sessions, and weight.",
                 style = MaterialTheme.typography.bodyLarge,
-                color = Mist,
+                color = TextHigh,
             )
             Text(
                 "Reading only. CutCoach never writes anything back into Health " +
                     "Connect and never changes or deletes what is already there.",
                 style = MaterialTheme.typography.bodyMedium,
-                color = SunriseAmber,
+                color = Ember,
             )
         }
 
@@ -95,7 +95,7 @@ private fun PrivacyPolicy(modifier: Modifier = Modifier) {
                     "cardio days reports how long the session spent in the right heart " +
                     "rate zone.",
                 style = MaterialTheme.typography.bodyLarge,
-                color = Mist,
+                color = TextHigh,
             )
         }
 
@@ -106,14 +106,14 @@ private fun PrivacyPolicy(modifier: Modifier = Modifier) {
                     "server, no analytics and no backup off the device. The app is not " +
                     "published; it is installed from Android Studio onto one phone.",
                 style = MaterialTheme.typography.bodyLarge,
-                color = Mist,
+                color = TextHigh,
             )
             Text(
                 "Later, a weekly review may send a small summary — daily totals and " +
                     "averages — to an AI service to write it in plain language. Raw " +
                     "health records are never sent.",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MistDim,
+                color = TextMid,
             )
         }
 
@@ -124,13 +124,13 @@ private fun PrivacyPolicy(modifier: Modifier = Modifier) {
                     "Those estimates run badly wrong, and eating to them undoes the " +
                     "deficit.",
                 style = MaterialTheme.typography.bodyMedium,
-                color = Mist,
+                color = TextHigh,
             )
             Text(
                 "It never guesses at missing data. If the watch did not record a " +
                     "night, the app asks rather than inventing a number.",
                 style = MaterialTheme.typography.bodyMedium,
-                color = Mist,
+                color = TextHigh,
             )
         }
 
@@ -141,7 +141,7 @@ private fun PrivacyPolicy(modifier: Modifier = Modifier) {
                     "under Settings. The app keeps working without them; it simply " +
                     "stops showing watch data.",
                 style = MaterialTheme.typography.bodyLarge,
-                color = Mist,
+                color = TextHigh,
             )
         }
     }

@@ -46,6 +46,19 @@ suspend fun adviceForToday(
         training.lastSessionSets(id).map { SetResult(reps = it.reps, seconds = it.seconds) }
     }.filterValues { it.isNotEmpty() }
 
+    // Which sessions contain each exercise. The database stores a session id
+    // and nothing about what is inside it, so this mapping only exists in the
+    // protocol file and has to be handed to the query.
+    val sessionsContaining: Map<String, List<String>> = scheduled.associateWith { id ->
+        repo.protocol.sessions
+            .filterValues { session -> session.exercises.any { it.exerciseId == id } }
+            .keys.toList()
+    }
+
+    val unloggedSince = scheduled.filter { id ->
+        training.lastSessionWentUnlogged(id, sessionsContaining[id].orEmpty())
+    }.toSet()
+
     return recommendationsFor(
         repo = repo,
         input = RuleInput(
@@ -60,6 +73,7 @@ suspend fun adviceForToday(
             lastPlateauChange = settings.lastPlateauChange.first(),
             rehabExercises = settings.rehabExercises.first(),
             lastSets = lastSets,
+            unloggedSince = unloggedSince,
             rungs = rungs,
             zone = zone,
             energyScores = com.cutcoach.health.EnergyScores.recent(

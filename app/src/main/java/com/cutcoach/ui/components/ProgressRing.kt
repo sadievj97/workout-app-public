@@ -17,7 +17,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.cutcoach.ui.theme.SlateEdge
+import com.cutcoach.ui.theme.SurfaceEdge
 import com.cutcoach.ui.theme.tabular
 
 /**
@@ -53,7 +53,7 @@ fun ProgressRing(
             val corner = androidx.compose.ui.geometry.Offset(inset, inset)
 
             drawArc(
-                color = SlateEdge,
+                color = SurfaceEdge,
                 startAngle = START_ANGLE,
                 sweepAngle = 360f,
                 useCenter = false,

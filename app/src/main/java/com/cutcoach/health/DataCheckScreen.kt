@@ -32,10 +32,10 @@ import androidx.health.connect.client.PermissionController
 import com.cutcoach.ui.components.CutCard
 import com.cutcoach.ui.components.LabelledValue
 import com.cutcoach.ui.components.SectionLabel
-import com.cutcoach.ui.theme.CoolSky
-import com.cutcoach.ui.theme.Mist
-import com.cutcoach.ui.theme.MistDim
-import com.cutcoach.ui.theme.SunriseAmber
+import com.cutcoach.ui.theme.Sky
+import com.cutcoach.ui.theme.TextHigh
+import com.cutcoach.ui.theme.TextMid
+import com.cutcoach.ui.theme.Ember
 import com.cutcoach.ui.theme.tabular
 import kotlinx.coroutines.launch
 
@@ -85,9 +85,9 @@ fun DataCheckScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         TextButton(onClick = onBack) {
-            Text("Back", style = MaterialTheme.typography.labelMedium, color = CoolSky)
+            Text("Back", style = MaterialTheme.typography.labelMedium, color = Sky)
         }
-        Text("Data check", style = MaterialTheme.typography.displaySmall, color = Mist)
+        Text("Data check", style = MaterialTheme.typography.displaySmall, color = TextHigh)
 
         when (manager.availability) {
             HealthConnectManager.Availability.UNAVAILABLE -> Unavailable(context.packageManager)
@@ -105,13 +105,13 @@ fun DataCheckScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
                         Text(
                             "Reading...",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MistDim,
+                            color = TextMid,
                         )
                     } else if (!ran) {
                         Text(
                             "Not checked yet.",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MistDim,
+                            color = TextMid,
                         )
                     }
                     surveys.forEach { RecordRow(it) }
@@ -125,7 +125,7 @@ fun DataCheckScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
                         .height(56.dp),
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = SunriseAmber,
+                        containerColor = Ember,
                         contentColor = MaterialTheme.colorScheme.onPrimary,
                     ),
                 ) {
@@ -136,7 +136,7 @@ fun DataCheckScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
                     "Nothing else in the app depends on this data yet. This screen " +
                         "exists to show what the phone really provides first.",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MistDim,
+                    color = TextMid,
                 )
             }
         }
@@ -165,18 +165,18 @@ private fun PermissionSummary(
             "History beyond 30 days",
             if (HealthConnectManager.PERMISSION_READ_HISTORY in granted) "yes" else "no",
             valueColor = if (HealthConnectManager.PERMISSION_READ_HISTORY in granted) {
-                Mist
+                TextHigh
             } else {
-                SunriseAmber
+                Ember
             },
         )
         LabelledValue(
             "Reading in the background",
             if (HealthConnectManager.PERMISSION_READ_IN_BACKGROUND in granted) "yes" else "no",
             valueColor = if (HealthConnectManager.PERMISSION_READ_IN_BACKGROUND in granted) {
-                Mist
+                TextHigh
             } else {
-                SunriseAmber
+                Ember
             },
         )
 
@@ -188,7 +188,7 @@ private fun PermissionSummary(
                     .height(56.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = SunriseAmber,
+                    containerColor = Ember,
                     contentColor = MaterialTheme.colorScheme.onPrimary,
                 ),
             ) {
@@ -198,7 +198,7 @@ private fun PermissionSummary(
                 "Health Connect may ask more than once: it keeps history and " +
                     "background reads on a separate screen from the data types.",
                 style = MaterialTheme.typography.bodySmall,
-                color = MistDim,
+                color = TextMid,
             )
         }
     }
@@ -214,7 +214,7 @@ private fun RecordRow(survey: RecordSurvey) {
             Text(
                 survey.type.label,
                 style = MaterialTheme.typography.bodyLarge,
-                color = Mist,
+                color = TextHigh,
             )
             Text(
                 when (survey.state) {
@@ -225,15 +225,15 @@ private fun RecordRow(survey: RecordSurvey) {
                 },
                 style = MaterialTheme.typography.bodyMedium.tabular(),
                 color = when (survey.state) {
-                    RecordState.PRESENT -> CoolSky
-                    else -> SunriseAmber
+                    RecordState.PRESENT -> Sky
+                    else -> Ember
                 },
             )
         }
         Text(
             survey.failure ?: survey.latest?.let { "Latest: $it" } ?: survey.type.why,
             style = MaterialTheme.typography.bodySmall,
-            color = MistDim,
+            color = TextMid,
         )
     }
 }
@@ -246,14 +246,14 @@ private fun Unavailable(packageManager: android.content.pm.PackageManager) {
         Text(
             "Health Connect is not available on this phone.",
             style = MaterialTheme.typography.bodyLarge,
-            color = SunriseAmber,
+            color = Ember,
         )
         Text(
             "On Android 14 and later it is built into the system settings. Before " +
                 "that it is a separate app from the Play Store. Samsung Health syncs " +
                 "into it; this app only reads what is already there.",
             style = MaterialTheme.typography.bodySmall,
-            color = MistDim,
+            color = TextMid,
         )
         TextButton(
             onClick = {
@@ -269,7 +269,7 @@ private fun Unavailable(packageManager: android.content.pm.PackageManager) {
             Text(
                 "Open it in the Play Store",
                 style = MaterialTheme.typography.labelMedium,
-                color = CoolSky,
+                color = Sky,
             )
         }
     }
@@ -282,7 +282,7 @@ private fun UpdateRequired() {
         Text(
             "Health Connect needs updating before this app can read anything.",
             style = MaterialTheme.typography.bodyLarge,
-            color = SunriseAmber,
+            color = Ember,
         )
     }
 }

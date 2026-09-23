@@ -204,6 +204,22 @@ class SessionPlayerViewModel(
 
     // ---- Recording --------------------------------------------------------
 
+    /** How many sets have been written down so far, for the leave dialog. */
+    val loggedSetCount: Int get() = logged.size
+
+    /**
+     * Close the session without walking the rest of the steps.
+     *
+     * For leaving part way through having actually done the work — the last
+     * two exercises away from the phone, or the phone put down. It writes an
+     * end time and nothing else: the sets that were logged stay, and the ones
+     * that were not are not invented, so this records a real session with an
+     * incomplete log rather than a fabricated complete one.
+     */
+    fun endSessionNow() {
+        viewModelScope.launch { sessionLogId?.let { training.endSession(it) } }
+    }
+
     /**
      * Keeps a set on screen and writes it to the database.
      *

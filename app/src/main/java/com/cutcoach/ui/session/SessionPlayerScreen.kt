@@ -16,6 +16,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.LinearProgressIndicator
@@ -25,7 +26,10 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,12 +44,13 @@ import com.cutcoach.data.session.SessionStep
 import com.cutcoach.data.session.Side
 import com.cutcoach.ui.figure.AnimatedStickFigure
 import com.cutcoach.ui.figure.FigureRender
-import com.cutcoach.ui.theme.CoolSky
-import com.cutcoach.ui.theme.Mist
-import com.cutcoach.ui.theme.MistDim
-import com.cutcoach.ui.theme.Slate
-import com.cutcoach.ui.theme.SlateEdge
-import com.cutcoach.ui.theme.SunriseAmber
+import com.cutcoach.ui.theme.InkLift
+import com.cutcoach.ui.theme.Sky
+import com.cutcoach.ui.theme.TextHigh
+import com.cutcoach.ui.theme.TextMid
+import com.cutcoach.ui.theme.Surface
+import com.cutcoach.ui.theme.SurfaceEdge
+import com.cutcoach.ui.theme.Ember
 import com.cutcoach.ui.theme.tabular
 
 /**
@@ -94,8 +99,8 @@ fun SessionPlayerScreen(
             is SessionStep.Warmup -> WarmupStep(vm, step)
             is SessionStep.RepSet -> RepSetStep(vm, step, onOpenCueCard)
             is SessionStep.HoldSet -> HoldStep(vm, step, onOpenCueCard)
-            is SessionStep.Rest -> TimedPhase(vm, "Rest", CoolSky, nextLabel(vm))
-            is SessionStep.SwitchSides -> TimedPhase(vm, "Switch sides", CoolSky, nextLabel(vm))
+            is SessionStep.Rest -> TimedPhase(vm, "Rest", Sky, nextLabel(vm))
+            is SessionStep.SwitchSides -> TimedPhase(vm, "Switch sides", Sky, nextLabel(vm))
             SessionStep.Finished -> FinishedStep(vm, onExit)
         }
     }
@@ -120,6 +125,24 @@ private fun sideSuffix(side: Side): String = if (side == Side.NONE) "" else ", $
 
 @Composable
 private fun SessionHeader(vm: SessionPlayerViewModel, onExit: () -> Unit) {
+    var leaving by remember { mutableStateOf(false) }
+
+    if (leaving) {
+        LeaveSessionDialog(
+            loggedSets = vm.loggedSetCount,
+            onMarkDone = {
+                leaving = false
+                vm.endSessionNow()
+                onExit()
+            },
+            onLeaveUnfinished = {
+                leaving = false
+                onExit()
+            },
+            onStay = { leaving = false },
+        )
+    }
+
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -129,7 +152,7 @@ private fun SessionHeader(vm: SessionPlayerViewModel, onExit: () -> Unit) {
             Text(
                 vm.session?.name ?: "Session",
                 style = MaterialTheme.typography.titleMedium,
-                color = Mist,
+                color = TextHigh,
             )
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
@@ -137,10 +160,10 @@ private fun SessionHeader(vm: SessionPlayerViewModel, onExit: () -> Unit) {
                     style = MaterialTheme.typography.titleMedium.tabular(),
                     // The clock turns amber once the session runs long. It is a
                     // nudge, not an alarm: nothing stops.
-                    color = if (vm.isOverrunning) SunriseAmber else MistDim,
+                    color = if (vm.isOverrunning) Ember else TextMid,
                 )
-                TextButton(onClick = onExit) {
-                    Text("End", style = MaterialTheme.typography.labelMedium, color = MistDim)
+                TextButton(onClick = { leaving = true }) {
+                    Text("End", style = MaterialTheme.typography.labelMedium, color = TextMid)
                 }
             }
         }
@@ -149,7 +172,7 @@ private fun SessionHeader(vm: SessionPlayerViewModel, onExit: () -> Unit) {
             Text(
                 "Running past the planned ${vm.plannedMinutes} minutes.",
                 style = MaterialTheme.typography.bodySmall,
-                color = SunriseAmber,
+                color = Ember,
             )
         }
 
@@ -159,8 +182,8 @@ private fun SessionHeader(vm: SessionPlayerViewModel, onExit: () -> Unit) {
                 .fillMaxWidth()
                 .height(4.dp)
                 .clip(CircleShape),
-            color = SunriseAmber,
-            trackColor = SlateEdge,
+            color = Ember,
+            trackColor = SurfaceEdge,
             gapSize = 0.dp,
             drawStopIndicator = {},
         )
@@ -209,7 +232,7 @@ private fun TimedPhase(
             Text(
                 subtitle,
                 style = MaterialTheme.typography.bodyLarge,
-                color = MistDim,
+                color = TextMid,
                 textAlign = TextAlign.Center,
             )
         }
@@ -237,15 +260,15 @@ private fun WarmupStep(vm: SessionPlayerViewModel, step: SessionStep.Warmup) {
         Text(
             "Warm-up ${step.blockNumber} of ${step.totalBlocks}",
             style = MaterialTheme.typography.labelMedium,
-            color = MistDim,
+            color = TextMid,
         )
         Box(Modifier.height(8.dp))
-        BigTimer(vm.secondsLeft, "Warm-up", SunriseAmber)
+        BigTimer(vm.secondsLeft, "Warm-up", Ember)
         Box(Modifier.height(20.dp))
         Text(
             step.what,
             style = MaterialTheme.typography.bodyLarge,
-            color = Mist,
+            color = TextHigh,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = 12.dp),
         )
@@ -287,14 +310,14 @@ private fun HoldStep(
         )
 
         Box(Modifier.height(12.dp))
-        BigTimer(vm.secondsLeft, "Hold", SunriseAmber)
+        BigTimer(vm.secondsLeft, "Hold", Ember)
 
         if (step.minimumSeconds < step.seconds) {
             Box(Modifier.height(8.dp))
             Text(
                 "Anything past ${step.minimumSeconds}s counts.",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MistDim,
+                color = TextMid,
             )
         }
 
@@ -335,7 +358,7 @@ private fun RepSetStep(
         Text(
             "Target ${step.target.describe()}",
             style = MaterialTheme.typography.bodyLarge,
-            color = MistDim,
+            color = TextMid,
         )
 
         Box(Modifier.height(16.dp))
@@ -350,14 +373,14 @@ private fun RepSetStep(
             Text(
                 vm.repsInput.toString(),
                 style = MaterialTheme.typography.displayLarge,
-                color = SunriseAmber,
+                color = Ember,
                 modifier = Modifier.width(150.dp),
                 textAlign = TextAlign.Center,
             )
             StepperButton("+") { vm.changeReps(1) }
         }
 
-        Text("reps", style = MaterialTheme.typography.bodyMedium, color = MistDim)
+        Text("reps", style = MaterialTheme.typography.bodyMedium, color = TextMid)
 
         Box(Modifier.height(24.dp))
         PrimaryButton("Log set") { vm.logReps() }
@@ -389,7 +412,7 @@ private fun ExerciseHeading(
         Text(
             name,
             style = MaterialTheme.typography.headlineMedium,
-            color = Mist,
+            color = TextHigh,
             textAlign = TextAlign.Center,
         )
         Text(
@@ -398,10 +421,10 @@ private fun ExerciseHeading(
                 if (side != Side.NONE) append("  -  ${side.label}")
             },
             style = MaterialTheme.typography.bodyMedium.tabular(),
-            color = if (side == Side.NONE) MistDim else CoolSky,
+            color = if (side == Side.NONE) TextMid else Sky,
         )
         TextButton(onClick = onOpenCueCard) {
-            Text("How to do it", style = MaterialTheme.typography.labelMedium, color = CoolSky)
+            Text("How to do it", style = MaterialTheme.typography.labelMedium, color = Sky)
         }
     }
 }
@@ -447,11 +470,11 @@ private fun FinishedStep(vm: SessionPlayerViewModel, onExit: () -> Unit) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text("Done", style = MaterialTheme.typography.displayMedium, color = SunriseAmber)
+        Text("Done", style = MaterialTheme.typography.displayMedium, color = Ember)
         Text(
             formatClock(vm.elapsedSeconds) + " total",
             style = MaterialTheme.typography.bodyLarge.tabular(),
-            color = MistDim,
+            color = TextMid,
         )
 
         Box(Modifier.height(20.dp))
@@ -460,7 +483,7 @@ private fun FinishedStep(vm: SessionPlayerViewModel, onExit: () -> Unit) {
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(16.dp))
-                .background(Slate)
+                .background(Surface)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
@@ -470,19 +493,19 @@ private fun FinishedStep(vm: SessionPlayerViewModel, onExit: () -> Unit) {
                     Text(
                         vm.exerciseName(exerciseId),
                         style = MaterialTheme.typography.titleMedium,
-                        color = Mist,
+                        color = TextHigh,
                     )
                     Text(
                         sets.joinToString("  ") { s -> s.reps?.toString() ?: "${s.seconds}s" },
                         style = MaterialTheme.typography.bodyMedium.tabular(),
-                        color = MistDim,
+                        color = TextMid,
                     )
                 }
             if (vm.logged.isEmpty()) {
                 Text(
                     "Nothing logged.",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MistDim,
+                    color = TextMid,
                 )
             }
         }
@@ -503,7 +526,7 @@ private fun PrimaryButton(label: String, onClick: () -> Unit) {
             .height(72.dp),
         shape = RoundedCornerShape(14.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = SunriseAmber,
+            containerColor = Ember,
             contentColor = MaterialTheme.colorScheme.onPrimary,
         ),
     ) {
@@ -518,8 +541,8 @@ private fun SecondaryButton(label: String, onClick: () -> Unit) {
         modifier = Modifier.height(56.dp),
         shape = RoundedCornerShape(12.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Slate,
-            contentColor = Mist,
+            containerColor = Surface,
+            contentColor = TextHigh,
         ),
     ) {
         Text(label, style = MaterialTheme.typography.labelLarge)
@@ -534,8 +557,8 @@ private fun StepperButton(label: String, onClick: () -> Unit) {
         shape = CircleShape,
         contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Slate,
-            contentColor = Mist,
+            containerColor = Surface,
+            contentColor = TextHigh,
         ),
     ) {
         Text(label, style = MaterialTheme.typography.displaySmall)
@@ -553,4 +576,58 @@ internal fun formatClock(totalSeconds: Int): String {
     } else {
         "%02d:%02d".format(minutes, seconds)
     }
+}
+
+/**
+ * Leaving part way through.
+ *
+ * Walking out used to leave the session with no end time, which History reads
+ * as "Not finished" forever and the progression rules discount. Sometimes that
+ * is right — you stopped. Often it is not: you finished the work and put the
+ * phone down, or the last two exercises happened without it.
+ *
+ * So the question is asked once rather than assumed either way. "Mark it done"
+ * keeps whatever sets were logged and closes the session; it never fills in the
+ * ones that were not.
+ */
+@Composable
+private fun LeaveSessionDialog(
+    loggedSets: Int,
+    onMarkDone: () -> Unit,
+    onLeaveUnfinished: () -> Unit,
+    onStay: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onStay,
+        containerColor = InkLift,
+        titleContentColor = TextHigh,
+        textContentColor = TextMid,
+        title = { Text("Leave this session?") },
+        text = {
+            Text(
+                if (loggedSets == 0) {
+                    "Nothing has been logged yet. Marking it done records that the " +
+                        "session happened, with no set numbers."
+                } else {
+                    "$loggedSets sets logged. Marking it done keeps those and closes " +
+                        "the session; the rest are not filled in."
+                },
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = onMarkDone) {
+                Text("Mark it done", color = Sky)
+            }
+        },
+        dismissButton = {
+            Row {
+                TextButton(onClick = onStay) {
+                    Text("Keep going", color = TextMid)
+                }
+                TextButton(onClick = onLeaveUnfinished) {
+                    Text("Leave unfinished", color = TextMid)
+                }
+            }
+        },
+    )
 }

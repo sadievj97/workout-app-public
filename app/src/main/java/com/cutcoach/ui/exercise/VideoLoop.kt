@@ -10,7 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
-import com.cutcoach.ui.theme.PreDawnNavy
+import com.cutcoach.ui.theme.Ink
 
 /**
  * A few seconds of a demo video, muted and looping, inside the cue card.
@@ -38,7 +38,7 @@ fun VideoLoop(
         factory = { context ->
             WebView(context).apply {
                 webView = this
-                setBackgroundColor(PreDawnNavy.value.toInt())
+                setBackgroundColor(Ink.value.toInt())
                 settings.javaScriptEnabled = true
                 settings.domStorageEnabled = true
                 // Without this the clip waits for a tap, which defeats a loop

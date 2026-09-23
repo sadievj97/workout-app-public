@@ -39,11 +39,11 @@ import com.cutcoach.ui.components.CutCard
 import com.cutcoach.ui.components.CutIcon
 import com.cutcoach.ui.components.CutIconView
 import com.cutcoach.ui.components.SectionLabel
-import com.cutcoach.ui.theme.CoolSky
-import com.cutcoach.ui.theme.Mist
-import com.cutcoach.ui.theme.MistDim
-import com.cutcoach.ui.theme.SlateEdge
-import com.cutcoach.ui.theme.SunriseAmber
+import com.cutcoach.ui.theme.Sky
+import com.cutcoach.ui.theme.TextHigh
+import com.cutcoach.ui.theme.TextMid
+import com.cutcoach.ui.theme.SurfaceEdge
+import com.cutcoach.ui.theme.Ember
 import kotlinx.coroutines.launch
 
 /**
@@ -72,7 +72,7 @@ fun SubstituteCard(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            CutIconView(CutIcon.QUESTION, CoolSky, size = 20.dp)
+            CutIconView(CutIcon.QUESTION, Sky, size = 20.dp)
             SectionLabel("Cannot do this today?")
         }
 
@@ -81,7 +81,7 @@ fun SubstituteCard(
                 "The Claude layer is not set up yet. Deploy the Worker and add its " +
                     "address to local.properties.",
                 style = MaterialTheme.typography.bodySmall,
-                color = MistDim,
+                color = TextMid,
             )
             return@CutCard
         }
@@ -97,13 +97,13 @@ fun SubstituteCard(
                 )
             },
             colors = OutlinedTextFieldDefaults.colors(
-                focusedTextColor = Mist,
-                unfocusedTextColor = Mist,
-                focusedBorderColor = CoolSky,
-                unfocusedBorderColor = SlateEdge,
-                focusedLabelColor = CoolSky,
-                unfocusedLabelColor = MistDim,
-                cursorColor = CoolSky,
+                focusedTextColor = TextHigh,
+                unfocusedTextColor = TextHigh,
+                focusedBorderColor = Sky,
+                unfocusedBorderColor = SurfaceEdge,
+                focusedLabelColor = Sky,
+                unfocusedLabelColor = TextMid,
+                cursorColor = Sky,
             ),
             modifier = Modifier.fillMaxWidth(),
         )
@@ -123,16 +123,16 @@ fun SubstituteCard(
                 .height(56.dp),
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = CoolSky,
+                containerColor = Sky,
                 contentColor = MaterialTheme.colorScheme.onSecondary,
-                disabledContainerColor = SlateEdge,
-                disabledContentColor = MistDim,
+                disabledContainerColor = SurfaceEdge,
+                disabledContentColor = TextMid,
             ),
         ) {
             if (busy) {
                 CircularProgressIndicator(
                     modifier = Modifier.height(20.dp),
-                    color = MistDim,
+                    color = TextMid,
                     strokeWidth = 2.dp,
                 )
             } else {
@@ -147,7 +147,7 @@ fun SubstituteCard(
             is Outcome.Broke -> Text(
                 result.message,
                 style = MaterialTheme.typography.bodySmall,
-                color = SunriseAmber,
+                color = Ember,
             )
         }
     }
@@ -160,7 +160,7 @@ private fun SubstituteResult(repo: ProtocolRepository, answer: SubstituteAnswer)
         ?: answer.withDescription
         ?: "No replacement"
 
-    Text(name, style = MaterialTheme.typography.titleMedium, color = SunriseAmber)
+    Text(name, style = MaterialTheme.typography.titleMedium, color = Ember)
     Text(
         buildString {
             append("${answer.sets} sets")
@@ -168,13 +168,13 @@ private fun SubstituteResult(repo: ProtocolRepository, answer: SubstituteAnswer)
             answer.seconds?.let { append(" of ${it}s") }
         },
         style = MaterialTheme.typography.bodyMedium,
-        color = Mist,
+        color = TextHigh,
     )
-    Text(answer.reason, style = MaterialTheme.typography.bodySmall, color = MistDim)
+    Text(answer.reason, style = MaterialTheme.typography.bodySmall, color = TextMid)
     Text(
         "Checked against the protocol's guardrails before being shown.",
         style = MaterialTheme.typography.labelSmall,
-        color = MistDim,
+        color = TextMid,
     )
 }
 
@@ -191,16 +191,16 @@ fun RefusedCard(reasons: List<Rejection>) {
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        CutIconView(CutIcon.ALERT, SunriseAmber, size = 18.dp)
+        CutIconView(CutIcon.ALERT, Ember, size = 18.dp)
         Text(
             if (reasons.size == 1) "Suggestion refused" else "Suggestion refused, ${reasons.size} reasons",
             style = MaterialTheme.typography.titleSmall,
-            color = SunriseAmber,
+            color = Ember,
         )
     }
     reasons.forEach { rejection ->
-        Text(rejection.because, style = MaterialTheme.typography.bodySmall, color = Mist)
-        Text(rejection.rule, style = MaterialTheme.typography.labelSmall, color = MistDim)
+        Text(rejection.because, style = MaterialTheme.typography.bodySmall, color = TextHigh)
+        Text(rejection.rule, style = MaterialTheme.typography.labelSmall, color = TextMid)
     }
 }
 
@@ -226,16 +226,16 @@ fun HarderCard(
     var busy by remember { mutableStateOf(false) }
     var outcome by remember { mutableStateOf<Outcome<HarderAnswer>?>(null) }
 
-    CutCard(background = SlateEdge, modifier = modifier) {
+    CutCard(background = SurfaceEdge, modifier = modifier) {
         SectionLabel("The ladder has run out")
         Text(
             "You are on the last rung. Claude can suggest a harder version of " +
                 "the same movement.",
             style = MaterialTheme.typography.bodySmall,
-            color = MistDim,
+            color = TextMid,
         )
         exercise.ladderEndNote?.let {
-            Text(it, style = MaterialTheme.typography.bodySmall, color = MistDim)
+            Text(it, style = MaterialTheme.typography.bodySmall, color = TextMid)
         }
 
         TextButton(
@@ -252,7 +252,7 @@ fun HarderCard(
             Text(
                 if (busy) "Asking..." else "Suggest something harder",
                 style = MaterialTheme.typography.labelLarge,
-                color = CoolSky,
+                color = Sky,
             )
         }
 
@@ -262,24 +262,24 @@ fun HarderCard(
                 Text(
                     result.answer.name,
                     style = MaterialTheme.typography.titleMedium,
-                    color = SunriseAmber,
+                    color = Ember,
                 )
                 Text(
                     result.answer.howTo,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Mist,
+                    color = TextHigh,
                 )
                 Text(
                     result.answer.reason,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MistDim,
+                    color = TextMid,
                 )
             }
             is Outcome.Refused -> RefusedCard(result.reasons)
             is Outcome.Broke -> Text(
                 result.message,
                 style = MaterialTheme.typography.bodySmall,
-                color = SunriseAmber,
+                color = Ember,
             )
         }
     }

@@ -31,11 +31,11 @@ import com.cutcoach.ui.components.CutIcon
 import com.cutcoach.ui.components.CutIconView
 import com.cutcoach.ui.components.LabelledValue
 import com.cutcoach.ui.components.SectionLabel
-import com.cutcoach.ui.theme.CoolSky
-import com.cutcoach.ui.theme.Mist
-import com.cutcoach.ui.theme.MistDim
-import com.cutcoach.ui.theme.SlateEdge
-import com.cutcoach.ui.theme.SunriseAmber
+import com.cutcoach.ui.theme.Sky
+import com.cutcoach.ui.theme.TextHigh
+import com.cutcoach.ui.theme.TextMid
+import com.cutcoach.ui.theme.SurfaceEdge
+import com.cutcoach.ui.theme.Ember
 import com.cutcoach.ui.theme.tabular
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -76,7 +76,7 @@ fun WeekScreen(
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text("This week", style = MaterialTheme.typography.displaySmall, color = Mist)
+            Text("This week", style = MaterialTheme.typography.displaySmall, color = TextHigh)
             Text(
                 buildString {
                     val total = repo.protocol.meta.programLengthWeeks
@@ -88,7 +88,7 @@ fun WeekScreen(
                     if (isDeload) append("  -  deload")
                 },
                 style = MaterialTheme.typography.bodyMedium.tabular(),
-                color = if (isDeload) SunriseAmber else MistDim,
+                color = if (isDeload) Ember else TextMid,
             )
         }
 
@@ -111,7 +111,7 @@ fun WeekScreen(
             Text(
                 deload.rule,
                 style = MaterialTheme.typography.bodyMedium,
-                color = Mist,
+                color = TextHigh,
             )
             val start = repo.programStart
             if (start != null) {
@@ -123,7 +123,7 @@ fun WeekScreen(
                         "Week $w",
                         start.plusWeeks((w - 1).toLong())
                             .format(DateTimeFormatter.ofPattern("d MMM yyyy")),
-                        valueColor = if (w == week) SunriseAmber else Mist,
+                        valueColor = if (w == week) Ember else TextHigh,
                     )
                 }
                 if (repo.isOpenEnded) {
@@ -131,7 +131,7 @@ fun WeekScreen(
                         "Every ${repo.protocol.progressionRules.deload.everyNthWeek}th week, " +
                             "for as long as the program runs.",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MistDim,
+                        color = TextMid,
                     )
                 }
             }
@@ -162,37 +162,37 @@ private fun DayRow(
         CutIconView(
             icon = if (isDone) CutIcon.CHECK else sessionIcon(schedule?.sessionId),
             tint = when {
-                isDone -> SunriseAmber
-                isToday -> CoolSky
-                else -> SlateEdge
+                isDone -> Ember
+                isToday -> Sky
+                else -> SurfaceEdge
             },
             size = 18.dp,
         )
         Text(
             date.format(DateTimeFormatter.ofPattern("EEE")),
             style = MaterialTheme.typography.bodyMedium.tabular(),
-            color = if (isToday) Mist else MistDim,
+            color = if (isToday) TextHigh else TextMid,
             modifier = Modifier.width(44.dp),
         )
         Column(Modifier.weight(1f)) {
             Text(
                 session?.name ?: "Rest",
                 style = MaterialTheme.typography.bodyLarge,
-                color = if (isToday) Mist else MistDim,
+                color = if (isToday) TextHigh else TextMid,
             )
             val sets = session?.exercises?.sumOf { repo.setsFor(it.sets, programWeek) } ?: 0
             if (sets > 0) {
                 Text(
                     "$sets sets",
                     style = MaterialTheme.typography.bodySmall.tabular(),
-                    color = MistDim,
+                    color = TextMid,
                 )
             }
         }
         Text(
             schedule?.start?.takeIf { it != "any" } ?: "",
             style = MaterialTheme.typography.bodySmall.tabular(),
-            color = MistDim,
+            color = TextMid,
         )
     }
 }

@@ -47,14 +47,14 @@ import com.cutcoach.ui.components.CutIcon
 import com.cutcoach.ui.components.CutIconView
 import com.cutcoach.ui.components.LabelledValue
 import com.cutcoach.ui.components.SectionLabel
-import com.cutcoach.ui.theme.CoolSky
-import com.cutcoach.ui.theme.Mist
-import com.cutcoach.ui.theme.MistDim
-import com.cutcoach.ui.theme.Slate
-import com.cutcoach.ui.theme.SlateEdge
-import com.cutcoach.ui.theme.SunriseAmber
+import com.cutcoach.ui.theme.Sky
+import com.cutcoach.ui.theme.TextHigh
+import com.cutcoach.ui.theme.TextMid
+import com.cutcoach.ui.theme.Surface
+import com.cutcoach.ui.theme.SurfaceEdge
+import com.cutcoach.ui.theme.Ember
 import com.cutcoach.ui.theme.tabular
-import com.cutcoach.ui.theme.PreDawnNavy
+import com.cutcoach.ui.theme.Ink
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -92,7 +92,7 @@ fun SettingsScreen(
             .padding(top = 16.dp, bottom = 40.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        Text("Settings", style = MaterialTheme.typography.displaySmall, color = Mist)
+        Text("Settings", style = MaterialTheme.typography.displaySmall, color = TextHigh)
 
         PainCard()
 
@@ -116,7 +116,7 @@ fun SettingsScreen(
                 "Energy Score is not in Health Connect, so it needs Samsung's own " +
                     "SDK and developer mode. Nothing depends on it yet.",
                 style = MaterialTheme.typography.bodySmall,
-                color = MistDim,
+                color = TextMid,
             )
         }
 
@@ -132,7 +132,7 @@ fun SettingsScreen(
                     "harder version, say so here rather than working up to where " +
                     "you already are.",
                 style = MaterialTheme.typography.bodySmall,
-                color = MistDim,
+                color = TextMid,
             )
         }
 
@@ -155,7 +155,7 @@ fun SettingsScreen(
             Text(
                 "Read only. Nothing in the app depends on watch data yet.",
                 style = MaterialTheme.typography.bodySmall,
-                color = MistDim,
+                color = TextMid,
             )
         }
 
@@ -178,7 +178,7 @@ fun SettingsScreen(
                     "the fact would renumber every session you have already logged, so " +
                     "it should be a deliberate edit to the file.",
                 style = MaterialTheme.typography.bodySmall,
-                color = MistDim,
+                color = TextMid,
             )
         }
 
@@ -212,7 +212,7 @@ fun SettingsScreen(
                     modifier = Modifier.height(56.dp),
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = SunriseAmber,
+                        containerColor = Ember,
                         contentColor = MaterialTheme.colorScheme.onPrimary,
                     ),
                 ) {
@@ -225,7 +225,7 @@ fun SettingsScreen(
                     Text(
                         "Back to the protocol's ${protocolRest}s",
                         style = MaterialTheme.typography.labelMedium,
-                        color = CoolSky,
+                        color = Sky,
                     )
                 }
             }
@@ -250,7 +250,7 @@ fun SettingsScreen(
                 modifier = Modifier.height(52.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = SunriseAmber,
+                    containerColor = Ember,
                     contentColor = MaterialTheme.colorScheme.onPrimary,
                 ),
             ) {
@@ -260,7 +260,7 @@ fun SettingsScreen(
                 "Typed in from your rehab program. The app only ever displays these: " +
                     "no recommendation in any phase will change or substitute rehab work.",
                 style = MaterialTheme.typography.bodySmall,
-                color = MistDim,
+                color = TextMid,
             )
         }
 
@@ -270,7 +270,7 @@ fun SettingsScreen(
                 "Paste a link you trust for each exercise. The cue card shows a " +
                     "button only once a link is set.",
                 style = MaterialTheme.typography.bodySmall,
-                color = MistDim,
+                color = TextMid,
             )
             Box(Modifier.height(4.dp))
             repo.library.exercises.forEach { exercise ->
@@ -310,8 +310,8 @@ private fun NavRow(icon: CutIcon, label: String, onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        CutIconView(icon, CoolSky, size = 22.dp)
-        Text(label, style = MaterialTheme.typography.bodyLarge, color = CoolSky)
+        CutIconView(icon, Sky, size = 22.dp)
+        Text(label, style = MaterialTheme.typography.bodyLarge, color = Sky)
     }
 }
 
@@ -332,14 +332,14 @@ private fun PainCard() {
     val scope = rememberCoroutineScope()
     val report by settings.painReport.collectAsStateWithLifecycle(null)
 
-    CutCard(background = if (report != null) SlateEdge else Slate) {
+    CutCard(background = if (report != null) SurfaceEdge else Surface) {
         SectionLabel("Today")
 
         if (report == null) {
             Text(
                 "Feeling something you should not be?",
                 style = MaterialTheme.typography.bodyLarge,
-                color = Mist,
+                color = TextHigh,
             )
             TextButton(
                 onClick = { scope.launch { settings.reportPain(PainKind.SERIOUS) } },
@@ -347,7 +347,7 @@ private fun PainCard() {
                 Text(
                     "Report sharp or worsening pain",
                     style = MaterialTheme.typography.bodyLarge,
-                    color = SunriseAmber,
+                    color = Ember,
                 )
             }
             Text(
@@ -355,19 +355,19 @@ private fun PainCard() {
                     "suggesting training for the rest of today and tell you to see " +
                     "a clinician.",
                 style = MaterialTheme.typography.bodySmall,
-                color = MistDim,
+                color = TextMid,
             )
         } else {
             Text(
                 "Pain reported today. No training is being suggested.",
                 style = MaterialTheme.typography.bodyLarge,
-                color = SunriseAmber,
+                color = Ember,
             )
             TextButton(onClick = { scope.launch { settings.reportPain(null) } }) {
                 Text(
                     "Clear it",
                     style = MaterialTheme.typography.labelMedium,
-                    color = CoolSky,
+                    color = Sky,
                 )
             }
         }
@@ -436,7 +436,7 @@ private fun EveningReminders(repo: ProtocolRepository) {
                 "Android is blocking notifications for CutCoach. Turn them on in " +
                     "the phone's app settings, or these will stay silent.",
                 style = MaterialTheme.typography.bodySmall,
-                color = SunriseAmber,
+                color = Ember,
             )
         }
 
@@ -451,14 +451,14 @@ private fun EveningReminders(repo: ProtocolRepository) {
                         Text(
                             "${moment.time} ${moment.label}",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = if (enabled) Mist else MistDim,
+                            color = if (enabled) TextHigh else TextMid,
                         )
                         if (moment.isLightsOut && moment.time.toString() != endState) {
                             Text(
                                 "Tonight's ramp target. The timeline says $endState, " +
                                     "which the ramp reaches later.",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = MistDim,
+                                color = TextMid,
                             )
                         }
                     }
@@ -479,18 +479,18 @@ private fun EveningReminders(repo: ProtocolRepository) {
         Text(
             repo.protocol.reminders.lieInGuardrail,
             style = MaterialTheme.typography.bodySmall,
-            color = MistDim,
+            color = TextMid,
         )
     }
 }
 
 @Composable
 private fun switchColours() = SwitchDefaults.colors(
-    checkedThumbColor = PreDawnNavy,
-    checkedTrackColor = SunriseAmber,
-    uncheckedThumbColor = MistDim,
-    uncheckedTrackColor = SlateEdge,
-    uncheckedBorderColor = SlateEdge,
+    checkedThumbColor = Ink,
+    checkedTrackColor = Ember,
+    uncheckedThumbColor = TextMid,
+    uncheckedTrackColor = SurfaceEdge,
+    uncheckedBorderColor = SurfaceEdge,
 )
 
 @Composable
@@ -509,7 +509,7 @@ private fun VideoLinkRow(
     LaunchedEffect(current) { draft = current }
 
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text(name, style = MaterialTheme.typography.bodyMedium, color = Mist)
+        Text(name, style = MaterialTheme.typography.bodyMedium, color = TextHigh)
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -518,7 +518,7 @@ private fun VideoLinkRow(
                 value = draft,
                 onValueChange = { draft = it },
                 placeholder = {
-                    Text("https://", style = MaterialTheme.typography.bodySmall, color = MistDim)
+                    Text("https://", style = MaterialTheme.typography.bodySmall, color = TextMid)
                 },
                 singleLine = true,
                 textStyle = MaterialTheme.typography.bodySmall,
@@ -526,7 +526,7 @@ private fun VideoLinkRow(
                 modifier = Modifier.weight(1f),
             )
             TextButton(onClick = { onSave(draft) }) {
-                Text("Save", style = MaterialTheme.typography.labelMedium, color = SunriseAmber)
+                Text("Save", style = MaterialTheme.typography.labelMedium, color = Ember)
             }
         }
 
@@ -544,7 +544,7 @@ private fun VideoLinkRow(
                         onSaveSegment(start.toFloatOrNull(), end.toFloatOrNull())
                     },
                 ) {
-                    Text("Set", style = MaterialTheme.typography.labelMedium, color = SunriseAmber)
+                    Text("Set", style = MaterialTheme.typography.labelMedium, color = Ember)
                 }
             }
         }
@@ -575,11 +575,11 @@ private fun secondsText(value: Float): String =
 
 @Composable
 private fun fieldColours() = OutlinedTextFieldDefaults.colors(
-    focusedTextColor = Mist,
-    unfocusedTextColor = Mist,
-    focusedBorderColor = SunriseAmber,
-    unfocusedBorderColor = SlateEdge,
-    focusedLabelColor = SunriseAmber,
-    unfocusedLabelColor = MistDim,
-    cursorColor = SunriseAmber,
+    focusedTextColor = TextHigh,
+    unfocusedTextColor = TextHigh,
+    focusedBorderColor = Ember,
+    unfocusedBorderColor = SurfaceEdge,
+    focusedLabelColor = Ember,
+    unfocusedLabelColor = TextMid,
+    cursorColor = Ember,
 )

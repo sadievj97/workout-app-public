@@ -22,10 +22,10 @@ import com.cutcoach.ui.components.CutIconView
 import com.cutcoach.ui.components.ProgressRing
 import com.cutcoach.ui.components.LabelledValue
 import com.cutcoach.ui.components.SectionLabel
-import com.cutcoach.ui.theme.CoolSky
-import com.cutcoach.ui.theme.Mist
-import com.cutcoach.ui.theme.MistDim
-import com.cutcoach.ui.theme.SunriseAmber
+import com.cutcoach.ui.theme.Sky
+import com.cutcoach.ui.theme.TextHigh
+import com.cutcoach.ui.theme.TextMid
+import com.cutcoach.ui.theme.Ember
 import com.cutcoach.ui.theme.tabular
 import java.time.format.DateTimeFormatter
 
@@ -52,7 +52,7 @@ fun WatchCard(
             Text(
                 "Not read yet.",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MistDim,
+                color = TextMid,
             )
             return@CutCard
         }
@@ -72,7 +72,7 @@ fun WatchCard(
             Text(
                 "Nothing from the watch today. Has Samsung Health synced?",
                 style = MaterialTheme.typography.bodySmall,
-                color = SunriseAmber,
+                color = Ember,
             )
         }
     }
@@ -85,12 +85,12 @@ private fun LastNight(repo: ProtocolRepository, night: com.cutcoach.health.Sleep
         Text(
             "No sleep recorded for last night.",
             style = MaterialTheme.typography.bodyMedium,
-            color = SunriseAmber,
+            color = Ember,
         )
         Text(
             "Did you wear the watch? Nothing is assumed either way.",
             style = MaterialTheme.typography.bodySmall,
-            color = MistDim,
+            color = TextMid,
         )
         return
     }
@@ -113,7 +113,7 @@ private fun LastNight(repo: ProtocolRepository, night: com.cutcoach.health.Sleep
             "Too short to be the night, so it is not measured against the ramp. " +
                 "A nap, or the watch caught only part of the night.",
             style = MaterialTheme.typography.bodySmall,
-            color = MistDim,
+            color = TextMid,
         )
     }
 
@@ -121,7 +121,7 @@ private fun LastNight(repo: ProtocolRepository, night: com.cutcoach.health.Sleep
         LabelledValue(
             "Against the ramp",
             describeRampGap(late),
-            valueColor = if (late > LATE_ENOUGH_TO_MENTION) SunriseAmber else Mist,
+            valueColor = if (late > LATE_ENOUGH_TO_MENTION) Ember else TextHigh,
         )
     }
 
@@ -130,12 +130,12 @@ private fun LastNight(repo: ProtocolRepository, night: com.cutcoach.health.Sleep
         LabelledValue(
             "Sleeping heart rate",
             "$bpm bpm",
-            valueColor = if (bpm.toDouble() in goal) CoolSky else Mist,
+            valueColor = if (bpm.toDouble() in goal) Sky else TextHigh,
         )
         Text(
             "Goal ${goal.describe("bpm")}, from ${repo.protocol.heartRate.sleepingHrBaselineBpm}.",
             style = MaterialTheme.typography.bodySmall,
-            color = MistDim,
+            color = TextMid,
         )
     }
 
@@ -144,7 +144,7 @@ private fun LastNight(repo: ProtocolRepository, night: com.cutcoach.health.Sleep
             "The watch split the night into ${night.fragments} stretches; the " +
                 "longest is used.",
             style = MaterialTheme.typography.bodySmall,
-            color = MistDim,
+            color = TextMid,
         )
     }
 }
@@ -161,18 +161,18 @@ private fun Steps(repo: ProtocolRepository, steps: Long?) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            CutIconView(CutIcon.FOOTSTEPS, MistDim, size = 18.dp)
+            CutIconView(CutIcon.FOOTSTEPS, TextMid, size = 18.dp)
             Text(
                 "No steps recorded today.",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MistDim,
+                color = TextMid,
             )
         }
         return
     }
 
     val done = steps >= target
-    val colour = if (done) CoolSky else SunriseAmber
+    val colour = if (done) Sky else Ember
 
     // A ring rather than a line of text: this is the one number on the card
     // that changes all day, and the point is where you are, not the digits.
@@ -191,7 +191,7 @@ private fun Steps(repo: ProtocolRepository, steps: Long?) {
             Text(
                 "$steps steps",
                 style = MaterialTheme.typography.titleMedium.tabular(),
-                color = Mist,
+                color = TextHigh,
             )
             Text(
                 if (done) {
@@ -200,7 +200,7 @@ private fun Steps(repo: ProtocolRepository, steps: Long?) {
                     "${target - steps} to go, of $target."
                 },
                 style = MaterialTheme.typography.bodySmall,
-                color = MistDim,
+                color = TextMid,
             )
         }
     }
@@ -215,7 +215,7 @@ private fun SessionZone(session: com.cutcoach.health.WorkoutSession) {
         Text(
             "No heart rate recorded for this session.",
             style = MaterialTheme.typography.bodySmall,
-            color = MistDim,
+            color = TextMid,
         )
         return
     }
@@ -233,7 +233,7 @@ private fun SessionZone(session: com.cutcoach.health.WorkoutSession) {
         Text(
             it,
             style = MaterialTheme.typography.bodySmall,
-            color = if (session.verdict == ZoneVerdict.IN_ZONE) MistDim else SunriseAmber,
+            color = if (session.verdict == ZoneVerdict.IN_ZONE) TextMid else Ember,
         )
     }
 }

@@ -35,11 +35,11 @@ import com.cutcoach.ui.components.CutIcon
 import com.cutcoach.ui.components.CutIconView
 import com.cutcoach.ui.components.LabelledValue
 import com.cutcoach.ui.components.SectionLabel
-import com.cutcoach.ui.theme.CoolSky
-import com.cutcoach.ui.theme.Mist
-import com.cutcoach.ui.theme.MistDim
-import com.cutcoach.ui.theme.SlateEdge
-import com.cutcoach.ui.theme.SunriseAmber
+import com.cutcoach.ui.theme.Sky
+import com.cutcoach.ui.theme.TextHigh
+import com.cutcoach.ui.theme.TextMid
+import com.cutcoach.ui.theme.SurfaceEdge
+import com.cutcoach.ui.theme.Ember
 import com.cutcoach.ui.theme.tabular
 import kotlinx.coroutines.launch
 import java.time.format.DateTimeFormatter
@@ -84,9 +84,9 @@ fun EnergyScoreProbeScreen(
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         TextButton(onClick = onBack) {
-            Text("Back", style = MaterialTheme.typography.labelMedium, color = CoolSky)
+            Text("Back", style = MaterialTheme.typography.labelMedium, color = Sky)
         }
-        Text("Energy Score probe", style = MaterialTheme.typography.displaySmall, color = Mist)
+        Text("Energy Score probe", style = MaterialTheme.typography.displaySmall, color = TextHigh)
 
         CutCard {
             Text(
@@ -94,12 +94,12 @@ fun EnergyScoreProbeScreen(
                     "own SDK and developer mode. This checks whether your phone " +
                     "actually provides one before anything is built on it.",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MistDim,
+                color = TextMid,
             )
             Text(
                 "Read only. Nothing here is stored or sent anywhere.",
                 style = MaterialTheme.typography.bodySmall,
-                color = MistDim,
+                color = TextMid,
             )
         }
 
@@ -111,16 +111,16 @@ fun EnergyScoreProbeScreen(
                 .height(60.dp),
             shape = RoundedCornerShape(14.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = SunriseAmber,
+                containerColor = Ember,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
-                disabledContainerColor = SlateEdge,
-                disabledContentColor = MistDim,
+                disabledContainerColor = SurfaceEdge,
+                disabledContentColor = TextMid,
             ),
         ) {
             if (busy) {
                 CircularProgressIndicator(
                     modifier = Modifier.height(22.dp),
-                    color = MistDim,
+                    color = TextMid,
                     strokeWidth = 2.dp,
                 )
             } else {
@@ -136,16 +136,16 @@ fun EnergyScoreProbeScreen(
                 ) {
                     CutIconView(
                         if (result.available) CutIcon.SUNRISE else CutIcon.ALERT,
-                        if (result.available) CoolSky else SunriseAmber,
+                        if (result.available) Sky else Ember,
                         size = 22.dp,
                     )
                     Text(
                         result.headline,
                         style = MaterialTheme.typography.titleMedium,
-                        color = if (result.available) Mist else SunriseAmber,
+                        color = if (result.available) TextHigh else Ember,
                     )
                 }
-                Text(result.detail, style = MaterialTheme.typography.bodyMedium, color = MistDim)
+                Text(result.detail, style = MaterialTheme.typography.bodyMedium, color = TextMid)
 
                 if (!result.available && EnergyScores.source != null) {
                     Box(Modifier.height(4.dp))
@@ -163,7 +163,7 @@ fun EnergyScoreProbeScreen(
                         Text(
                             "Ask Samsung Health",
                             style = MaterialTheme.typography.labelLarge,
-                            color = CoolSky,
+                            color = Sky,
                         )
                     }
                 }
@@ -182,7 +182,7 @@ fun EnergyScoreProbeScreen(
                         "Raw, unrounded, and not used by anything. If these look " +
                             "right, Phase 5 has something to build on.",
                         style = MaterialTheme.typography.bodySmall.tabular(),
-                        color = MistDim,
+                        color = TextMid,
                     )
                 }
             }

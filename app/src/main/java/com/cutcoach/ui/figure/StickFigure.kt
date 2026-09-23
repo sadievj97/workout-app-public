@@ -20,10 +20,10 @@ import com.cutcoach.data.poses.Symmetry
 import com.cutcoach.data.poses.Vec3
 import com.cutcoach.data.poses.body
 import com.cutcoach.data.poses.project
-import com.cutcoach.ui.theme.CoolSky
-import com.cutcoach.ui.theme.Mist
-import com.cutcoach.ui.theme.SlateEdge
-import com.cutcoach.ui.theme.SunriseAmber
+import com.cutcoach.ui.theme.Sky
+import com.cutcoach.ui.theme.TextHigh
+import com.cutcoach.ui.theme.SurfaceEdge
+import com.cutcoach.ui.theme.Ember
 
 /** Which limb groups an exercise works, for the amber highlight. */
 private const val ARMS = "arms"
@@ -175,7 +175,7 @@ private fun DrawScope.drawFigure(
     }
 
     fun colourFor(group: String, fade: Float): Color {
-        val base = if (highlight && group in workingLimbs) SunriseAmber else Mist
+        val base = if (highlight && group in workingLimbs) Ember else TextHigh
         return if (fade >= 0.999f) base else base.copy(alpha = fade)
     }
 
@@ -205,7 +205,7 @@ private fun DrawScope.drawProp(prop: Prop, box: FigureBox, camera: Camera) {
 
     fun line(fromX: Float, toX: Float, y: Float, z: Float, stroke: Float = width) {
         drawLine(
-            color = SlateEdge,
+            color = SurfaceEdge,
             start = box.at(Vec3(fromX, y, z).project(camera)),
             end = box.at(Vec3(toX, y, z).project(camera)),
             strokeWidth = stroke,
@@ -232,7 +232,7 @@ private fun DrawScope.drawProp(prop: Prop, box: FigureBox, camera: Camera) {
             line(prop.fromX, prop.toX, prop.y, prop.z)
             listOf(prop.fromX, prop.toX).forEach { x ->
                 drawLine(
-                    color = SlateEdge,
+                    color = SurfaceEdge,
                     start = box.at(Vec3(x, prop.y, prop.z).project(camera)),
                     end = box.at(Vec3(x, prop.y + prop.height, prop.z).project(camera)),
                     strokeWidth = width,
@@ -251,7 +251,7 @@ private fun DrawScope.drawHoldRing(progress: Float, box: FigureBox, style: Figur
     val ringSize = Size(box.side - inset * 2, box.side - inset * 2)
 
     drawArc(
-        color = SlateEdge,
+        color = SurfaceEdge,
         startAngle = 0f,
         sweepAngle = 360f,
         useCenter = false,
@@ -260,7 +260,7 @@ private fun DrawScope.drawHoldRing(progress: Float, box: FigureBox, style: Figur
         style = Stroke(width = ringWidth, cap = StrokeCap.Round),
     )
     drawArc(
-        color = CoolSky,
+        color = Sky,
         startAngle = -90f,
         sweepAngle = 360f * progress.coerceIn(0f, 1f),
         useCenter = false,

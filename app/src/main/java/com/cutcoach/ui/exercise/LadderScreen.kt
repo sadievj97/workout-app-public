@@ -32,10 +32,10 @@ import com.cutcoach.data.protocol.Exercise
 import com.cutcoach.data.protocol.ProtocolRepository
 import com.cutcoach.ui.components.CutCard
 import com.cutcoach.ui.components.SectionLabel
-import com.cutcoach.ui.theme.CoolSky
-import com.cutcoach.ui.theme.Mist
-import com.cutcoach.ui.theme.MistDim
-import com.cutcoach.ui.theme.SunriseAmber
+import com.cutcoach.ui.theme.Sky
+import com.cutcoach.ui.theme.TextHigh
+import com.cutcoach.ui.theme.TextMid
+import com.cutcoach.ui.theme.Ember
 import kotlinx.coroutines.launch
 
 /**
@@ -85,7 +85,7 @@ fun LadderScreen(
     ) {
         item {
             TextButton(onClick = onBack) {
-                Text("Back", style = MaterialTheme.typography.labelMedium, color = CoolSky)
+                Text("Back", style = MaterialTheme.typography.labelMedium, color = Sky)
             }
         }
 
@@ -94,20 +94,20 @@ fun LadderScreen(
                 Text(
                     "Starting rungs",
                     style = MaterialTheme.typography.displaySmall,
-                    color = Mist,
+                    color = TextHigh,
                 )
                 Text(
                     "Tap the hardest version of each movement you can already do with " +
                         "good form for the whole set. Everything starts on the first " +
                         "rung until you say otherwise.",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MistDim,
+                    color = TextMid,
                 )
                 Text(
                     "This sets difficulty and tempo only. It never changes how many " +
                         "sets you do, and rehab work has no ladder at all.",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MistDim,
+                    color = TextMid,
                 )
             }
         }
@@ -145,15 +145,15 @@ private fun LadderCard(exercise: Exercise, step: Int, onSelect: (Int) -> Unit) {
                 Text(
                     "${index + 1}.",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = if (index == step) SunriseAmber else MistDim,
+                    color = if (index == step) Ember else TextMid,
                 )
                 Text(
                     rung,
                     style = MaterialTheme.typography.bodyLarge,
                     color = when {
-                        index == step -> SunriseAmber
-                        index < step -> MistDim
-                        else -> Mist
+                        index == step -> Ember
+                        index < step -> TextMid
+                        else -> TextHigh
                     },
                     modifier = Modifier.weight(1f),
                 )
@@ -161,7 +161,7 @@ private fun LadderCard(exercise: Exercise, step: Int, onSelect: (Int) -> Unit) {
                     Text(
                         "Start here",
                         style = MaterialTheme.typography.labelSmall,
-                        color = SunriseAmber,
+                        color = Ember,
                     )
                 }
             }
@@ -173,13 +173,13 @@ private fun LadderCard(exercise: Exercise, step: Int, onSelect: (Int) -> Unit) {
                 Text(
                     "Back to the first rung",
                     style = MaterialTheme.typography.labelMedium,
-                    color = CoolSky,
+                    color = Sky,
                 )
             }
         }
 
         exercise.ladderEndNote?.let {
-            Text(it, style = MaterialTheme.typography.bodySmall, color = MistDim)
+            Text(it, style = MaterialTheme.typography.bodySmall, color = TextMid)
         }
     }
 }

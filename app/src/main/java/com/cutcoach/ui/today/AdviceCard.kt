@@ -29,11 +29,11 @@ import com.cutcoach.ui.components.CutCard
 import com.cutcoach.ui.components.CutIcon
 import com.cutcoach.ui.components.CutIconView
 import com.cutcoach.ui.components.SectionLabel
-import com.cutcoach.ui.theme.CoolSky
-import com.cutcoach.ui.theme.Mist
-import com.cutcoach.ui.theme.MistDim
-import com.cutcoach.ui.theme.SlateEdge
-import com.cutcoach.ui.theme.SunriseAmber
+import com.cutcoach.ui.theme.Sky
+import com.cutcoach.ui.theme.TextHigh
+import com.cutcoach.ui.theme.TextMid
+import com.cutcoach.ui.theme.SurfaceEdge
+import com.cutcoach.ui.theme.Ember
 
 /**
  * What the rules engine makes of today, on the Today screen.
@@ -56,19 +56,19 @@ fun AdviceCard(
 
     val stop = recommendations.firstOrNull { it.kind == Recommendation.Kind.PAIN }
     if (stop != null) {
-        CutCard(background = SlateEdge, modifier = modifier) {
+        CutCard(background = SurfaceEdge, modifier = modifier) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                CutIconView(CutIcon.ALERT, SunriseAmber, size = 26.dp)
+                CutIconView(CutIcon.ALERT, Ember, size = 26.dp)
                 Text(
                     stop.headline,
                     style = MaterialTheme.typography.titleLarge,
-                    color = SunriseAmber,
+                    color = Ember,
                 )
             }
-            Text(stop.reason, style = MaterialTheme.typography.bodyMedium, color = Mist)
+            Text(stop.reason, style = MaterialTheme.typography.bodyMedium, color = TextHigh)
         }
         return
     }
@@ -91,7 +91,7 @@ fun AdviceCard(
                 Text(
                     if (expanded) "Show fewer" else "$hidden more",
                     style = MaterialTheme.typography.labelMedium,
-                    color = CoolSky,
+                    color = Sky,
                 )
             }
         }
@@ -99,7 +99,7 @@ fun AdviceCard(
         Text(
             "Suggestions, not instructions. Nothing here changes your session on its own.",
             style = MaterialTheme.typography.bodySmall,
-            color = MistDim,
+            color = TextMid,
         )
     }
 }
@@ -127,8 +127,8 @@ private fun AdviceRow(
     onOpenExercise: (String) -> Unit,
 ) {
     val accent = when (recommendation.tone) {
-        Recommendation.Tone.STOP, Recommendation.Tone.ATTENTION -> SunriseAmber
-        Recommendation.Tone.INFO -> CoolSky
+        Recommendation.Tone.STOP, Recommendation.Tone.ATTENTION -> Ember
+        Recommendation.Tone.INFO -> Sky
     }
     val opensSomething = recommendation.exerciseId != null
 
@@ -154,19 +154,19 @@ private fun AdviceRow(
             Text(
                 recommendation.headline,
                 style = MaterialTheme.typography.bodyLarge,
-                color = if (recommendation.tone == Recommendation.Tone.INFO) Mist else accent,
+                color = if (recommendation.tone == Recommendation.Tone.INFO) TextHigh else accent,
             )
             // The one-line reason the protocol requires.
             Text(
                 recommendation.reason,
                 style = MaterialTheme.typography.bodySmall,
-                color = MistDim,
+                color = TextMid,
             )
             if (opensSomething) {
                 Text(
                     "Tap for the cue card",
                     style = MaterialTheme.typography.labelSmall,
-                    color = CoolSky,
+                    color = Sky,
                 )
             }
         }

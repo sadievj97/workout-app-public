@@ -27,7 +27,7 @@ import com.cutcoach.data.poses.PoseLibrary
 import com.cutcoach.data.poses.Tempo
 import com.cutcoach.data.poses.Vec3
 import com.cutcoach.data.poses.timeline
-import com.cutcoach.ui.theme.MistDim
+import com.cutcoach.ui.theme.TextMid
 
 /**
  * A stick figure that moves.
@@ -179,7 +179,7 @@ private fun ReducedMotionPair(
                         facing = facing,
                     )
                 }
-                Text(label, style = MaterialTheme.typography.labelSmall, color = MistDim)
+                Text(label, style = MaterialTheme.typography.labelSmall, color = TextMid)
             }
         }
     }

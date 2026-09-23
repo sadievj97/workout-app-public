@@ -40,11 +40,11 @@ import com.cutcoach.ui.components.CutIcon
 import com.cutcoach.ui.components.CutIconView
 import com.cutcoach.ui.components.LabelledValue
 import com.cutcoach.ui.components.SectionLabel
-import com.cutcoach.ui.theme.CoolSky
-import com.cutcoach.ui.theme.Mist
-import com.cutcoach.ui.theme.MistDim
-import com.cutcoach.ui.theme.SlateEdge
-import com.cutcoach.ui.theme.SunriseAmber
+import com.cutcoach.ui.theme.Sky
+import com.cutcoach.ui.theme.TextHigh
+import com.cutcoach.ui.theme.TextMid
+import com.cutcoach.ui.theme.SurfaceEdge
+import com.cutcoach.ui.theme.Ember
 import kotlinx.coroutines.launch
 
 /**
@@ -82,23 +82,23 @@ fun WeeklyReviewScreen(
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         TextButton(onClick = onBack) {
-            Text("Back", style = MaterialTheme.typography.labelMedium, color = CoolSky)
+            Text("Back", style = MaterialTheme.typography.labelMedium, color = Sky)
         }
-        Text("Weekly review", style = MaterialTheme.typography.displaySmall, color = Mist)
+        Text("Weekly review", style = MaterialTheme.typography.displaySmall, color = TextHigh)
 
         if (!ClaudeClient.isConfigured) {
             CutCard {
                 Text(
                     "Not set up yet.",
                     style = MaterialTheme.typography.bodyLarge,
-                    color = Mist,
+                    color = TextHigh,
                 )
                 Text(
                     "Deploy the Cloudflare Worker, then add cutcoach.proxyUrl and " +
                         "cutcoach.proxySecret to local.properties and rebuild. Your " +
                         "Anthropic key stays on Cloudflare and never enters the app.",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MistDim,
+                    color = TextMid,
                 )
             }
             return@Column
@@ -111,7 +111,7 @@ fun WeeklyReviewScreen(
                     "weekly weight averages, and your last set of each exercise. " +
                     "No raw records leave the phone.",
                 style = MaterialTheme.typography.bodySmall,
-                color = MistDim,
+                color = TextMid,
             )
             Button(
                 onClick = {
@@ -128,16 +128,16 @@ fun WeeklyReviewScreen(
                     .height(60.dp),
                 shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = SunriseAmber,
+                    containerColor = Ember,
                     contentColor = MaterialTheme.colorScheme.onPrimary,
-                    disabledContainerColor = SlateEdge,
-                    disabledContentColor = MistDim,
+                    disabledContainerColor = SurfaceEdge,
+                    disabledContentColor = TextMid,
                 ),
             ) {
                 if (busy) {
                     CircularProgressIndicator(
                         modifier = Modifier.height(22.dp),
-                        color = MistDim,
+                        color = TextMid,
                         strokeWidth = 2.dp,
                     )
                 } else {
@@ -149,12 +149,12 @@ fun WeeklyReviewScreen(
         when (val result = outcome) {
             null -> Unit
             is Outcome.Ready -> ReviewBody(result.answer)
-            is Outcome.Refused -> CutCard(background = SlateEdge) { RefusedCard(result.reasons) }
+            is Outcome.Refused -> CutCard(background = SurfaceEdge) { RefusedCard(result.reasons) }
             is Outcome.Broke -> CutCard {
                 Text(
                     result.message,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = SunriseAmber,
+                    color = Ember,
                 )
             }
         }
@@ -171,32 +171,32 @@ private fun ReviewBody(answer: WeeklyReviewAnswer) {
     Section(CutIcon.SCALE, "Weight", answer.weight)
     Section(CutIcon.BARBELL, "Strength", answer.strength)
 
-    CutCard(background = SlateEdge) {
+    CutCard(background = SurfaceEdge) {
         SectionLabel("One change")
         val change = answer.oneChange
         if (change == null || change.kind == "nothing") {
             Text(
                 "Nothing to change this week.",
                 style = MaterialTheme.typography.bodyLarge,
-                color = Mist,
+                color = TextHigh,
             )
             Text(
                 "Which is an answer, not a failure to find one.",
                 style = MaterialTheme.typography.bodySmall,
-                color = MistDim,
+                color = TextMid,
             )
         } else {
             Text(
                 describe(change.kind, change.stepsChange, change.caloriesKcalChange),
                 style = MaterialTheme.typography.titleMedium,
-                color = SunriseAmber,
+                color = Ember,
             )
-            Text(change.reason, style = MaterialTheme.typography.bodySmall, color = MistDim)
+            Text(change.reason, style = MaterialTheme.typography.bodySmall, color = TextMid)
             Text(
                 "Checked against the guardrails before being shown. The protocol " +
                     "allows one change, then three weeks of waiting.",
                 style = MaterialTheme.typography.labelSmall,
-                color = MistDim,
+                color = TextMid,
             )
         }
     }
@@ -215,10 +215,10 @@ private fun Section(icon: CutIcon, title: String, body: String) {
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            CutIconView(icon, CoolSky, size = 20.dp)
+            CutIconView(icon, Sky, size = 20.dp)
             SectionLabel(title)
         }
-        Text(body, style = MaterialTheme.typography.bodyLarge, color = Mist)
+        Text(body, style = MaterialTheme.typography.bodyLarge, color = TextHigh)
     }
 }
 
@@ -244,7 +244,7 @@ private fun CostCard(totals: CallLog.Totals) {
                 "your health summaries, and a log of it on the phone would be a " +
                 "second copy of the thing this app is careful about.",
             style = MaterialTheme.typography.bodySmall,
-            color = MistDim,
+            color = TextMid,
         )
     }
 }

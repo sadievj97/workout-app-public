@@ -42,11 +42,11 @@ import com.cutcoach.ui.claude.SubstituteCard
 import com.cutcoach.ui.components.CutCard
 import com.cutcoach.ui.figure.AnimatedStickFigure
 import com.cutcoach.ui.components.SectionLabel
-import com.cutcoach.ui.theme.CoolSky
-import com.cutcoach.ui.theme.Mist
-import com.cutcoach.ui.theme.MistDim
-import com.cutcoach.ui.theme.SlateEdge
-import com.cutcoach.ui.theme.SunriseAmber
+import com.cutcoach.ui.theme.Sky
+import com.cutcoach.ui.theme.TextHigh
+import com.cutcoach.ui.theme.TextMid
+import com.cutcoach.ui.theme.SurfaceEdge
+import com.cutcoach.ui.theme.Ember
 
 /**
  * How to do one exercise: setup, cues, what usually goes wrong, the easier
@@ -97,15 +97,15 @@ fun CueCardScreen(
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         TextButton(onClick = onBack) {
-            Text("Back", style = MaterialTheme.typography.labelMedium, color = CoolSky)
+            Text("Back", style = MaterialTheme.typography.labelMedium, color = Sky)
         }
 
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(exercise.name, style = MaterialTheme.typography.displaySmall, color = Mist)
+            Text(exercise.name, style = MaterialTheme.typography.displaySmall, color = TextHigh)
             Text(
                 "${exercise.pattern}  -  ${exercise.muscles.joinToString(", ")}",
                 style = MaterialTheme.typography.bodySmall,
-                color = MistDim,
+                color = TextMid,
             )
         }
 
@@ -131,7 +131,7 @@ fun CueCardScreen(
                         "Playing muted. Set a start and end in Settings to loop a segment."
                     },
                     style = MaterialTheme.typography.bodySmall,
-                    color = MistDim,
+                    color = TextMid,
                 )
             }
         }
@@ -158,37 +158,37 @@ fun CueCardScreen(
                         "or a coach, and the shading is approximate rather than " +
                         "anatomical.",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MistDim,
+                    color = TextMid,
                 )
             }
         }
 
         // Safety first where the setup itself can hurt you.
         exercise.safety?.let {
-            CutCard(background = SlateEdge) {
+            CutCard(background = SurfaceEdge) {
                 SectionLabel("Before your first set")
-                Text(it, style = MaterialTheme.typography.bodyLarge, color = SunriseAmber)
+                Text(it, style = MaterialTheme.typography.bodyLarge, color = Ember)
             }
         }
 
         CutCard {
             SectionLabel("Setup")
-            Text(exercise.setup, style = MaterialTheme.typography.bodyLarge, color = Mist)
+            Text(exercise.setup, style = MaterialTheme.typography.bodyLarge, color = TextHigh)
         }
 
         CutCard {
             SectionLabel("Cues")
-            exercise.cues.forEach { Bullet(it, SunriseAmber) }
+            exercise.cues.forEach { Bullet(it, Ember) }
         }
 
         CutCard {
             SectionLabel("Common mistakes")
-            exercise.commonMistakes.forEach { Bullet(it, MistDim) }
+            exercise.commonMistakes.forEach { Bullet(it, TextMid) }
         }
 
         CutCard {
             SectionLabel("If it is too hard today")
-            Text(exercise.easier, style = MaterialTheme.typography.bodyLarge, color = Mist)
+            Text(exercise.easier, style = MaterialTheme.typography.bodyLarge, color = TextHigh)
         }
 
         CutCard {
@@ -206,7 +206,7 @@ fun CueCardScreen(
                 "Tap the rung you are actually on. It sets the difficulty and the " +
                     "tempo; it changes nothing about the sets or the schedule.",
                 style = MaterialTheme.typography.bodySmall,
-                color = MistDim,
+                color = TextMid,
             )
             // Only said when it is true. A rung that only changes tempo or adds
             // load is drawn correctly by the base figure; one that changes body
@@ -216,12 +216,12 @@ fun CueCardScreen(
                     "This rung is not drawn yet, so the figure above shows the base " +
                         "movement. Its tempo is still applied.",
                     style = MaterialTheme.typography.bodySmall,
-                    color = SunriseAmber,
+                    color = Ember,
                 )
             }
             exercise.ladderEndNote?.let {
                 Box(Modifier.height(4.dp))
-                Text(it, style = MaterialTheme.typography.bodySmall, color = MistDim)
+                Text(it, style = MaterialTheme.typography.bodySmall, color = TextMid)
             }
         }
 
@@ -241,7 +241,7 @@ fun CueCardScreen(
                     .height(60.dp),
                 shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = CoolSky,
+                    containerColor = Sky,
                     contentColor = MaterialTheme.colorScheme.onSecondary,
                 ),
             ) {
@@ -255,7 +255,7 @@ fun CueCardScreen(
                     "The clip would not play here, so the figure above is standing in. " +
                         "Offline, or the video does not allow embedding.",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MistDim,
+                    color = TextMid,
                 )
             }
         } else {
@@ -264,7 +264,7 @@ fun CueCardScreen(
                 "No demo video linked yet. Add one in Settings when you find a clip " +
                     "you trust.",
                 style = MaterialTheme.typography.bodySmall,
-                color = MistDim,
+                color = TextMid,
             )
         }
     }
@@ -287,12 +287,12 @@ private fun MuscleLegend(muscles: List<String>) {
             Modifier
                 .size(9.dp)
                 .clip(CircleShape)
-                .background(SunriseAmber),
+                .background(Ember),
         )
         Text(
             muscles.joinToString(", "),
             style = MaterialTheme.typography.bodyMedium,
-            color = Mist,
+            color = TextHigh,
         )
     }
 }
@@ -310,7 +310,7 @@ private fun Bullet(text: String, dotColor: androidx.compose.ui.graphics.Color) {
                 .clip(CircleShape)
                 .background(dotColor),
         )
-        Text(text, style = MaterialTheme.typography.bodyLarge, color = Mist)
+        Text(text, style = MaterialTheme.typography.bodyLarge, color = TextHigh)
     }
 }
 
@@ -336,23 +336,23 @@ private fun LadderRung(
         Text(
             "$number.",
             style = MaterialTheme.typography.bodyMedium,
-            color = if (isCurrent) SunriseAmber else MistDim,
+            color = if (isCurrent) Ember else TextMid,
         )
         Column {
             Text(
                 text,
                 style = MaterialTheme.typography.bodyLarge,
                 color = when {
-                    isCurrent -> SunriseAmber
-                    isDone -> MistDim
-                    else -> Mist
+                    isCurrent -> Ember
+                    isDone -> TextMid
+                    else -> TextHigh
                 },
             )
             if (isCurrent) {
                 Text(
                     "You are here",
                     style = MaterialTheme.typography.labelSmall,
-                    color = SunriseAmber,
+                    color = Ember,
                 )
             }
         }

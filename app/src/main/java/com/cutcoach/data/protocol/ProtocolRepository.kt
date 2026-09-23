@@ -41,6 +41,43 @@ class ProtocolRepository private constructor(
     fun sessionFor(day: DayOfWeek): SessionDefinition? =
         scheduleFor(day)?.let { session(it.sessionId) }
 
+    /**
+     * Every session the protocol defines, each with the weekdays it is normally
+     * run on.
+     *
+     * The schedule says which session belongs to which day. It does not say
+     * that a session may only be done on that day, and the owner does not
+     * always train to the calendar: Monday's session on a Wednesday is the same
+     * session. So this exists to offer all of them, in the order the week runs
+     * them, with their usual days shown rather than enforced.
+     *
+     * A session defined in `sessions` but absent from `weekly_schedule` still
+     * appears, with no days against it. Dropping it would make the protocol
+     * file and the picker disagree, and the file is the source of truth.
+     */
+    fun allSessions(): List<SessionChoice> {
+        val dayOrder = DayOfWeek.entries
+        val scheduledDays: Map<String, List<DayOfWeek>> = dayOrder
+            .mapNotNull { day -> scheduleFor(day)?.let { it.sessionId to day } }
+            .groupBy({ it.first }, { it.second })
+
+        val inScheduleOrder = dayOrder
+            .mapNotNull { scheduleFor(it)?.sessionId }
+            .distinct()
+        val unscheduled = protocol.sessions.keys - inScheduleOrder.toSet()
+
+        return (inScheduleOrder + unscheduled).mapNotNull { id ->
+            session(id)?.let {
+                SessionChoice(
+                    id = id,
+                    session = it,
+                    usualDays = scheduledDays[id].orEmpty(),
+                    schedule = scheduledDays[id]?.firstOrNull()?.let(::scheduleFor),
+                )
+            }
+        }
+    }
+
     // ---- The program calendar --------------------------------------------
 
     val programStart: LocalDate? = protocol.meta.programStartDate?.let(LocalDate::parse)
@@ -276,3 +313,17 @@ sealed interface ProtocolLoad {
         val message: String get() = "Could not read $file: ${cause.message ?: cause::class.simpleName}"
     }
 }
+
+/**
+ * One session offered to the owner, with the days it usually falls on.
+ *
+ * [usualDays] is information, not a restriction. It is empty for a session the
+ * protocol defines but never schedules.
+ */
+data class SessionChoice(
+    val id: String,
+    val session: SessionDefinition,
+    val usualDays: List<DayOfWeek>,
+    /** The schedule entry from the first day it runs, for start time and duration. */
+    val schedule: ScheduledDay?,
+)

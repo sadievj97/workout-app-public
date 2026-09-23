@@ -39,11 +39,11 @@ import com.cutcoach.ui.components.CutCard
 import com.cutcoach.ui.components.Sparkline
 import com.cutcoach.ui.components.LabelledValue
 import com.cutcoach.ui.components.SectionLabel
-import com.cutcoach.ui.theme.CoolSky
-import com.cutcoach.ui.theme.Mist
-import com.cutcoach.ui.theme.MistDim
-import com.cutcoach.ui.theme.SlateEdge
-import com.cutcoach.ui.theme.SunriseAmber
+import com.cutcoach.ui.theme.Sky
+import com.cutcoach.ui.theme.TextHigh
+import com.cutcoach.ui.theme.TextMid
+import com.cutcoach.ui.theme.SurfaceEdge
+import com.cutcoach.ui.theme.Ember
 import com.cutcoach.ui.theme.tabular
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
@@ -87,7 +87,7 @@ fun BodyScreen(
             .padding(top = 16.dp, bottom = 40.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        Text("Body", style = MaterialTheme.typography.displaySmall, color = Mist)
+        Text("Body", style = MaterialTheme.typography.displaySmall, color = TextHigh)
 
         CutCard {
             SectionLabel("7-day average")
@@ -95,19 +95,19 @@ fun BodyScreen(
                 Text(
                     "Nothing weighed yet.",
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MistDim,
+                    color = TextMid,
                 )
             } else {
                 Row(verticalAlignment = Alignment.Bottom) {
                     Text(
                         "%.1f".format(average),
                         style = MaterialTheme.typography.displayMedium.tabular(),
-                        color = SunriseAmber,
+                        color = Ember,
                     )
                     Text(
                         " kg",
                         style = MaterialTheme.typography.titleLarge,
-                        color = MistDim,
+                        color = TextMid,
                         modifier = Modifier.padding(bottom = 6.dp),
                     )
                 }
@@ -122,12 +122,12 @@ fun BodyScreen(
                 // One weighing is a dot, not a trend. Drawing nothing but
                 // keeping the caption would describe a line that is not there.
                 if (fortnight.count { it != null } >= 2) {
-                    Sparkline(values = fortnight, colour = SunriseAmber)
+                    Sparkline(values = fortnight, colour = Ember)
                     Text(
                         "The last $FORTNIGHT days. A gap is a day with nothing weighed, " +
                             "not a flat one.",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MistDim,
+                        color = TextMid,
                     )
                 }
 
@@ -145,7 +145,7 @@ fun BodyScreen(
                             "$watchDays of these days came from the watch."
                         },
                         style = MaterialTheme.typography.bodySmall,
-                        color = MistDim,
+                        color = TextMid,
                     )
                 }
             }
@@ -156,7 +156,7 @@ fun BodyScreen(
                 Text(
                     "No verdict in week 1. Early change is water and cortisol, not fat.",
                     style = MaterialTheme.typography.bodySmall,
-                    color = CoolSky,
+                    color = Sky,
                 )
             }
         }
@@ -187,13 +187,13 @@ fun BodyScreen(
             Text(
                 repo.protocol.tracking.weight.display,
                 style = MaterialTheme.typography.bodySmall,
-                color = MistDim,
+                color = TextMid,
             )
         }
 
         // Waist is weekly, on the day the protocol names.
         if (isSunday) {
-            CutCard(background = SlateEdge) {
+            CutCard(background = SurfaceEdge) {
                 SectionLabel("Waist, Sundays only")
                 todayRow?.waistCm?.let {
                     LabelledValue("Logged", "%.1f cm".format(it))
@@ -213,7 +213,7 @@ fun BodyScreen(
                 Text(
                     repo.protocol.tracking.waist.how,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MistDim,
+                    color = TextMid,
                 )
             }
         }
@@ -221,7 +221,7 @@ fun BodyScreen(
         CutCard {
             SectionLabel("Recent")
             if (recent.isEmpty()) {
-                Text("Nothing yet.", style = MaterialTheme.typography.bodyMedium, color = MistDim)
+                Text("Nothing yet.", style = MaterialTheme.typography.bodyMedium, color = TextMid)
             }
             recent.take(14).forEach { row ->
                 LabelledValue(
@@ -267,7 +267,7 @@ private fun ClearButton(label: String, onClear: () -> Unit) {
         Text(
             if (confirming) "Tap again to clear" else label,
             style = MaterialTheme.typography.labelMedium,
-            color = if (confirming) SunriseAmber else MistDim,
+            color = if (confirming) Ember else TextMid,
         )
     }
 }
@@ -298,13 +298,13 @@ private fun NumberEntry(
             textStyle = MaterialTheme.typography.headlineSmall.tabular(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedTextColor = Mist,
-                unfocusedTextColor = Mist,
-                focusedBorderColor = SunriseAmber,
-                unfocusedBorderColor = SlateEdge,
-                focusedLabelColor = SunriseAmber,
-                unfocusedLabelColor = MistDim,
-                cursorColor = SunriseAmber,
+                focusedTextColor = TextHigh,
+                unfocusedTextColor = TextHigh,
+                focusedBorderColor = Ember,
+                unfocusedBorderColor = SurfaceEdge,
+                focusedLabelColor = Ember,
+                unfocusedLabelColor = TextMid,
+                cursorColor = Ember,
             ),
             modifier = Modifier.weight(1f),
         )
@@ -314,10 +314,10 @@ private fun NumberEntry(
             modifier = Modifier.height(56.dp),
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = SunriseAmber,
+                containerColor = Ember,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
-                disabledContainerColor = SlateEdge,
-                disabledContentColor = MistDim,
+                disabledContainerColor = SurfaceEdge,
+                disabledContentColor = TextMid,
             ),
         ) {
             Text("Save", style = MaterialTheme.typography.labelLarge)

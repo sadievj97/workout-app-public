@@ -146,7 +146,8 @@ was judged "too late to be a bedtime" and dismissed as a nap. It was a real
 bedtime. The app was hiding the largest miss in the log behind a reassuring
 sentence. Length, not start hour, is the honest test.
 
-**"365 minutes late."** Arithmetically correct and unreadable. Now "6h 5m late".
+**"365 minutes late."** Arithmetically correct and unreadable at a glance, which
+is the only way it is ever read. Now "6h 5m late".
 
 **A rung the tempo parser could not read.** `"3-second slide-out"` asked for three
 seconds while the figure moved at normal speed — the picture contradicting the

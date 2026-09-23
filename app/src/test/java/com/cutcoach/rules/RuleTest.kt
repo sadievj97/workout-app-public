@@ -421,4 +421,109 @@ class RuleTest {
             input(lastNight = DailyHealth(LocalDate.parse("2026-10-18")), rehab = rehab),
         ).map { recommendationsFor(repo, it) }
     }
+
+    // ---- The Energy Score fallback, approved 2026-09-22 -------------------
+
+    @Test
+    fun `energy score only speaks when there is no sleep at all`() {
+        // The approved rule is untouched. A night that was recorded is judged
+        // by sleep and heart rate, whatever Samsung thinks of the day.
+        val sleep = SleepNight(
+            start = at("2026-10-18", "22:40"),
+            end = at("2026-10-19", "06:10"),
+            duration = Duration.ofMinutes(450),
+            sleepingHeartRate = 58,
+        )
+        val slept = input(
+            lastNight = DailyHealth(LocalDate.parse("2026-10-18"), night = sleep),
+            baseline = List(14) { 60 },
+        ).copy(energyScores = List(14) { if (it == 0) 60f else 85f })
+
+        val readiness = recommendationsFor(repo, slept)
+            .filter { it.kind == Recommendation.Kind.READINESS }
+
+        assertTrue(
+            "A dismal Energy Score overrode a good night: $readiness",
+            readiness.isEmpty(),
+        )
+    }
+
+    @Test
+    fun `with no sleep, a low energy score gives a yellow day`() {
+        val noSleep = input(lastNight = DailyHealth(LocalDate.parse("2026-10-18")))
+            // 14 days averaging about 85, today well under it.
+            .copy(energyScores = listOf(76f) + List(13) { 86f })
+
+        val readiness = recommendationsFor(repo, noSleep)
+            .single { it.kind == Recommendation.Kind.READINESS }
+
+        assertEquals(Recommendation.Tone.ATTENTION, readiness.tone)
+        assertTrue(readiness.headline, readiness.headline.contains("Yellow"))
+        assertTrue(
+            "It did not say the verdict came from Energy Score: ${readiness.reason}",
+            readiness.reason.contains("Energy Score"),
+        )
+        // no_extra_volume: it may only ever take a set away.
+        assertTrue(readiness.headline.contains("dropping"))
+    }
+
+    @Test
+    fun `the fallback never reaches red`() {
+        // A red day means a short night AND an elevated heart rate. One number
+        // cannot tell those apart, so a stand-in must be more cautious than the
+        // rule it stands in for.
+        val dire = input(lastNight = DailyHealth(LocalDate.parse("2026-10-18")))
+            .copy(energyScores = listOf(20f) + List(13) { 90f })
+
+        val readiness = recommendationsFor(repo, dire)
+            .single { it.kind == Recommendation.Kind.READINESS }
+
+        assertFalse(readiness.headline.lowercase(), readiness.headline.lowercase().contains("red"))
+        assertFalse(
+            "The fallback suggested replacing the session",
+            readiness.headline.lowercase().contains("walk instead"),
+        )
+    }
+
+    @Test
+    fun `a normal energy score says nothing`() {
+        val fine = input(lastNight = DailyHealth(LocalDate.parse("2026-10-18")))
+            .copy(energyScores = listOf(84f) + List(13) { 85f })
+
+        assertTrue(
+            recommendationsFor(repo, fine).none { it.kind == Recommendation.Kind.READINESS },
+        )
+    }
+
+    @Test
+    fun `no sleep and no energy score is still a question, not a guess`() {
+        // The whole point of guardrail no_guessing. A fallback that fired on an
+        // empty list would be inventing a verdict out of nothing at all.
+        val nothing = input(lastNight = DailyHealth(LocalDate.parse("2026-10-18")))
+        val all = recommendationsFor(repo, nothing)
+
+        assertTrue(all.none { it.kind == Recommendation.Kind.READINESS })
+        assertTrue(all.any { it.kind == Recommendation.Kind.CHECK_IN })
+    }
+
+    @Test
+    fun `a short run of energy scores is not a baseline`() {
+        // Same bar the sleeping heart rate rule sets: with three days of
+        // history, "five below average" is noise.
+        val thin = input(lastNight = DailyHealth(LocalDate.parse("2026-10-18")))
+            .copy(energyScores = listOf(60f, 90f, 90f))
+
+        assertTrue(
+            recommendationsFor(repo, thin).none { it.kind == Recommendation.Kind.READINESS },
+        )
+    }
+
+    @Test
+    fun `the fallback's numbers come from the file`() {
+        val fallback = repo.protocol.readinessAdjustment.energyScoreFallback
+        assertTrue("energy_score_fallback is missing from protocol.json", fallback != null)
+        assertTrue(fallback!!.isApproved)
+        assertEquals(5, fallback.belowBaseline)
+        assertEquals(14, fallback.baselineWindowDays)
+    }
 }

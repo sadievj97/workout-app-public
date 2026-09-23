@@ -330,7 +330,31 @@ data class ReadinessAdjustment(
     val sleepHoursThreshold: Double,
     val sleepingHrAboveBaselineBpm: Int,
     val baselineWindowDays: Int,
+    val energyScoreFallback: EnergyScoreFallback? = null,
     val conditions: List<String>,
+) {
+    val isApproved: Boolean get() = status == "approved"
+}
+
+/**
+ * What to do when Health Connect has no sleep for last night.
+ *
+ * A fallback, not a third condition: the approved rule is unchanged, and this
+ * only speaks where that rule would otherwise have nothing to say. It stops at
+ * a yellow day because one number cannot tell a short night from an elevated
+ * heart rate, and a stand-in should be more cautious than what it stands in
+ * for.
+ */
+@Serializable
+data class EnergyScoreFallback(
+    val status: String,
+    val rule: String,
+    /** How far below its own average counts as a low day. */
+    val belowBaseline: Int,
+    val baselineWindowDays: Int,
+    val whyFive: String = "",
+    val whyNeverRed: String = "",
+    val conditions: List<String> = emptyList(),
 ) {
     val isApproved: Boolean get() = status == "approved"
 }

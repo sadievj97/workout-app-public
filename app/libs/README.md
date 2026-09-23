@@ -20,8 +20,13 @@ expose. Everything else in the app works without it.
 ### Without the file
 
 `app/src/main/java/com/cutcoach/samsung/` imports SDK classes directly, so it
-will not compile. Delete that folder, or download the SDK. The build does not
-degrade gracefully and this file exists so that is not a surprise.
+will not compile. Delete that folder **and** the `SamsungEnergyScores.register`
+line in `MainActivity.onCreate`, or download the SDK. The build does not degrade
+gracefully and this file exists so that is not a surprise.
+
+Nothing else references the SDK. The readiness rule reaches Energy Score through
+`health/EnergyScoreSource.kt`, an interface that does not know Samsung exists,
+so the rules engine keeps compiling either way.
 
 Samsung's developer mode is documented as being for testing and debugging only.
 An app that uses the SDK without a Samsung partnership works **only** while

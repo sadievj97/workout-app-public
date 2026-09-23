@@ -44,6 +44,9 @@ class MainActivity : ComponentActivity() {
         DailySyncWorker.schedule(this)
 
         ReminderNotifier.ensureChannel(this)
+        // The one line that knows Samsung exists. Deleting com/cutcoach/samsung
+        // means deleting this too, which app/libs/README.md says.
+        com.cutcoach.samsung.SamsungEnergyScores.register(this)
         bookReminders()
 
         setContent { CutCoachApp() }

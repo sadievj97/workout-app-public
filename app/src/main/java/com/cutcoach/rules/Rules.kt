@@ -47,6 +47,14 @@ data class RuleInput(
     val lastSets: Map<String, List<SetResult>> = emptyMap(),
     /** Which rung each exercise is currently on. */
     val rungs: Map<String, Int> = emptyMap(),
+    /**
+     * Samsung's Energy Scores, newest first.
+     *
+     * Only consulted when Health Connect has no sleep for last night. Empty is
+     * the ordinary state: it needs the Samsung SDK and developer mode, and
+     * neither is something the protocol depends on.
+     */
+    val energyScores: List<Float> = emptyList(),
     /** Needed to say what time a recorded session started. */
     val zone: ZoneId = ZoneId.systemDefault(),
 )
@@ -485,7 +493,10 @@ private fun readinessRecommendation(
     val rule = repo.protocol.readinessAdjustment
     if (!rule.isApproved) return null
 
-    val night = input.lastNight?.night ?: return null
+    // No sleep recorded: the approved rule has nothing to work with, so the
+    // fallback gets its turn. It never runs while sleep data exists.
+    val night = input.lastNight?.night
+        ?: return energyScoreFallback(repo, input)
     // Condition two: never before the baseline is real.
     if (input.sleepingHrBaseline.size < rule.baselineWindowDays) return null
 
@@ -529,3 +540,48 @@ private fun readinessRecommendation(
 
 /** Short enough to sit inside a headline. */
 private val SESSION_CLOCK: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+
+/**
+ * Samsung's Energy Score, standing in for a night the watch did not record.
+ *
+ * Approved on 2026-09-22 as a fallback rather than a third condition: the
+ * failure it fixes is a readiness rule that cannot fire, not a rule that was
+ * wrong. It runs only where the approved rule is silent.
+ *
+ * It stops at a yellow day. A red day means both a short night and an elevated
+ * heart rate, and one number cannot tell those apart — a stand-in should be
+ * more cautious than the thing it stands in for, not less.
+ *
+ * Returns null, not a verdict, when there is no score or no baseline. That
+ * leaves the check-in question to speak instead, which is what `no_guessing`
+ * asks for.
+ */
+private fun energyScoreFallback(
+    repo: ProtocolRepository,
+    input: RuleInput,
+): Recommendation? {
+    val fallback = repo.protocol.readinessAdjustment.energyScoreFallback ?: return null
+    if (!fallback.isApproved) return null
+
+    val scores = input.energyScores
+    // The same bar the sleeping heart rate rule sets: with three days of
+    // history, "five below average" is noise.
+    if (scores.size < fallback.baselineWindowDays) return null
+
+    val today = scores.first()
+    val average = scores.average()
+    val below = average - today
+    if (below < fallback.belowBaseline) return null
+
+    return Recommendation(
+        kind = Recommendation.Kind.READINESS,
+        headline = "Yellow day: consider dropping one set from each exercise.",
+        reason = "No sleep was recorded, so this is Samsung's Energy Score instead: " +
+            "%.0f against a %.0f average over %d days. Rehab stays as it is.".format(
+                today,
+                average,
+                scores.size,
+            ),
+        tone = Recommendation.Tone.ATTENTION,
+    )
+}

@@ -62,6 +62,9 @@ suspend fun adviceForToday(
             lastSets = lastSets,
             rungs = rungs,
             zone = zone,
+            energyScores = com.cutcoach.health.EnergyScores.recent(
+                repo.protocol.readinessAdjustment.energyScoreFallback?.baselineWindowDays ?: 14,
+            ),
         ),
     )
 }

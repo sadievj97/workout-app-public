@@ -1074,7 +1074,79 @@
         {"pose": "up",   "seconds": 1.0, "role": "raise"},
         {"pose": "down", "seconds": 1.0, "role": "lower"}
       ],
-      "hardest_pose": "up"
+      "hardest_pose": "up",
+      "variants": [
+        {
+          "rung": 0,
+          "note": "Both feet, flat on the floor. The standing leg is mirrored to the other side and the step prop goes. The rise is smaller than on a step, 0.022 against 0.060, because without an edge to drop the heel below there is less range to travel.",
+          "props": [
+            {"type": "floor", "y": 0.205, "from_x": -0.5, "to_x": 0.5, "depth": 0.22}
+          ],
+          "poses": {
+            "down": {
+              "head":  [ 0.006, -0.409, 0.000],
+              "neck":  [ 0.000, -0.334, 0.000],
+              "hip":   [ 0.000, -0.075, 0.000],
+              "elbow": [ 0.010, -0.230, 0.055],
+              "wrist": [ 0.010, -0.125, 0.055],
+              "knee":  [ 0.010,  0.060, 0.030],
+              "ankle": [ 0.010,  0.195, 0.030],
+              "toe":   [ 0.059,  0.205, 0.030],
+              "knee_other":  [ 0.010, 0.060, -0.030],
+              "ankle_other": [ 0.010, 0.195, -0.030],
+              "toe_other":   [ 0.059, 0.205, -0.030]
+            },
+            "up": {
+              "head":  [ 0.006, -0.431, 0.000],
+              "neck":  [ 0.000, -0.356, 0.000],
+              "hip":   [ 0.000, -0.097, 0.000],
+              "elbow": [ 0.010, -0.252, 0.055],
+              "wrist": [ 0.010, -0.147, 0.055],
+              "knee":  [ 0.021,  0.037, 0.030],
+              "ankle": [ 0.021,  0.172, 0.030],
+              "toe":   [ 0.059,  0.205, 0.030],
+              "knee_other":  [ 0.021, 0.037, -0.030],
+              "ankle_other": [ 0.021, 0.172, -0.030],
+              "toe_other":   [ 0.059, 0.205, -0.030]
+            }
+          }
+        },
+        {
+          "rung": 1,
+          "note": "Single leg on a flat floor. The same leg does the work, but the foot is flat rather than on a step edge, so the heel cannot drop below the forefoot. The raised foot is flexed up to keep it clear of a floor it would otherwise pass through.",
+          "props": [
+            {"type": "floor", "y": 0.205, "from_x": -0.5, "to_x": 0.5, "depth": 0.22}
+          ],
+          "poses": {
+            "down": {
+              "head":  [ 0.006, -0.409, 0.000],
+              "neck":  [ 0.000, -0.334, 0.000],
+              "hip":   [ 0.000, -0.075, 0.000],
+              "elbow": [ 0.010, -0.230, 0.055],
+              "wrist": [ 0.010, -0.125, 0.055],
+              "knee":  [ 0.010,  0.060, 0.030],
+              "ankle": [ 0.010,  0.195, 0.030],
+              "toe":   [ 0.059,  0.205, 0.030],
+              "knee_other":  [-0.042, 0.052, -0.030],
+              "ankle_other": [-0.098, 0.175, -0.030],
+              "toe_other":   [-0.068, 0.136, -0.030]
+            },
+            "up": {
+              "head":  [ 0.006, -0.431, 0.000],
+              "neck":  [ 0.000, -0.356, 0.000],
+              "hip":   [ 0.000, -0.097, 0.000],
+              "elbow": [ 0.010, -0.252, 0.055],
+              "wrist": [ 0.010, -0.147, 0.055],
+              "knee":  [ 0.021,  0.037, 0.030],
+              "ankle": [ 0.021,  0.172, 0.030],
+              "toe":   [ 0.059,  0.205, 0.030],
+              "knee_other":  [-0.042, 0.030, -0.030],
+              "ankle_other": [-0.098, 0.153, -0.030],
+              "toe_other":   [-0.068, 0.114, -0.030]
+            }
+          }
+        }
+      ]
     }
   }
 }

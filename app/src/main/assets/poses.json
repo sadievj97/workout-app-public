@@ -52,6 +52,23 @@
     "not_really_muscles": "Grip, Core, Balance and trunk and Shoulder stabilizers are functional descriptions rather than single muscles. Each is attached to the forms that do the work, and they are listed here so the choice is visible and can be corrected.",
     "fidelity": "Smooth masses, not sculpted anatomy. There are no striations and the contours are approximations, which is why the cue card says the shading is schematic.",
 
+    "reference_body": {
+      "note": "A neutral body facing the viewer, shown beside the movement so the worked muscles have somewhere to be seen. The exercise's own figure is drawn from whatever angle shows the movement best, which is often the wrong angle for its muscles: a push-up is drawn from the side and the chest it works faces away. This is the anatomy plate; the animation is the instruction. It is not an exercise and has no sequence.",
+      "camera": {"azimuth": 8, "elevation": 2},
+      "facing": [0.0, 0.0, 1.0],
+      "symmetry": "mirror_x",
+      "pose": {
+        "head":  [ 0.000, -0.330,  0.010],
+        "neck":  [ 0.000, -0.255,  0.000],
+        "hip":   [ 0.000,  0.005,  0.000],
+        "elbow": [-0.090, -0.140,  0.004],
+        "wrist": [-0.118, -0.022,  0.008],
+        "knee":  [-0.040,  0.140,  0.000],
+        "ankle": [-0.044,  0.276,  0.000],
+        "toe":   [-0.048,  0.300,  0.030]
+      }
+    },
+
     "forms": [
       {"id": "pectoralis_major", "muscles": ["chest", "upper chest"], "segment": "torso",
        "from": 0.02, "to": 0.40, "side": "front", "lift": 0.85, "across": 0.52,

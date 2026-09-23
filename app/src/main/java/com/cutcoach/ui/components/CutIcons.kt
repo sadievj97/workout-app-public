@@ -88,6 +88,18 @@ enum class CutIcon {
 
     /** A plain point on the timeline. */
     DOT,
+
+    /** Pause a running timer. */
+    PAUSE,
+
+    /** Resume a paused timer. */
+    PLAY,
+
+    /** Move past the current step without logging it. */
+    SKIP,
+
+    /** Leave the session. */
+    STOP,
 }
 
 /**
@@ -286,5 +298,45 @@ private fun DrawScope.drawIcon(icon: CutIcon, tint: Color, u: Float, stroke: Str
         }
 
         CutIcon.DOT -> drawCircle(tint, radius = 3.2f * u, center = p(12f, 12f))
+
+        // The transport controls are filled rather than stroked, unlike every
+        // other icon here. They sit on a button that is pressed without looking,
+        // mid-set, and a solid shape is findable by silhouette where an outline
+        // is not.
+        CutIcon.PAUSE -> {
+            drawRect(tint, topLeft = p(7.5f, 5f), size = Size(3.2f * u, 14f * u))
+            drawRect(tint, topLeft = p(13.3f, 5f), size = Size(3.2f * u, 14f * u))
+        }
+
+        CutIcon.PLAY -> drawPath(
+            Path().apply {
+                moveTo(p(8f, 5f).x, p(8f, 5f).y)
+                lineTo(p(19f, 12f).x, p(19f, 12f).y)
+                lineTo(p(8f, 19f).x, p(8f, 19f).y)
+                close()
+            },
+            tint,
+        )
+
+        // A triangle against a bar: the same shape every player uses for
+        // "next", which is what this does.
+        CutIcon.SKIP -> {
+            drawPath(
+                Path().apply {
+                    moveTo(p(6f, 5f).x, p(6f, 5f).y)
+                    lineTo(p(16f, 12f).x, p(16f, 12f).y)
+                    lineTo(p(6f, 19f).x, p(6f, 19f).y)
+                    close()
+                },
+                tint,
+            )
+            drawRect(tint, topLeft = p(16.8f, 5f), size = Size(2.6f * u, 14f * u))
+        }
+
+        CutIcon.STOP -> drawRect(
+            tint,
+            topLeft = p(6.5f, 6.5f),
+            size = Size(11f * u, 11f * u),
+        )
     }
 }

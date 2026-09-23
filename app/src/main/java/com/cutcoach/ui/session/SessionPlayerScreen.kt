@@ -45,8 +45,11 @@ import com.cutcoach.data.poses.PoseLoad
 import com.cutcoach.data.poses.PoseRepository
 import com.cutcoach.data.session.SessionStep
 import com.cutcoach.data.session.Side
+import com.cutcoach.ui.components.CutIcon
+import com.cutcoach.ui.components.CutIconView
 import com.cutcoach.ui.figure.AnimatedStickFigure
 import com.cutcoach.ui.figure.FigureRender
+import com.cutcoach.ui.figure.MuscleMap
 import com.cutcoach.ui.theme.InkLift
 import com.cutcoach.ui.theme.Mint
 import com.cutcoach.ui.theme.Sky
@@ -215,6 +218,8 @@ private fun SessionHeader(vm: SessionPlayerViewModel, onExit: () -> Unit) {
                     color = if (vm.isOverrunning) Ember else TextMid,
                 )
                 TextButton(onClick = { leaving = true }) {
+                    CutIconView(CutIcon.STOP, TextMid, size = 14.dp)
+                    Box(Modifier.width(6.dp))
                     Text("End", style = MaterialTheme.typography.labelMedium, color = TextMid)
                 }
             }
@@ -292,13 +297,16 @@ private fun TimedPhase(
         Box(Modifier.height(32.dp))
 
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            SecondaryButton("+30s") { vm.addSeconds(30) }
-            SecondaryButton(if (vm.running) "Pause" else "Resume") { vm.pauseOrResume() }
+            SecondaryButton("+30s", CutIcon.CLOCK) { vm.addSeconds(30) }
+            SecondaryButton(
+                if (vm.running) "Pause" else "Resume",
+                if (vm.running) CutIcon.PAUSE else CutIcon.PLAY,
+            ) { vm.pauseOrResume() }
         }
 
         Box(Modifier.height(12.dp))
 
-        PrimaryButton("Skip") { vm.skip() }
+        PrimaryButton("Skip", CutIcon.SKIP) { vm.skip() }
     }
 }
 
@@ -315,6 +323,28 @@ private fun WarmupStep(vm: SessionPlayerViewModel, step: SessionStep.Warmup) {
             color = TextMid,
         )
         Box(Modifier.height(8.dp))
+
+        // The ramp-up block is a set of the day's first exercise, so it has a
+        // movement to draw. The marching and mobility blocks have no single
+        // movement — "hip circles, leg swings, arm circles, cat-cow" is four —
+        // and no figure is honest there. They keep the words, larger.
+        step.exerciseId?.let { id ->
+            ExerciseFigure(
+                exerciseId = id,
+                muscles = vm.musclesFor(id),
+                side = Side.NONE,
+                working = false,
+                holdProgress = null,
+            )
+            Box(Modifier.height(4.dp))
+            Text(
+                vm.exerciseName(id),
+                style = MaterialTheme.typography.titleMedium,
+                color = TextHigh,
+            )
+            Box(Modifier.height(8.dp))
+        }
+
         BigTimer(vm.secondsLeft, "Warm-up", Ember)
         Box(Modifier.height(20.dp))
         Text(
@@ -326,8 +356,11 @@ private fun WarmupStep(vm: SessionPlayerViewModel, step: SessionStep.Warmup) {
         )
         Box(Modifier.height(28.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            SecondaryButton(if (vm.running) "Pause" else "Resume") { vm.pauseOrResume() }
-            SecondaryButton("Skip") { vm.skip() }
+            SecondaryButton(
+                if (vm.running) "Pause" else "Resume",
+                if (vm.running) CutIcon.PAUSE else CutIcon.PLAY,
+            ) { vm.pauseOrResume() }
+            SecondaryButton("Skip", CutIcon.SKIP) { vm.skip() }
         }
     }
 }
@@ -348,6 +381,7 @@ private fun HoldStep(
         ExerciseHeading(
             name = vm.exerciseName(step.exerciseId),
             exerciseId = step.exerciseId,
+            muscles = vm.musclesFor(step.exerciseId),
             setNumber = step.setNumber,
             totalSets = step.totalSets,
             side = step.side,
@@ -374,11 +408,14 @@ private fun HoldStep(
         }
 
         Box(Modifier.height(28.dp))
-        PrimaryButton("Done") { vm.finishHoldNow() }
+        PrimaryButton("Done", CutIcon.CHECK) { vm.finishHoldNow() }
         Box(Modifier.height(12.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            SecondaryButton(if (vm.running) "Pause" else "Resume") { vm.pauseOrResume() }
-            SecondaryButton("Skip") { vm.skip() }
+            SecondaryButton(
+                if (vm.running) "Pause" else "Resume",
+                if (vm.running) CutIcon.PAUSE else CutIcon.PLAY,
+            ) { vm.pauseOrResume() }
+            SecondaryButton("Skip", CutIcon.SKIP) { vm.skip() }
         }
     }
 }
@@ -399,6 +436,7 @@ private fun RepSetStep(
         ExerciseHeading(
             name = vm.exerciseName(step.exerciseId),
             exerciseId = step.exerciseId,
+            muscles = vm.musclesFor(step.exerciseId),
             setNumber = step.setNumber,
             totalSets = step.totalSets,
             side = step.side,
@@ -435,9 +473,9 @@ private fun RepSetStep(
         Text("reps", style = MaterialTheme.typography.bodyMedium, color = TextMid)
 
         Box(Modifier.height(24.dp))
-        PrimaryButton("Log set") { vm.logReps() }
+        PrimaryButton("Log set", CutIcon.CHECK) { vm.logReps() }
         Box(Modifier.height(12.dp))
-        SecondaryButton("Skip this set") { vm.skip() }
+        SecondaryButton("Skip this set", CutIcon.SKIP) { vm.skip() }
     }
 }
 
@@ -445,6 +483,7 @@ private fun RepSetStep(
 private fun ExerciseHeading(
     name: String,
     exerciseId: String,
+    muscles: List<String>,
     setNumber: Int,
     totalSets: Int,
     side: Side,
@@ -457,6 +496,7 @@ private fun ExerciseHeading(
         // not so big it competes with the timer.
         ExerciseFigure(
             exerciseId = exerciseId,
+            muscles = muscles,
             side = side,
             working = working,
             holdProgress = holdProgress,
@@ -490,6 +530,7 @@ private fun ExerciseHeading(
 @Composable
 private fun ExerciseFigure(
     exerciseId: String,
+    muscles: List<String>,
     side: Side,
     working: Boolean,
     holdProgress: Float?,
@@ -498,19 +539,45 @@ private fun ExerciseFigure(
     val poses = remember { PoseRepository.load(context) as? PoseLoad.Success } ?: return
     val animation = poses.library.animationFor(exerciseId) ?: return
 
-    AnimatedStickFigure(
-        animation = animation,
-        style = poses.library.figure,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(150.dp),
-        mirrored = side == Side.RIGHT,
-        highlightWorking = working,
-        // Small and mid-set, a shaded body would be a smudge. The bare
-        // skeleton stays legible at this size.
-        render = FigureRender.LINES,
-        holdProgress = holdProgress,
-    )
+    // The movement large, the anatomy beside it.
+    //
+    // This used to be one small skeleton. The brief called for the bare
+    // skeleton here on the grounds that a shaded body is a smudge at that
+    // size — true, and the answer was to stop drawing it at that size rather
+    // than to draw less of it. A figure you cannot copy is not worth the space
+    // it takes, and "I do not know how to do this" is the reason someone opens
+    // the player in the first place.
+    //
+    // The map earns its third of the width because the movement's own camera
+    // is chosen to show the movement, which is regularly the wrong angle for
+    // the muscles: a push-up is drawn from the side and its chest faces away.
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        AnimatedStickFigure(
+            animation = animation,
+            style = poses.library.figure,
+            modifier = Modifier
+                .weight(2f)
+                .height(200.dp),
+            mirrored = side == Side.RIGHT,
+            highlightWorking = working,
+            render = FigureRender.SOLID,
+            muscles = muscles,
+            library = poses.library,
+            holdProgress = holdProgress,
+        )
+
+        MuscleMap(
+            library = poses.library,
+            muscles = muscles,
+            modifier = Modifier
+                .weight(1f)
+                .height(150.dp),
+        )
+    }
 }
 
 @Composable
@@ -570,7 +637,7 @@ private fun FinishedStep(vm: SessionPlayerViewModel, onExit: () -> Unit) {
 // ---- Buttons --------------------------------------------------------------
 
 @Composable
-private fun PrimaryButton(label: String, onClick: () -> Unit) {
+private fun PrimaryButton(label: String, icon: CutIcon? = null, onClick: () -> Unit) {
     Button(
         onClick = onClick,
         modifier = Modifier
@@ -582,12 +649,19 @@ private fun PrimaryButton(label: String, onClick: () -> Unit) {
             contentColor = Ink,
         ),
     ) {
+        // Icon and word together, never the icon alone. A glyph is faster to
+        // find once you know it and a guess until then, and this is a screen
+        // used half awake.
+        icon?.let {
+            CutIconView(it, Ink, size = 22.dp)
+            Box(Modifier.width(10.dp))
+        }
         Text(label, style = MaterialTheme.typography.titleLarge)
     }
 }
 
 @Composable
-private fun SecondaryButton(label: String, onClick: () -> Unit) {
+private fun SecondaryButton(label: String, icon: CutIcon? = null, onClick: () -> Unit) {
     Button(
         onClick = onClick,
         modifier = Modifier.height(56.dp),
@@ -597,6 +671,10 @@ private fun SecondaryButton(label: String, onClick: () -> Unit) {
             contentColor = TextHigh,
         ),
     ) {
+        icon?.let {
+            CutIconView(it, TextHigh, size = 18.dp)
+            Box(Modifier.width(8.dp))
+        }
         Text(label, style = MaterialTheme.typography.labelLarge)
     }
 }

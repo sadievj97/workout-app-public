@@ -32,7 +32,20 @@ data class Warmup(
 data class WarmupBlock(
     val min: Int,
     val what: String,
-)
+    /**
+     * Set to "first_exercise" on the ramp-up block, so the player can draw the
+     * movement it is talking about.
+     *
+     * Declared in exercises.json rather than inferred from the block's text or
+     * its position. Matching on the words "first exercise" would break the
+     * moment the wording changed, and assuming it is always the last block is
+     * an assumption about a file the owner is told to edit freely.
+     */
+    val shows: String? = null,
+) {
+    /** Whether this block is a ramp-up of the day's own first exercise. */
+    val showsFirstExercise: Boolean get() = shows == "first_exercise"
+}
 
 @Serializable
 data class Exercise(

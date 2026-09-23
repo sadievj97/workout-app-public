@@ -30,6 +30,8 @@ sealed interface SessionStep {
         val totalBlocks: Int,
         val what: String,
         val seconds: Int,
+        /** The exercise to draw, when this block is a ramp-up of one. */
+        val exerciseId: String? = null,
     ) : SessionStep
 
     /** A set you count out and then type in. */
@@ -87,6 +89,14 @@ fun buildSessionPlan(
             totalBlocks = warmup.blocks.size,
             what = block.what,
             seconds = block.min * 60,
+            // The ramp-up block is a set of the day's own first exercise, so
+            // the player can draw it rather than leaving the one warm-up block
+            // that has a movement looking like the two that do not.
+            exerciseId = if (block.showsFirstExercise) {
+                session.exercises.firstOrNull()?.exerciseId
+            } else {
+                null
+            },
         )
     }
 

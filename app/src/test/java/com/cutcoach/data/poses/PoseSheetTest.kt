@@ -97,6 +97,69 @@ class PoseSheetTest {
         println("Pose sheet written to ${out.absolutePath}")
     }
 
+    /**
+     * The reference body the muscle map is drawn on, once per muscle group.
+     *
+     * It is hand-authored like every pose here and goes wrong the same ways.
+     * The pike push-up floated above its own floor for weeks because nobody
+     * looked at it; this body is what the player now shows beside every
+     * exercise to answer "where should I feel this", so a highlight landing on
+     * the wrong limb would be a confident, wrong answer.
+     *
+     * One panel per muscle group named anywhere in the anatomy, so every form
+     * is looked at at least once.
+     */
+    @Test
+    fun `write a sheet of the reference body`() {
+        val text = File("src/main/assets/poses.json").readText()
+        val library = (PoseRepository.parse(text) as PoseLoad.Success).library
+        val body = library.anatomy.referenceBody
+        if (body == null) {
+            println("No reference body in poses.json; nothing to draw.")
+            return
+        }
+
+        val groups = library.anatomy.forms.flatMap { it.muscles }.distinct().sorted()
+        val stand = ExerciseAnimation(
+            camera = Camera(body.camera.azimuth, body.camera.elevation),
+            facing = body.facing,
+            symmetry = body.symmetry,
+            poses = mapOf("stand" to body.pose),
+            sequence = emptyList(),
+        )
+
+        val width = columns * side
+        val height = ((groups.size + columns) / columns) * side
+
+        val svg = buildString {
+            append("<svg xmlns='http://www.w3.org/2000/svg' width='$width' height='$height' ")
+            append("viewBox='0 0 $width $height'>")
+            append("<rect width='$width' height='$height' fill='#0B0A12'/>")
+
+            groups.forEachIndexed { index, group ->
+                append(
+                    panel(
+                        pose = body.pose,
+                        animation = stand,
+                        style = library.figure,
+                        camera = stand.camera,
+                        worked = listOf(group),
+                        anatomy = library.anatomy,
+                        originX = (index % columns) * side,
+                        originY = (index / columns) * side,
+                        label = group,
+                    ),
+                )
+            }
+            append("</svg>")
+        }
+
+        val out = File("build/reference-body.svg")
+        out.parentFile?.mkdirs()
+        out.writeText(svg)
+        println("Reference body sheet written to ${out.absolutePath}")
+    }
+
     private fun panel(
         pose: Pose,
         animation: ExerciseAnimation,

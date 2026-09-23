@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The themed-icon variant, for Android 13+ launchers that recolour every icon
+  to match the wallpaper.
+
+  Its own file rather than a reuse of the foreground: that pipeline tints by
+  alpha and discards colour, so the gradient there would arrive as a flat
+  smear. The bars are the part that survives being reduced to one colour, and
+  descending heights say the same thing without any colour at all.
+
+  The geometry must stay in step with ic_launcher_foreground.xml.
+  IconSafeZoneTest checks this file against the same safe radius.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <path
+        android:pathData="M 34,37 L 34,64 M 47,46 L 47,64 M 61,55 L 61,64 M 74,61 L 74,64"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="11"
+        android:strokeLineCap="round" />
+
+</vector>

@@ -1,42 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  A sunrise over a horizon: the 05:00 start. Drawn inside the central safe zone
-  of the 108dp adaptive-icon canvas so no launcher shape crops it.
+  Four descending bars: weight coming down, week by week.
+
+  Two designs were thrown out to get here, both only visibly wrong once
+  rendered at the size a launcher draws. The first was a thin-stroke sunrise —
+  at ~48dp the hairlines vanish and what is left reads as a weather app. The
+  second was a single thick curve meant as the cut curve, and it was
+  unmistakably a telephone handset, because a thick J with round caps is the
+  universal phone glyph. It would have sat on the home screen looking like a
+  dialer.
+
+  Bars have no such twin. Descending heights read as a downward trend at any
+  size, in one colour or three, and the shape is what this app is for: the Body
+  screen draws the same descent.
+
+  GEOMETRY. The canvas is 108 and the centre is (54,54). A launcher may mask to
+  a circle, and only radius 33 from the centre is guaranteed to survive — the
+  discarded curve reached 42 and would have had both ends sliced off, which
+  Android Studio's preview would not have shown, because it draws the full
+  square. Each bar is a stroked segment with a round cap, so its reach is the
+  endpoint plus half the stroke width. IconSafeZoneTest checks all eight
+  endpoints on every build.
+
+  One path with four subpaths rather than four paths: the gradient is declared
+  once and runs across the whole mark, so the leftmost bar is violet and the
+  last is amber, instead of each bar carrying its own copy of the ramp.
+
+  Monochrome lives in its own file: the themed-icon pipeline tints by alpha,
+  and a gradient handed to it comes back as mud.
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
 
     <path
-        android:pathData="M 34,64 A 20,20 0 0 1 74,64"
-        android:strokeColor="#FF6B35"
-        android:strokeWidth="6"
-        android:strokeLineCap="round" />
-
-    <path
-        android:pathData="M 28,74 L 80,74"
-        android:strokeColor="#FF6B35"
-        android:strokeWidth="6"
-        android:strokeLineCap="round" />
-
-    <path
-        android:pathData="M 54,30 L 54,36"
-        android:strokeColor="#38BDF8"
-        android:strokeWidth="5"
-        android:strokeLineCap="round" />
-
-    <path
-        android:pathData="M 31,40 L 35,44"
-        android:strokeColor="#38BDF8"
-        android:strokeWidth="5"
-        android:strokeLineCap="round" />
-
-    <path
-        android:pathData="M 77,40 L 73,44"
-        android:strokeColor="#38BDF8"
-        android:strokeWidth="5"
-        android:strokeLineCap="round" />
+        android:pathData="M 34,37 L 34,64 M 47,46 L 47,64 M 61,55 L 61,64 M 74,61 L 74,64"
+        android:strokeWidth="11"
+        android:strokeLineCap="round">
+        <aapt:attr name="android:strokeColor">
+            <gradient
+                android:type="linear"
+                android:startX="29"
+                android:startY="32"
+                android:endX="79"
+                android:endY="70">
+                <item android:offset="0.0" android:color="#A855F7" />
+                <item android:offset="0.5" android:color="#FF6B35" />
+                <item android:offset="1.0" android:color="#FBBF24" />
+            </gradient>
+        </aapt:attr>
+    </path>
 
 </vector>

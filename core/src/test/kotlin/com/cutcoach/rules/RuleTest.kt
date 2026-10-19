@@ -618,4 +618,83 @@ class RuleTest {
             advice.none { it.headline.contains("Glute bridge") },
         )
     }
+
+    // ---- The readiness rule, in the direction that fires -----------------
+
+    /**
+     * A short night with a normal heart rate.
+     *
+     * This crashed the app on the phone, every launch, with
+     * `IllegalFormatConversionException: d != java.lang.Double`: the reason
+     * string formatted `sleep_hours_threshold` with `%d` and the field is a
+     * Double, because the protocol is allowed to say 6.5 hours.
+     *
+     * Nothing caught it. The readiness tests covered the rule staying silent
+     * on absent data, and the Energy Score fallback, which formats a list size
+     * — an Int — and works. The one branch that reaches this line needs sleep
+     * recorded, a full baseline, a short night and a heart rate that is *not*
+     * elevated, all at once. It had never been executed, in a test or on the
+     * phone, until the owner's sleep data finally started syncing.
+     *
+     * A format string is a runtime contract the compiler does not check, so
+     * the only way to know it holds is to run the line.
+     */
+    @Test
+    fun `a short night with a normal heart rate produces a readable reason`() {
+        val short = DailyHealth(
+            date = LocalDate.parse("2026-10-18"),
+            night = SleepNight(
+                start = at("2026-10-18", "01:30"),
+                end = at("2026-10-18", "06:00"),
+                duration = Duration.ofMinutes(270),
+                // Normal: the baseline below averages 60, and the rule needs
+                // +5 to call it elevated. This is the branch that crashed.
+                sleepingHeartRate = 60,
+                minutesAfterTarget = 165L,
+            ),
+        )
+
+        val advice = recommendationsFor(
+            repo,
+            input(lastNight = short, baseline = List(14) { 60 }),
+        )
+
+        val readiness = advice.single { it.kind == Recommendation.Kind.READINESS }
+        assertTrue(
+            "The reason should state the threshold: ${readiness.reason}",
+            readiness.reason.contains("6-hour") || readiness.reason.contains("6.0-hour"),
+        )
+        assertTrue(
+            "4.5 hours should be stated: ${readiness.reason}",
+            readiness.reason.contains("4.5"),
+        )
+    }
+
+    @Test
+    fun `every readiness reason a short night can produce is formattable`() {
+        // The crash was one branch of four. This walks the lot: short night
+        // with and without an elevated heart rate, a long night with one, and
+        // a long night with neither. Building the string is the test — a
+        // format mismatch throws rather than returning something wrong.
+        val baseline = List(14) { 60 }
+        listOf(
+            270 to 60,   // short night, normal heart rate — the crash
+            270 to 70,   // short night, elevated
+            450 to 70,   // full night, elevated
+            450 to 60,   // full night, normal: the rule should stay quiet
+        ).forEach { (minutes, bpm) ->
+            val night = DailyHealth(
+                date = LocalDate.parse("2026-10-18"),
+                night = SleepNight(
+                    start = at("2026-10-18", "23:00"),
+                    end = at("2026-10-19", "05:00"),
+                    duration = Duration.ofMinutes(minutes.toLong()),
+                    sleepingHeartRate = bpm,
+                ),
+            )
+            // Reading every reason forces each format string to be built.
+            recommendationsFor(repo, input(lastNight = night, baseline = baseline))
+                .forEach { it.reason.length }
+        }
+    }
 }

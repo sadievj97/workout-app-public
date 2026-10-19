@@ -554,12 +554,19 @@ private fun readinessRecommendation(
     val average = input.sleepingHrBaseline.average()
     val highHeartRate = bpm != null && bpm >= average + rule.sleepingHrAboveBaselineBpm
 
+    // Both read from the protocol rather than written down here. "14-night"
+    // was hardcoded in two of these sentences while baseline_window_days held
+    // the real number, which is the drift the brief forbids: change the file
+    // and the app would have gone on saying fourteen.
+    val nights = rule.baselineWindowDays
+    val threshold = rule.sleepHoursThreshold.tidy()
+
     return when {
         shortSleep && highHeartRate -> Recommendation(
             kind = Recommendation.Kind.READINESS,
             headline = "Red day: an easy walk instead of strength, if you want it.",
             reason = "%.1f hours of sleep and a sleeping heart rate of $bpm, ".format(hours) +
-                "%.0f above your 14-night average. A suggestion, not a change.".format(
+                "%.0f above your $nights-night average. A suggestion, not a change.".format(
                     bpm!! - average,
                 ),
             tone = Recommendation.Tone.ATTENTION,
@@ -567,16 +574,14 @@ private fun readinessRecommendation(
         shortSleep -> Recommendation(
             kind = Recommendation.Kind.READINESS,
             headline = "Yellow day: consider dropping one set from each exercise.",
-            reason = "%.1f hours of sleep, under the %d-hour mark. Rehab stays as it is.".format(
-                hours,
-                rule.sleepHoursThreshold,
-            ),
+            reason = "%.1f hours of sleep, under the $threshold-hour mark. ".format(hours) +
+                "Rehab stays as it is.",
             tone = Recommendation.Tone.ATTENTION,
         )
         highHeartRate -> Recommendation(
             kind = Recommendation.Kind.READINESS,
             headline = "Yellow day: consider dropping one set from each exercise.",
-            reason = "Sleeping heart rate $bpm, %.0f above your 14-night average. ".format(
+            reason = "Sleeping heart rate $bpm, %.0f above your $nights-night average. ".format(
                 bpm!! - average,
             ) + "Rehab stays as it is.",
             tone = Recommendation.Tone.ATTENTION,
@@ -632,3 +637,17 @@ private fun energyScoreFallback(
         tone = Recommendation.Tone.ATTENTION,
     )
 }
+
+/**
+ * A protocol number as a person would write it: "6", not "6.0", and "6.5" when
+ * it really is.
+ *
+ * These thresholds are Doubles because the protocol is allowed to say 6.5
+ * hours, and almost all of them are whole. Writing one into a sentence with
+ * "%d" is what crashed the app on every launch —
+ * `IllegalFormatConversionException: d != java.lang.Double` — because a format
+ * string is a runtime contract the compiler cannot check. This gives the
+ * sentence a String and takes the format specifier out of it entirely.
+ */
+internal fun Double.tidy(): String =
+    if (this == toLong().toDouble()) toLong().toString() else toString()

@@ -46,3 +46,8 @@ app/libs/*.aar
 # carries sample numbers and this file overrides it locally. Same arrangement
 # local.properties uses for the proxy secret.
 app/src/main/assets/protocol.local.json
+
+# The September export, superseded by the published GitHub repo. It carries its
+# own .git, so it would land here as a broken submodule reference rather than
+# as files. Kept on disk until confirmed unneeded; never committed.
+/cutcoach/

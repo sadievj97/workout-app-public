@@ -8,6 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
+import com.cutcoach.data.protocol.loadFromAssets
 import com.cutcoach.data.protocol.ProtocolLoad
 import com.cutcoach.data.protocol.ProtocolRepository
 import com.cutcoach.data.settings.SettingsRepository
@@ -104,7 +105,7 @@ class MainActivity : ComponentActivity() {
      */
     private fun bookReminders() {
         lifecycleScope.launch {
-            val protocol = ProtocolRepository.load(applicationContext)
+            val protocol = ProtocolRepository.loadFromAssets(applicationContext)
             if (protocol !is ProtocolLoad.Success) return@launch
 
             val settings = SettingsRepository.get(applicationContext)

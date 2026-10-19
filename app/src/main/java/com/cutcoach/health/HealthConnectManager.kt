@@ -175,7 +175,8 @@ class HealthConnectManager(private val context: Context) {
                     ?.takeIf { theNight }
                     ?.let { minutesAfterTarget(sleep.start, it, date, zone) },
                 isTheNight = theNight,
-            ).also { it.fragmentCount = sleepWindows.size }
+                fragments = sleepWindows.size,
+            )
         }
 
         val band = if (isIntervalDay) intervals else zone2

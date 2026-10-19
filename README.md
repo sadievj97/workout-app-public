@@ -4,7 +4,7 @@ An Android app that runs one person's 24-week cut: it shows the day's session,
 guides it with timers and animated figures, reads a Galaxy Watch through Health
 Connect, and suggests progressions that follow the protocol's own rules.
 
-Kotlin, Jetpack Compose, Room. **208 unit tests, no instrumentation.** All health
+Kotlin, Jetpack Compose, Room. **215 unit tests, no instrumentation.** All health
 data stays on the phone.
 
 > The protocol in this repository is **sample data**. The real one is a
@@ -43,13 +43,18 @@ Claude layer sends, and only when asked.
 protocol.json  exercises.json  poses.json      ← the source of truth
         │
         ▼
-ProtocolRepository ──────────────────────────► every screen and rule
-        │
-        ├── rules/          pure Kotlin, no Android   ← the engine
-        ├── health/         Health Connect, read only
-        ├── claude/         summaries → Worker → Claude → guardrails
-        ├── samsung/        optional SDK, its own source root
-        └── ui/             Compose; figures drawn in code
+:core   plain Kotlin. No Android on the dependency path at all.
+        ├── protocol/   the two JSON files, parsed
+        ├── session/    the ordered plan a session is walked through
+        ├── rules/      the engine: progression, deload, plateau, readiness
+        └── health/     the derived metrics and the types they produce
+
+:app    Android: Compose, Room, Health Connect, WorkManager
+        ├── ui/         every screen; figures drawn in code
+        ├── health/     Health Connect reads and the daily sync
+        ├── claude/     summaries → Worker → Claude → guardrails
+        ├── samsung/    optional SDK, its own source root
+        └── data/       Room, and the figure geometry
 ```
 
 **The rules engine is pure Kotlin with no Android in it.** That is the single
@@ -57,6 +62,15 @@ most load-bearing decision in the project: it lets the twelve rule tests the
 brief specifies run on a laptop in seconds instead of needing a device. Gathering
 the data — database, settings, watch — lives in a separate file so the rules stay
 testable.
+
+It is now a module rather than a habit. Of the 1,700 lines that moved into
+`:core`, exactly one file imported anything from Android, and only to read a
+file by name — so `ProtocolRepository` asks for the text of a named file and
+`:app` answers with its assets. The discipline was already being kept; the
+module makes it impossible to break, because a `Context` is not on the
+dependency path to reach for. It is also what would let a second front end —
+a watch, say — build the same session from the same protocol without
+reimplementing any of it.
 
 **Nulls are load-bearing.** A missing value means the watch recorded nothing, and
 nothing in the app ever turns that into a zero. A night with no data is not a
@@ -107,7 +121,7 @@ assertions did.
 ## Test results
 
 ```
-208 tests, 0 failures
+215 tests, 0 failures  (87 in :core, 128 in :app)
 ```
 
 | Area | What it covers |
@@ -190,7 +204,7 @@ finds what you thought to check.
 ## Building it
 
 ```bash
-./gradlew testDebugUnitTest      # 208 tests, no device needed
+./gradlew test testDebugUnitTest  # 215 tests, no device needed
 ./gradlew installDebug           # needs a phone; minSdk 28
 ```
 

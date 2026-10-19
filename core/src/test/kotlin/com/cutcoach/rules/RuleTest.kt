@@ -34,7 +34,7 @@ class RuleTest {
     private lateinit var repo: ProtocolRepository
     private val zone: ZoneId = ZoneId.of("Europe/Amsterdam")
 
-    private fun asset(name: String) = File("src/main/assets/$name").readText()
+    private fun asset(name: String) = com.cutcoach.ShippedAssets.text(name)
 
     @Before
     fun setUp() {
@@ -274,26 +274,18 @@ class RuleTest {
 
     // ---- 9 ---------------------------------------------------------------
 
+    /**
+     * The engine half of the brief's ninth rule test.
+     *
+     * The other half — that no calorie record type is read from Health Connect
+     * and no calorie permission is in the manifest — is about the app's own
+     * surface rather than the rules, and both of those live on Android. It is
+     * in `:app` as CaloriesGuardrailTest, and the two together are the whole
+     * guardrail. Splitting it was the honest option: this module has no
+     * manifest and no Health Connect to check.
+     */
     @Test
-    fun `watch calories are never shown anywhere as food to eat back`() {
-        // The strongest form of this guardrail is that the number never enters
-        // the app at all: no calorie record type is read from Health Connect,
-        // so there is nothing to display by accident.
-        val readTypes = com.cutcoach.health.HealthConnectManager.RECORD_TYPES
-            .map { it.type.simpleName.orEmpty() }
-        assertTrue(
-            "A calories-burned record type is being read: $readTypes",
-            readTypes.none { it.contains("Calories", ignoreCase = true) },
-        )
-
-        val manifest = File("src/main/AndroidManifest.xml").readText()
-        assertFalse(
-            "The manifest asks for a calories-burned permission",
-            manifest.contains("READ_ACTIVE_CALORIES_BURNED") ||
-                manifest.contains("READ_TOTAL_CALORIES_BURNED"),
-        )
-
-        // And nothing the engine can say mentions eating anything back.
+    fun `no recommendation mentions eating watch calories back`() {
         val everything = broadSweep().flatten()
             .joinToString(" ") { "${it.headline} ${it.reason}" }
             .lowercase()

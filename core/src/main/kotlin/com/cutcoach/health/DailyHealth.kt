@@ -45,10 +45,20 @@ data class SleepNight(
      * A very late night is still a night. Length decides this, not the hour.
      */
     val isTheNight: Boolean = true,
-) {
-    val fragments: Int get() = fragmentCount
-    internal var fragmentCount: Int = 1
-}
+    /**
+     * How many stretches the watch split this night into. The longest is the
+     * one reported; this says how many there were, so the Today screen can
+     * admit it rather than presenting a fragment as the whole night.
+     *
+     * A constructor parameter rather than the `internal var` it used to be.
+     * That worked only while the reader and this class shared a module, and
+     * stopped compiling the moment they did not — correctly, because a value
+     * assigned after construction can be forgotten, and a data class whose
+     * `copy()` silently drops it is a trap. One is the honest default: a night
+     * the watch did not split is one stretch.
+     */
+    val fragments: Int = 1,
+)
 
 /**
  * One recorded workout, with the part that matters for a cardio day: how long

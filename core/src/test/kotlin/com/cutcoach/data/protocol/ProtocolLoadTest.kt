@@ -25,7 +25,7 @@ class ProtocolLoadTest {
 
     /** The same files that ship in the APK. */
     private fun asset(name: String): String {
-        val file = File("src/main/assets/$name")
+        val file = com.cutcoach.ShippedAssets.file(name)
         assertTrue("Missing asset: ${file.absolutePath}", file.exists())
         return file.readText()
     }

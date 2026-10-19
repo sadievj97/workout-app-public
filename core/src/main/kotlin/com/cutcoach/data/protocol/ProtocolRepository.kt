@@ -1,6 +1,5 @@
 package com.cutcoach.data.protocol
 
-import android.content.Context
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonNamingStrategy
@@ -250,12 +249,12 @@ class ProtocolRepository private constructor(
          * typo in the protocol shows as a readable message on screen instead of
          * a crash at 05:35.
          */
-        fun load(context: Context): ProtocolLoad {
+        fun load(readFile: (String) -> String?): ProtocolLoad {
             cached?.let { return ProtocolLoad.Success(it) }
             val result = parse(
-                protocolText = readAsset(context, PROTOCOL_OVERRIDE)
-                    ?: readAsset(context, PROTOCOL_ASSET).orEmpty(),
-                exercisesText = readAsset(context, EXERCISES_ASSET).orEmpty(),
+                protocolText = readFile(PROTOCOL_OVERRIDE)
+                    ?: readFile(PROTOCOL_ASSET).orEmpty(),
+                exercisesText = readFile(EXERCISES_ASSET).orEmpty(),
             )
             if (result is ProtocolLoad.Success) cached = result.repository
             return result
@@ -282,11 +281,6 @@ class ProtocolRepository private constructor(
             return ProtocolLoad.Success(ProtocolRepository(protocol, library))
         }
 
-        /** Null when the asset is not there, which is normal for the override. */
-        private fun readAsset(context: Context, name: String): String? =
-            runCatching {
-                context.assets.open(name).bufferedReader().use { it.readText() }
-            }.getOrNull()
     }
 }
 

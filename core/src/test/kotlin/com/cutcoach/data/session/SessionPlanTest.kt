@@ -20,8 +20,8 @@ class SessionPlanTest {
     @Before
     fun setUp() {
         val result = ProtocolRepository.parse(
-            File("src/main/assets/protocol.json").readText(),
-            File("src/main/assets/exercises.json").readText(),
+            com.cutcoach.ShippedAssets.text("protocol.json"),
+            com.cutcoach.ShippedAssets.text("exercises.json"),
         )
         repo = (result as ProtocolLoad.Success).repository
     }

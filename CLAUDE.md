@@ -29,6 +29,13 @@ Later, Claude adds substitutions, harder variations, and weekly reviews.
 - Resolve every item in `open_decisions` with the owner before building a feature that depends on it, then write the answer back into `protocol.json`.
 - Items under `proposed_rules_needing_approval` are not active until the owner approves them.
 
+## Modules
+
+- `:core` — plain Kotlin, no Android. The protocol and exercise library parsed, the session plan, the rules engine, and the derived health metrics. This was always Android-free; it became a module so the compiler enforces it rather than the author remembering. `ProtocolRepository` asks for the text of a named file through a `(String) -> String?` and does not know what an asset is.
+- `:app` — the Android app. Supplies that reader from its own assets (`ProtocolRepository.loadFromAssets`), and owns Compose, Room, Health Connect, WorkManager, the Claude layer and the figures.
+- Tests follow their code. `:core` tests read the real `protocol.json` from `:app`'s assets through `ShippedAssets`, rather than keeping a second copy that would drift.
+- A second front end — a watch — answers the file question its own way and reuses `:core` unchanged. That is the reason the split exists.
+
 ## Stack
 
 - Kotlin, Jetpack Compose, Material 3

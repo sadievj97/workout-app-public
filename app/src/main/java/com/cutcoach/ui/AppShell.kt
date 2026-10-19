@@ -44,6 +44,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.cutcoach.data.db.TrainingRepository
+import com.cutcoach.data.protocol.loadFromAssets
 import com.cutcoach.data.protocol.ProtocolLoad
 import com.cutcoach.data.protocol.ProtocolRepository
 import com.cutcoach.data.settings.SettingsRepository
@@ -113,7 +114,7 @@ private val TABS = listOf(
 @Composable
 fun CutCoachApp() {
     val context = LocalContext.current
-    val load = remember { ProtocolRepository.load(context) }
+    val load = remember { ProtocolRepository.loadFromAssets(context) }
 
     CutCoachTheme {
         Surface(

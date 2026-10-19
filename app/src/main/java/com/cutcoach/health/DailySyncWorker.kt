@@ -8,6 +8,7 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.cutcoach.data.db.TrainingRepository
 import com.cutcoach.data.db.WeightSource
+import com.cutcoach.data.protocol.loadFromAssets
 import com.cutcoach.data.protocol.ProtocolLoad
 import com.cutcoach.data.protocol.ProtocolRepository
 import java.time.LocalDate
@@ -35,7 +36,7 @@ class DailySyncWorker(
         }
         if (!manager.hasAllPermissions()) return Result.success()
 
-        val protocol = ProtocolRepository.load(applicationContext)
+        val protocol = ProtocolRepository.loadFromAssets(applicationContext)
         if (protocol !is ProtocolLoad.Success) return Result.failure()
 
         return try {

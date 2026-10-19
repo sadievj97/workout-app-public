@@ -16,3 +16,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "CutCoach"
 include(":app")
+include(":core")

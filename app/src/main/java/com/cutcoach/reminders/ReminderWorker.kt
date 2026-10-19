@@ -7,6 +7,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import com.cutcoach.data.protocol.loadFromAssets
 import com.cutcoach.data.protocol.ProtocolLoad
 import com.cutcoach.data.protocol.ProtocolRepository
 import com.cutcoach.data.settings.SettingsRepository
@@ -32,7 +33,7 @@ class ReminderWorker(
 
     override suspend fun doWork(): Result {
         val momentId = inputData.getString(KEY_MOMENT_ID)
-        val protocol = ProtocolRepository.load(applicationContext)
+        val protocol = ProtocolRepository.loadFromAssets(applicationContext)
         if (protocol !is ProtocolLoad.Success) return Result.failure()
 
         val settings = SettingsRepository.get(applicationContext)

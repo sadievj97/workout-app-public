@@ -217,6 +217,63 @@ class SessionPlayerViewModel(
         }
     }
 
+    /** Whether there is anything to go back to. False on the first step. */
+    val canGoBack: Boolean get() = index > 0
+
+    /**
+     * Step back one.
+     *
+     * For the ordinary mistakes: a set logged with the wrong number, or a rest
+     * skipped by a thumb that was aiming elsewhere. Until now the session only
+     * ran forwards, so either one was permanent.
+     *
+     * Going back onto a set **un-logs it**, in memory and in the database, and
+     * puts what was logged back in the input. That is the whole reason this is
+     * more than an index change: redoing a set without removing the first
+     * attempt would leave two rows for one set, and progression reads whichever
+     * the query happens to return — a worse bug than the typo being fixed.
+     *
+     * The reps come back as they were typed rather than as the target, because
+     * the common case is correcting 12 to 11, not starting again.
+     */
+    fun previous() {
+        if (!canGoBack) return
+
+        // Leaving the end means the session is no longer over: let the finish
+        // chime fire again when it is reached a second time.
+        finishChimed = false
+
+        index -= 1
+        val step = current
+        val undone = unlog(step)
+
+        prepareStep()
+
+        // prepareStep refills the input from the target, so this goes after.
+        if (step is SessionStep.RepSet) {
+            undone?.reps?.let { repsInput = it }
+        }
+    }
+
+    /**
+     * Remove the set recorded for a step, if there was one.
+     *
+     * Returns what was removed so the caller can put it back on screen.
+     */
+    private fun unlog(step: SessionStep): LoggedSet? {
+        val found = setLoggedFor(step, logged) ?: return null
+
+        logged.remove(found)
+        pending.remove(found)
+
+        sessionLogId?.let { id ->
+            viewModelScope.launch {
+                training.deleteSet(id, found.exerciseId, found.setNumber, found.side.name)
+            }
+        }
+        return found
+    }
+
     // ---- Recording --------------------------------------------------------
 
     /** How many sets have been written down so far, for the leave dialog. */
@@ -327,5 +384,33 @@ class SessionPlayerViewModel(
     private companion object {
         /** Only used for a max-reps exercise on its first set of a session. */
         const val FALLBACK_MAX_REPS_START = 8
+    }
+}
+
+/**
+ * Which logged set belongs to a step, if any.
+ *
+ * A step and a logged set are separate objects and agree on three fields
+ * only: the exercise, the set number and the side. All three are needed —
+ * an each-side exercise logs set 2 twice, once left and once right, and
+ * matching on exercise and number alone would delete whichever came first.
+ * That is a wrong rep count written to the wrong side, from a button pressed
+ * to fix a wrong rep count.
+ *
+ * Top-level and internal rather than a method, so it can be tested without a
+ * ViewModel, a database or a device. Everything else [SessionPlayerViewModel]
+ * does on the way back is index arithmetic.
+ */
+internal fun setLoggedFor(step: SessionStep, logged: List<LoggedSet>): LoggedSet? {
+    val (exerciseId, setNumber, side) = when (step) {
+        is SessionStep.RepSet -> Triple(step.exerciseId, step.setNumber, step.side)
+        is SessionStep.HoldSet -> Triple(step.exerciseId, step.setNumber, step.side)
+        // Rest, switch sides, warm-up and the end log nothing, so stepping
+        // back onto one removes nothing.
+        else -> return null
+    }
+
+    return logged.lastOrNull {
+        it.exerciseId == exerciseId && it.setNumber == setNumber && it.side == side
     }
 }

@@ -100,6 +100,34 @@ interface SetLogDao {
     @Insert
     suspend fun insert(set: SetLogEntity): Long
 
+    /**
+     * Remove one set, for stepping back in the player.
+     *
+     * Matched on the four fields that identify a set within a session rather
+     * than on the row id, because the player holds its sets as plain values
+     * and never sees the id Room hands back.
+     *
+     * Deleting is the point. Stepping back to redo a set and logging it again
+     * would otherwise leave two rows for one set, and progression reads
+     * whichever the query returns first — a worse bug than the mistyped rep
+     * count the owner was trying to correct.
+     */
+    @Query(
+        """
+        DELETE FROM set_log
+        WHERE sessionLogId = :sessionLogId
+          AND exerciseId = :exerciseId
+          AND setNumber = :setNumber
+          AND side = :side
+        """,
+    )
+    suspend fun deleteSet(
+        sessionLogId: Long,
+        exerciseId: String,
+        setNumber: Int,
+        side: String,
+    )
+
     @Query("SELECT * FROM set_log WHERE sessionLogId = :sessionLogId ORDER BY id")
     fun setsFor(sessionLogId: Long): Flow<List<SetLogEntity>>
 

@@ -100,6 +100,9 @@ enum class CutIcon {
 
     /** Leave the session. */
     STOP,
+
+    /** Step back to the previous part of a session. */
+    BACK,
 }
 
 /**
@@ -331,6 +334,21 @@ private fun DrawScope.drawIcon(icon: CutIcon, tint: Color, u: Float, stroke: Str
                 tint,
             )
             drawRect(tint, topLeft = p(16.8f, 5f), size = Size(2.6f * u, 14f * u))
+        }
+
+        // The mirror of SKIP: a bar the triangle backs into. Filled, like the
+        // rest of the transport controls, because it is pressed mid-set.
+        CutIcon.BACK -> {
+            drawPath(
+                Path().apply {
+                    moveTo(p(18f, 5f).x, p(18f, 5f).y)
+                    lineTo(p(8f, 12f).x, p(8f, 12f).y)
+                    lineTo(p(18f, 19f).x, p(18f, 19f).y)
+                    close()
+                },
+                tint,
+            )
+            drawRect(tint, topLeft = p(4.6f, 5f), size = Size(2.6f * u, 14f * u))
         }
 
         CutIcon.STOP -> drawRect(

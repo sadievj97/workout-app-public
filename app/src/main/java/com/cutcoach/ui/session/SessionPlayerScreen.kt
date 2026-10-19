@@ -302,6 +302,12 @@ private fun TimedPhase(
                 if (vm.running) "Pause" else "Resume",
                 if (vm.running) CutIcon.PAUSE else CutIcon.PLAY,
             ) { vm.pauseOrResume() }
+            // The case this was built for: a rest skipped by a thumb aiming
+            // elsewhere. Back puts you on the set before it, with what you
+            // logged still in the field.
+            if (vm.canGoBack) {
+                SecondaryButton("Back", CutIcon.BACK) { vm.previous() }
+            }
         }
 
         Box(Modifier.height(12.dp))
@@ -347,6 +353,9 @@ private fun WarmupStep(vm: SessionPlayerViewModel, step: SessionStep.Warmup) {
                 if (vm.running) CutIcon.PAUSE else CutIcon.PLAY,
             ) { vm.pauseOrResume() }
             SecondaryButton("Skip", CutIcon.SKIP) { vm.skip() }
+            if (vm.canGoBack) {
+                SecondaryButton("Back", CutIcon.BACK) { vm.previous() }
+            }
         }
     }
 }
@@ -401,6 +410,9 @@ private fun HoldStep(
                 if (vm.running) CutIcon.PAUSE else CutIcon.PLAY,
             ) { vm.pauseOrResume() }
             SecondaryButton("Skip", CutIcon.SKIP) { vm.skip() }
+            if (vm.canGoBack) {
+                SecondaryButton("Back", CutIcon.BACK) { vm.previous() }
+            }
         }
     }
 }
@@ -459,7 +471,12 @@ private fun RepSetStep(
         Box(Modifier.height(24.dp))
         PrimaryButton("Log set", CutIcon.CHECK) { vm.logReps() }
         Box(Modifier.height(12.dp))
-        SecondaryButton("Skip this set", CutIcon.SKIP) { vm.skip() }
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            SecondaryButton("Skip this set", CutIcon.SKIP) { vm.skip() }
+            if (vm.canGoBack) {
+                SecondaryButton("Back", CutIcon.BACK) { vm.previous() }
+            }
+        }
     }
 }
 

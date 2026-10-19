@@ -114,6 +114,14 @@ class TrainingRepository(private val db: CutCoachDatabase) {
         ),
     )
 
+    /** Undo one logged set, for stepping back in the player. */
+    suspend fun deleteSet(
+        sessionLogId: Long,
+        exerciseId: String,
+        setNumber: Int,
+        side: String,
+    ) = db.setLogDao().deleteSet(sessionLogId, exerciseId, setNumber, side)
+
     fun historyFor(exerciseId: String): Flow<List<SetLogEntity>> =
         db.setLogDao().historyFor(exerciseId)
 
